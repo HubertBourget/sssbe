@@ -28,8 +28,11 @@ creds.js
 *.tsv
 *.tsv.gz
 *.xlsx
- 
- 
+
+# except for package.json & !package-lock.json
+!package.json
+!package-lock.json
+
 # Mac/OSX
 .DS_Store
  
