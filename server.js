@@ -2,6 +2,8 @@ const express = require("express");
 const PORT = process.env.PORT || 8000;
 
 const {
+    getServerHomePage,
+    getFavIcon,
     postVideoMetaData,
     getPreReviewedVideoList,
     updateVideoMetaData,
@@ -9,12 +11,12 @@ const {
     getUserProfile,
     postProfileImage,
     checkAccountName,
-    getServerHomePage,
 } = require("./handlers");
 
 express()
     .use(express.json())
     .get('/', getServerHomePage)
+    .get('/favicon.ico', getFavIcon)
     .post("/api/postVideoMetaData", postVideoMetaData)
     .get("/api/getPreReviewedVideoList", getPreReviewedVideoList)
     .post("/api/updateVideoMetaData", updateVideoMetaData)

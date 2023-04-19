@@ -9,7 +9,12 @@ const options = {
 };
 
 const getServerHomePage = async (req, res) => {
-    res.status(200).json({status: 200, message:`Sacred Sound Studio Back End Server is currently up and running!`});};
+    res.status(200).json({status: 200, message:`Sacred Sound Studio Back End Server is currently up and running!`});
+};
+
+const getFavIcon = (req, res) => {
+        res.sendFile(path.join(__dirname, 'favicon.ico'));
+    };
 
 const postVideoMetaData = async (req, res) => {
     const VideoMetaData = {
@@ -204,6 +209,7 @@ const checkAccountName = async (req, res) => {
 
 module.exports = {
     getServerHomePage,
+    getFavIcon,
     postVideoMetaData,
     getPreReviewedVideoList,
     updateVideoMetaData,
