@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require('cors');
 const PORT = process.env.PORT || 8000;
 
 const {
@@ -14,6 +15,7 @@ const {
 } = require("./handlers");
 
 express()
+    .use(cors())
     .use(express.json())
     .get('/', getServerHomePage)
     .get('/favicon.ico', getFavIcon)
