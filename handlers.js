@@ -8,6 +8,8 @@ const options = {
     useUnifiedTopology: true,
 };
 
+const getServerHomePage = async (req, res) => {
+    res.status(200).json({status: 200, message:`Sacred Sound Studio Back End Server is currently up and running!`});};
 
 const postVideoMetaData = async (req, res) => {
     const VideoMetaData = {
@@ -201,6 +203,7 @@ const checkAccountName = async (req, res) => {
 
 
 module.exports = {
+    getServerHomePage,
     postVideoMetaData,
     getPreReviewedVideoList,
     updateVideoMetaData,
@@ -208,4 +211,5 @@ module.exports = {
     getUserProfile,
     postProfileImage,
     checkAccountName,
+    
 };

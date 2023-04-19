@@ -9,10 +9,12 @@ const {
     getUserProfile,
     postProfileImage,
     checkAccountName,
+    getServerHomePage,
 } = require("./handlers");
 
 express()
     .use(express.json())
+    .get('/', getServerHomePage)
     .post("/api/postVideoMetaData", postVideoMetaData)
     .get("/api/getPreReviewedVideoList", getPreReviewedVideoList)
     .post("/api/updateVideoMetaData", updateVideoMetaData)
