@@ -15,10 +15,10 @@ const {
 } = require("./handlers");
 
 express()
-    .use(use(cors({
+    .use(cors({
     origin: "*", //['https://sacredsound.app/', 'https://test.sacredsound.app/']
     methods: ['GET','POST','DELETE','UPDATE','PUT','PATCH']
-})))
+    }))
     .use(express.json())
     .get('/', getServerHomePage)
     .get('/favicon.ico', getFavIcon)
