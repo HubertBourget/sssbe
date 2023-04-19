@@ -12,10 +12,6 @@ const getServerHomePage = async (req, res) => {
     res.status(200).json({status: 200, message:`Sacred Sound Studio Back End Server is currently up and running!`});
 };
 
-const getFavIcon = (req, res) => {
-        res.sendFile(path.join(__dirname, 'favicon.ico'));
-    };
-
 const postVideoMetaData = async (req, res) => {
     const VideoMetaData = {
         VideoMetaData: req.body
@@ -37,6 +33,7 @@ const postVideoMetaData = async (req, res) => {
 }
 
 const getPreReviewedVideoList = async (req, res) => {
+    console.log("printing somewhere")
     const client = await new MongoClient(MONGO_URI, options);
     try {
         await client.connect();
@@ -209,7 +206,6 @@ const checkAccountName = async (req, res) => {
 
 module.exports = {
     getServerHomePage,
-    getFavIcon,
     postVideoMetaData,
     getPreReviewedVideoList,
     updateVideoMetaData,
