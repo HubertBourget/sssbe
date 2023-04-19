@@ -1,5 +1,5 @@
 const express = require("express");
-const PORT_NUMBER = 8001;
+const PORT = process.env.PORT || 8000;
 
 const {
     postVideoMetaData,
@@ -23,9 +23,9 @@ express()
     .post('/api/postProfileImage', postProfileImage)
     .get('/api/checkAccountName/:username', checkAccountName)
 
-    .listen(PORT_NUMBER, () => {
-        console.log(`Server launched on port ${PORT_NUMBER}`)
-    });
+    .listen(PORT, () => {
+        console.log(`Server launched on port ${PORT}`);
+});
 
     
 
