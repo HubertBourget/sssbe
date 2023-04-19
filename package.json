@@ -16,5 +16,6 @@
   },
   "scripts": {
     "start": "nodemon server.js"
-  }
+  },
+  "engines": { "node": "16.14.2" }
 }
