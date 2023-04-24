@@ -13,6 +13,11 @@ const {
     checkAccountName,
 } = require("./handlers");
 
+const {
+    CreateImageThumbnail,
+} = require("./controllers/ThumbnailController");
+
+
 express()
     .use(cors({
     origin: "*", //['https://sacredsound.app/', 'https://test.sacredsound.app/']
@@ -27,6 +32,7 @@ express()
     .get('/api/getUserProfile/:userId', getUserProfile)
     .post('/api/postProfileImage', postProfileImage)
     .get('/api/checkAccountName/:username', checkAccountName)
+    .post("/api/createImageThumbnail", CreateImageThumbnail)
 
     .listen(PORT, () => {
         console.log(`Server launched on port ${PORT}`);

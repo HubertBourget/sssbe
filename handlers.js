@@ -33,7 +33,6 @@ const postVideoMetaData = async (req, res) => {
 }
 
 const getPreReviewedVideoList = async (req, res) => {
-    console.log(req);
     const client = await new MongoClient(MONGO_URI, options);
     try {
         await client.connect();
