@@ -21,7 +21,6 @@ async function getFilePaths() {
 }  
 
 const CreateImageThumbnail = async function(req, res) {
-    console.log(req);
     try {
         const { 
             video_url, 
