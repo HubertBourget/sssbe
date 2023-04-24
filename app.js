@@ -16,5 +16,3 @@ app.use("/", thumbnailRouter);
 app.listen(process.env.PORT, () => {
     console.log("Listening to the port :: ", process.env.PORT);
 });
-
-

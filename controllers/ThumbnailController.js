@@ -4,14 +4,14 @@ const fs = require("fs");
 const fse = require("fs-extra");
 const request = require("request");
 const Video = require("../models/Video");
+const User = require("../models/User");
 const { upload } = require("../utils/uploadToS3");
-const { url } = require("inspector");
 const dir = './Thumbnails';
 const directoryPath = path.resolve(__dirname,'../Thumbnails');
+const { RecombeeSync } = require("../utils/RecombeeSync");
 
 async function getFilePaths() {
     try {
-        
         const files = await fs.promises.readdir(directoryPath);
         return files.map((file) => path.join(directoryPath, file));
     } catch (err) {
@@ -24,7 +24,7 @@ const CreateImageThumbnail = async function(req, res) {
     try {
         const { 
             video_url, 
-            time_marks = ["1", "6", "10"],
+            time_marks = ["1"],
         } = req.body;
 
         if (!video_url) {
@@ -37,7 +37,6 @@ const CreateImageThumbnail = async function(req, res) {
         if (!fs.existsSync(dir)){
             fs.mkdirSync(dir);
         }
-        let destination = path.join(__dirname, "../Thumbnails");
 
         request.get(video_url)
         .on('error', (err) => {
@@ -56,11 +55,11 @@ const CreateImageThumbnail = async function(req, res) {
             .on('end', (err, files) => {                
                 getFilePaths().then(async (data) => {
                     await upload(data);
-                    fse.emptyDir(path.resolve(__dirname,'../Thumbnails'))
+                    fse.emptyDir(path.resolve(__dirname,'../Thumbnails'));
+                    await fse.remove(path.resolve(__dirname,'../Temp.mp4'));
                 }).catch((e) => {
                     console.log("e :: ", e);
                 });
-
             })
             .on('error', (err) => {
                 console.log('Error:', err.message);
@@ -73,8 +72,6 @@ const CreateImageThumbnail = async function(req, res) {
                 fastSeek: true
             });
         });
-        
-
 
         return res.status(200).json({
             msg: "success"
@@ -88,6 +85,22 @@ const CreateImageThumbnail = async function(req, res) {
     }
 };
 
+const SyncCatalog = async function (req, res) {
+    try {
+        RecombeeSync();
+        return res.status(200).json({
+            msg: "Data syncing successfully."
+        });
+    } catch (err) {
+        console.log('err : ', err);
+        return res.status(400).json({
+            msg: "err",
+            err: err,
+        })
+    }
+}
+
 module.exports = {
     CreateImageThumbnail,
+    SyncCatalog,
 }
