@@ -8,7 +8,7 @@ const RecombeeSync = async () => {
         const client = new recombee.ApiClient(
             process.env.RECOMBEE_DB, 
             process.env.RECOMBEE_API_TOKEN, 
-            { regiovarn: 'us-west' },
+            { regiovarn: process.env.RECOMBEE_REGION },
         );
 
         // getting existing videoes and users
