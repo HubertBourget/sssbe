@@ -1,6 +1,6 @@
 const { Storage } = require('@google-cloud/storage');
 const path = require("path");
-const serviceKey = path.join(__dirname, './sacred-sound-2a7ce18e134a.json')
+const serviceKey = path.join(__dirname, './sacred-sound-2a7ce18e134a.json');
 
 module.exports = {
     upload: async function (url) {
@@ -10,7 +10,7 @@ module.exports = {
                 projectId: process.env.PROJECT_ID,
             });    
             const bucketName = process.env.BUCKET_NAME;
-            const folder = process.env.BUCKET_FOLDER;
+            const folder = process.env.BUCKET_THUMBNAIL_FOLDER;
             const fileName = `${Math.random().toString().substr(2, 6)}--${new Date().toISOString()}--image.jpg`;
 
             let imgUrls = [];
@@ -22,7 +22,7 @@ module.exports = {
                 imgUrls.push(data[0].metadata.selfLink);
             }
 
-            console.log("imgUrls :: ", imgUrls);
+            console.log("uploaded imgUrls :: ", imgUrls);
             return imgUrls;
         } catch(err) {
             console.log("err in file upload in gcs :: ", err);
