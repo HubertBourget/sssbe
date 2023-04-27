@@ -145,17 +145,14 @@ const getUserProfile = async (req, res) => {
 const getVideoUrlById = async (req, res) => {
     const client = await new MongoClient(MONGO_URI, options);
     try {
-        console.log(req.query.videoId)
         const db = client.db("db-name");
         const collection = db.collection('VideoMetaData');
         const videoDocument = await collection.findOne({ videoId: req.params.videoId });
-        console.log(videoDocument);
-        
         if (!videoDocument) {
             return res.status(404).json({ message: 'videoDocument not found: err.404' });
         }
 
-        const { fileUrl } = videoDocument;
+        const fileUrl = videoDocument.VideoMetaData.fileUrl;
 
         return res.status(200).json({ fileUrl });
     } catch (error) {
