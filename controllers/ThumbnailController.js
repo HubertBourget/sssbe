@@ -73,7 +73,7 @@ const CreateThumbnailOfAllBucketVideoes = async (req, res) => {
         }
 
         files.map(async (vid) => {
-            let videoUrl = vid.metadata.selfLink;
+            let videoUrl = vid.metadata.mediaLink;
             await StoreAndUpload(videoUrl, time_marks);
         });
 
