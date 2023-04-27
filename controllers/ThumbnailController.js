@@ -1,5 +1,4 @@
 const path = require("path");
-const ffmpeg = require('fluent-ffmpeg');
 const fs = require("fs");
 const fse = require("fs-extra");
 const request = require("request");
@@ -8,6 +7,9 @@ const Video = require("../models/Video");
 const { url } = require("inspector");
 const dir = './Thumbnails';
 const directoryPath = path.resolve(__dirname,'../Thumbnails');
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+const ffmpeg = require('fluent-ffmpeg');
+ffmpeg.setFfmpegPath(ffmpegPath);
 
 async function getFilePaths() {
     try {

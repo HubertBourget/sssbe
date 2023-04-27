@@ -6,6 +6,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@google-cloud/storage": "^6.9.5",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
