@@ -147,7 +147,7 @@ const getVideoUrlById = async (req, res) => {
     try {
         const db = client.db("db-name");
         const collection = db.collection('VideoMetaData');
-        const videoDocument = await collection.findOne({ videoId: req.query.videoId });
+        const videoDocument = await collection.findOne({ "VideoMetaData.videoId": req.query.videoId });
         console.log(req.query.videoId);
         console.log(req.params.videoId);
         console.log(videoDocument);
