@@ -148,11 +148,15 @@ const getVideoUrlById = async (req, res) => {
         const db = client.db("db-name");
         const collection = db.collection('VideoMetaData');
         const videoDocument = await collection.findOne({ videoId: req.query.videoId });
+        console.log(req.query.videoId);
+        console.log(req.params.videoId);
+        console.log(videoDocument);
+        console.log(videoDocument.VideoMetaData.fileUrlL);
+
         if (!videoDocument) {
             return res.status(404).json({ message: 'videoDocument not found: err.404' });
         }
-        console.log(videoDocument);
-        console.log(videoDocument.VideoMetaData.fileUrlL);
+        
 
         const fileUrl = videoDocument.VideoMetaData.fileUrl;
 
