@@ -145,7 +145,7 @@ const getUserProfile = async (req, res) => {
 const getVideoUrlById = async (req, res) => {
     const client = await new MongoClient(MONGO_URI, options);
     try {
-        console.log(req.params.videoId)
+        console.log(req.params)
         const db = client.db("db-name");
         const collection = db.collection('VideoMetaData');
         const videoDocument = await collection.findOne({ "VideoMetaData.videoId": req.params.videoId });
