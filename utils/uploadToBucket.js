@@ -1,7 +1,9 @@
 const { Storage } = require('@google-cloud/storage');
 const path = require("path");
 const { MongoClient } = require("mongodb");
+const axios = require('axios');
 const { MONGO_URI } = process.env;
+
 const serviceKeyUrl = process.env.SERVICE_KEY;
 
 const options = {
@@ -25,7 +27,7 @@ module.exports = {
         let imgUrls = [];
         try {
         const storage = new Storage({
-            keyFilename: getServiceKey(),
+            keyFilename: await getServiceKey(),
             projectId: process.env.PROJECT_ID,
         });
         const bucketName = process.env.BUCKET_NAME;
