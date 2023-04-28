@@ -2,20 +2,30 @@ const { Storage } = require('@google-cloud/storage');
 const path = require("path");
 const { MongoClient } = require("mongodb");
 const { MONGO_URI } = process.env;
-const serviceKey = process.env.SERVICE_KEY;
+const serviceKeyUrl = process.env.SERVICE_KEY;
 
 const options = {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 };
 
+async function getServiceKey() {
+    try {
+        const response = await axios.get(serviceKeyUrl);
+        const serviceKey = response.data;
+        return serviceKey;
+    } catch (error) {
+        console.error(error);
+    }
+}
+
 module.exports = {
     upload: async function (url, video_id) {
-        console.log(serviceKey);
+        console.log(getServiceKey());
         let imgUrls = [];
         try {
         const storage = new Storage({
-            keyFilename: serviceKey,
+            keyFilename: getServiceKey(),
             projectId: process.env.PROJECT_ID,
         });
         const bucketName = process.env.BUCKET_NAME;
