@@ -15,7 +15,8 @@ async function getServiceKey() {
     try {
         const response = await axios.get(serviceKeyUrl);
         const serviceKey = response.data;
-        return serviceKey;
+        const keyFilename = serviceKey['private_key'];
+        return keyFilename;
     } catch (error) {
         console.error(error);
     }
