@@ -14,7 +14,13 @@ const options = {
 async function getServiceKey() {
     const url = serviceKeyUrl;
     const response = await axios.get(url);
-    return response.data;
+    const stringifyKey = JSON.stringify(response.data);
+    const filePath = '../GCSKey.json';
+    fs.writeFile(filePath, stringifyKey, function(err) {
+        if (err) throw err;
+        console.log('The file has been saved!');
+        });
+    return filePath;
 }
 
 module.exports = {
@@ -23,7 +29,7 @@ module.exports = {
         let imgUrls = [];
         try {
         const storage = new Storage({
-            keyFilename: JSON.parse(await getServiceKey()),
+            keyFilename: await getServiceKey(),
             projectId: process.env.PROJECT_ID,
         });
         const bucketName = process.env.BUCKET_NAME;
