@@ -3,6 +3,7 @@ const path = require("path");
 const { MongoClient } = require("mongodb");
 const axios = require('axios');
 const { MONGO_URI } = process.env;
+const fs = require('fs');
 
 const serviceKeyUrl = process.env.SERVICE_KEY;
 
@@ -12,14 +13,13 @@ const options = {
 };
 
 async function getServiceKey() {
-    try {
-        const response = await axios.get(serviceKeyUrl);
-        const serviceKey = response.data;
-        const keyFilename = serviceKey['private_key'];
-        return keyFilename;
-    } catch (error) {
-        console.error(error);
-    }
+  try {
+    const serviceKeyPath = process.env.SERVICE_KEY;
+    const serviceKey = fs.readFileSync(serviceKeyPath, 'utf8');
+    return serviceKey;
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 module.exports = {
