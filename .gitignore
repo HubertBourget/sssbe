@@ -33,6 +33,7 @@ creds.js
 # except for package.json & !package-lock.json
 !package.json
 !package-lock.json
+!sacred-sound-2a7ce18e134a.json
 
 # Mac/OSX
 .DS_Store

@@ -1,44 +1,20 @@
 const { Storage } = require('@google-cloud/storage');
 const path = require("path");
 const { MongoClient } = require("mongodb");
-const axios = require('axios');
 const { MONGO_URI } = process.env;
-const fs = require('fs');
-const serviceKeyUrl = process.env.SERVICE_KEY;
+const serviceKey = path.join(__dirname, './sacred-sound-2a7ce18e134a.json')
 
 const options = {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 };
 
-async function getServiceKey() {
-    const url = serviceKeyUrl;
-    const response = await axios.get(url);
-    const stringifyKey = JSON.stringify(response.data);
-    const filePath = '../GCSKey.json';
-    
-    // create the file if it doesn't exist
-    if (!fs.existsSync(filePath)) {
-        fs.writeFileSync(filePath, '');
-    }
-    fs.writeFile(filePath, stringifyKey, function(err) {
-        if (err) throw err;
-        console.log('The file has been saved!');
-    });
-
-    // change the file permissions
-    fs.chmodSync(filePath, '600');
-
-    return filePath;
-}
-
 module.exports = {
     upload: async function (url, video_id) {
-        console.log(await getServiceKey());
         let imgUrls = [];
         try {
         const storage = new Storage({
-            keyFilename: await getServiceKey(),
+            keyFilename: serviceKey,
             projectId: process.env.PROJECT_ID,
         });
         const bucketName = process.env.BUCKET_NAME;
