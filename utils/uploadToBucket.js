@@ -23,7 +23,7 @@ module.exports = {
         let imgUrls = [];
         try {
         const storage = new Storage({
-            keyFilename: await getServiceKey(),
+            keyFilename: JSON.parse(await getServiceKey()),
             projectId: process.env.PROJECT_ID,
         });
         const bucketName = process.env.BUCKET_NAME;
