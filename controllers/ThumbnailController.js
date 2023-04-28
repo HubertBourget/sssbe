@@ -1,12 +1,10 @@
 const fs = require("fs");
-const dir = './Thumbnails';
 const fse = require("fs-extra");
 const request = require("request");
 const { RecombeeSync } = require("../utils/RecombeeSync");
 const { StoreAndUpload } = require("../utils/StoreVideoAndCreateThumbnail");
-const { Storage } = require('@google-cloud/storage');
 const path = require("path");
-const serviceKey = path.join(__dirname, '../utils/sacred-sound-2a7ce18e134a.json');
+const { bucket, thumbnailDir } = require("../utils/constants");
   
 /**
  * @method POST
@@ -31,8 +29,8 @@ const CreateImageThumbnail = async function(req, res) {
         }
 
         // we want one directory for store thumbnails locally so if directory not exist then create one
-        if (!fs.existsSync(dir)){
-            fs.mkdirSync(dir);
+        if (!fs.existsSync(thumbnailDir)){
+            fs.mkdirSync(thumbnailDir);
         }
 
         // store video locally then create thumbnails and then store new thumbnails to the GCS
@@ -42,7 +40,7 @@ const CreateImageThumbnail = async function(req, res) {
             msg: "success"
         });
     } catch (err) {
-        console.log('err : ', err);
+        console.log('Err in File-ThumbnailController > Method-CreateImageThumbnail > : ', err);
         return res.status(400).json({
             err: true,
             error: err,
@@ -66,7 +64,7 @@ const SyncCatalog = async function (req, res) {
             msg: "Data syncing successfully."
         });
     } catch (err) {
-        console.log('err : ', err);
+        console.log('Err in File-ThumbnailController > Method-SyncCatalog > : ', err);
         return res.status(400).json({
             msg: "err",
             err: err,
@@ -86,35 +84,28 @@ const CreateThumbnailOfAllBucketVideoes = async (req, res) => {
         // get capture time from body
         const { time_marks = ["1"] } = req.body;    // if we want to capture 2 thumbnails on 1st and 5th second then time_marks = ["1", "5"]
 
-        // create instance of storage
-        const storage = new Storage({
-            keyFilename: serviceKey,
-            projectId: process.env.PROJECT_ID,
-        });    
-
         // getting bucket name and folder name in which our video will be store
-        const bucketName = process.env.BUCKET_NAME;
         const folder = process.env.BUCKET_VIDEO_FOLDER;
 
         // getting all the media links of videoes which are stored in specific folder in bucket
-        const [files] = await storage.bucket(bucketName).getFiles({ prefix: folder});
+        const [files] = await bucket.getFiles({ prefix: folder});
 
         // we want one directory for store thumbnails locally so if directory not exist then create one
-        if (!fs.existsSync(dir)){
-            fs.mkdirSync(dir);
+        if (!fs.existsSync(thumbnailDir)){
+            fs.mkdirSync(thumbnailDir);
         }
 
-        files.map(async (vid) => {
-            let videoUrl = vid.metadata.mediaLink;
-            // download video > create thumbnail of that video > upload the thumbnails to GCS > then delete the created thumbnails from local
-            await StoreAndUpload(videoUrl, time_marks);
-        });
-
-        return res.status(200).json({
+        res.status(200).json({
             msg: "success",
         });
+
+        for (let i = 0; i < files.length; i++) {
+            let videoUrl = files[i].metadata.mediaLink;
+            // download video > create thumbnail of that video > upload the thumbnails to GCS > then delete the created thumbnails from local
+            await StoreAndUpload(videoUrl, time_marks);
+        }
     } catch (err) {
-        console.log('err : ', err);
+        console.log('Err in File-ThumbnailController > Method-CreateThumbnailOfAllBucketVideoes > : ', err);
         return res.status(400).json({
             msg: "err",
             err: err,
@@ -138,7 +129,7 @@ const uploadVideo = async (req, res) => {
 
         // handle error if any occur while downloading the video
         .on('error', (err) => {
-            console.log("err in download video from req.get :: ", err);
+            console.log("Err in File-ThumbnailController > Method-CreateThumbnailOfAllBucketVideoes > download video from req.get :: ", err);
         })  
 
         // createWriteStream will download video as Temp.mp4 in main directory
@@ -146,26 +137,15 @@ const uploadVideo = async (req, res) => {
 
         // after successfully download the video we will upload it to the google cloud storage
         .on('finish', async () => {         
-            // create instance of storage with our credentials
-            const storage = new Storage({
-                keyFilename: serviceKey,
-                projectId: process.env.PROJECT_ID,
-            });    
     
-            const bucketName = process.env.BUCKET_NAME;
-
             // create a unique file name with 6 digin random number and current date
             const fileName = `${Math.random().toString().substr(2, 6)}--${new Date().toISOString()}--video.mp4`;
 
-            // getting bucket
-            const bucket = storage.bucket(bucketName);
-
             // uploading video to the bucket
-            let uploadedVideo = await bucket.upload("Temp.mp4", {
+            await bucket.upload("Temp.mp4", {
                 destination: path.join(process.env.BUCKET_VIDEO_FOLDER, fileName),
                 contentType: 'video/mp4'
             });
-            console.log("uploadedVideo :: ", uploadedVideo[0].metadata.selfLink);
 
             // removing video which is stored in our main directory named "Temp.mp4"
             await fse.remove(path.resolve(__dirname,'../Temp.mp4'));
@@ -175,7 +155,7 @@ const uploadVideo = async (req, res) => {
             msg: "success",
         });
     } catch (err) {
-        console.log('err : ', err);
+        console.log('Err in File-ThumbnailController > Method-uploadVideo > : ', err);
         return res.status(400).json({
             msg: "err",
             err: err,

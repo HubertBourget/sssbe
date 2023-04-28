@@ -21,7 +21,7 @@ const StoreAndUpload = async function (video_url, time_marks) {
 
         // handle error if any occur while downloading the video
         .on('error', (err) => {
-            console.log("err in download video from req.get :: ", err);
+            console.log("Err in File-StoreVideoAndCreateThumbnail > Method-StoreAndUpload > download video from req.get :: ", err);
         })
 
         // createWriteStream will download video as Temp.mp4 in main directory
@@ -38,7 +38,6 @@ const StoreAndUpload = async function (video_url, time_marks) {
             .on('end', (err, files) => {                
                 // get paths of all the files contains in "directoryPath"
                 getFilePaths(directoryPath).then(async (data) => {
-                    console.log("images to being upload :: ", data);
 
                     // upload images to the google cloud storage
                     await upload(data);
@@ -47,15 +46,15 @@ const StoreAndUpload = async function (video_url, time_marks) {
                     fse.emptyDir(path.resolve(__dirname,'../Thumbnails'));
 
                     // delete Temp.mp4 video which we have downloaded locally
-                    await fse.remove(path.resolve(__dirname,'../Temp.mp4'));
+                    await fse.remove(videoFilePath);
                 }).catch((e) => {
-                    console.log("err in getFilePaths :: ", e);
+                    console.log("Err in File-StoreVideoAndCreateThumbnail > Method-StoreAndUpload > getFilePaths :: ", e);
                 });
             })
 
             // handle error if any occur while downloading the video
             .on('error', (err) => {
-                console.log("err in get video by ffmpeg :: ", err);
+                console.log("Err in File-StoreVideoAndCreateThumbnail > Method-StoreAndUpload > get video by ffmpeg :: ", err);
             })
 
             // creates thumbnails
@@ -63,12 +62,12 @@ const StoreAndUpload = async function (video_url, time_marks) {
                 count: 1,
                 timemarks: time_marks,
                 filename: fileName+ ".jpg",
-                folder: path.resolve(__dirname,'../Thumbnails'),
+                folder: directoryPath,
                 fastSeek: true
             });
         });
     } catch (err) {
-        console.log('err : ', err);
+        console.log('Err in File-StoreVideoAndCreateThumbnail > Method-StoreAndUpload > : ', err);
     }
 }
 

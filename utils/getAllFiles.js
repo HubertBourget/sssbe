@@ -14,7 +14,7 @@ async function getFilePaths(directoryPath) {
         // return path of all the files which are exist in the directory
         return files.map((file) => path.join(directoryPath, file));
     } catch (err) {
-        console.log('Error getting directory information:', err);
+        console.log('Err in File-getAllFiles > Method-getFilePaths > :', err);
         return [];
     }
 };  
