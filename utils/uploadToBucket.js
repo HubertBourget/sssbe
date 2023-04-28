@@ -22,7 +22,7 @@ async function getServiceKey() {
         });
     fs.chmod('../GCSKey.json', '666', (err) => {
     if (err) throw err;
-    console.log('File permission changed!');
+    console.log('File permission changed!!');
     }); 
     return filePath;
 }
