@@ -16,14 +16,19 @@ async function getServiceKey() {
     const response = await axios.get(url);
     const stringifyKey = JSON.stringify(response.data);
     const filePath = '../GCSKey.json';
+    
+    // create the file if it doesn't exist
+    if (!fs.existsSync(filePath)) {
+        fs.writeFileSync(filePath, '');
+    }
     fs.writeFile(filePath, stringifyKey, function(err) {
         if (err) throw err;
         console.log('The file has been saved!');
-        });
-    fs.chmod('../GCSKey.json', '666', (err) => {
-    if (err) throw err;
-    console.log('File permission changed!!');
-    }); 
+    });
+
+    // change the file permissions
+    fs.chmodSync(filePath, '600');
+
     return filePath;
 }
 
