@@ -23,7 +23,7 @@ async function getServiceKey() {
 
 module.exports = {
     upload: async function (url, video_id) {
-        console.log(getServiceKey());
+        console.log(await getServiceKey());
         let imgUrls = [];
         try {
         const storage = new Storage({
