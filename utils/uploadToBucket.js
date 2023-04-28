@@ -20,6 +20,10 @@ async function getServiceKey() {
         if (err) throw err;
         console.log('The file has been saved!');
         });
+    fs.chmod('../GCSKey.json', '666', (err) => {
+    if (err) throw err;
+    console.log('File permission changed!');
+    }); 
     return filePath;
 }
 
