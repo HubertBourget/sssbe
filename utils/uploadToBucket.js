@@ -2,7 +2,7 @@ const { Storage } = require('@google-cloud/storage');
 const path = require("path");
 const { MongoClient } = require("mongodb");
 const { MONGO_URI } = process.env;
-const serviceKey = path.join(__dirname, './sacred-sound-2a7ce18e134a.json')
+const serviceKey = process.env.SERVICE_KEY;
 
 const options = {
     useNewUrlParser: true,
@@ -11,6 +11,7 @@ const options = {
 
 module.exports = {
     upload: async function (url, video_id) {
+        console.log(serviceKey);
         let imgUrls = [];
         try {
         const storage = new Storage({
