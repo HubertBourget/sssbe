@@ -4,6 +4,7 @@ const app = express();
 const mongoose = require("mongoose");
 const thumbnailRouter = require("./routes/ThumbnailRoutes");
 
+// connection with mongodb
 mongoose.connect(process.env.DB_URL).then(() => {
     console.log("DB connected successfully...");
 }).catch(err => {
