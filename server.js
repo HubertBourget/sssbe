@@ -12,6 +12,7 @@ const {
     postProfileImage,
     checkAccountName,
     getVideoUrlById,
+    b_getUserExist,
 } = require("./handlers");
 
 const {
@@ -35,6 +36,7 @@ express()
     .get('/api/checkAccountName/:username', checkAccountName)
     .post("/api/createImageThumbnail", CreateImageThumbnail)
     .get('/api/getVideoUrlById', getVideoUrlById)
+    .get('/api/b_getUserExist/:userId', b_getUserExist)
 
     .listen(PORT, () => {
         console.log(`Server launched on port ${PORT}`);

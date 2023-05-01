@@ -142,6 +142,26 @@ const getUserProfile = async (req, res) => {
     }
 };
 
+const b_getUserExist = async (req, res) => {
+    const client = await new MongoClient(MONGO_URI, options);
+    try {
+        const db = client.db("db-name");
+        const collection = db.collection('users');
+        const user = await collection.findOne({ email: req.params.userId });
+        
+        if (!user) {
+            return res.status(404).json({ exist: false, message: 'User not found' });
+        }
+
+        return res.status(200).json({ exist: true, message: 'User found', user: user });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    } finally {
+        await client.close();
+    }
+};
+
 const getVideoUrlById = async (req, res) => {
     const client = await new MongoClient(MONGO_URI, options);
     try {
@@ -232,4 +252,5 @@ module.exports = {
     postProfileImage,
     checkAccountName,
     getVideoUrlById,
+    b_getUserExist,
 };
