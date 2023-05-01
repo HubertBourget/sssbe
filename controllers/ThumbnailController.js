@@ -5,6 +5,9 @@ const { RecombeeSync } = require("../utils/RecombeeSync");
 const { StoreAndUpload } = require("../utils/StoreVideoAndCreateThumbnail");
 const path = require("path");
 const { bucket, thumbnailDir } = require("../utils/constants");
+const recombee = require('recombee-api-client');
+const rqs = recombee.requests;
+const { recombeeClient } = require("../utils/constants");
   
 /**
  * @method POST
@@ -161,11 +164,76 @@ const uploadVideo = async (req, res) => {
             err: err,
         })
     }
-}
+};
+
+/**
+ * @method POST
+ * @route "/syncCatalog"
+ * @description This method will take Ids of all the users and approved videoes from the database. Then it will add new users and videoes(items) to the recombee.
+ * @param, No need to pass any params or body
+ * @returns This will return success message while other processes like get Ids from database and sync it with the recombee will be run in background.
+ */
+const addUserRecommendation = async function (req, res) {
+    try {
+        // get userId and itemId from the body
+        let { userId, itemId } = req.body;
+
+        // validate body data
+        if (!userId || !itemId) {
+            return res.status(400).json({
+                err: true,
+                error: "Please provide userId and itemId!",
+            });
+        }
+
+        // getting existing videoes and users from recombee
+        let existItems = await recombeeClient.send(new rqs.ListItems({}));
+        let existUsers = await recombeeClient.send(new rqs.ListUsers({}));
+
+        // if userId not exist in the recombee database then add it to the recombee database
+        if (!existUsers.includes(userId)) {
+            // adding user into the recombee database
+            recombeeClient.send(new rqs.AddUser(userId), function(err, data) {
+                if (err) {
+                    console.log("Err in File-ThumbnailController > Method-addUserRecommendation > adduser :: ", err);
+                }
+            });
+        }
+
+        // if itemId not exist in the recombee database then add it to the recombee database
+        if (!existItems.includes(itemId)) {
+            // adding item into the recombee database
+            recombeeClient.send(new rqs.AddItem(itemId), function(err, data) {
+                if (err) {
+                    console.log("Err in File-ThumbnailController > Method-addUserRecommendation > additem :: ", err);
+                }
+            });
+        }
+
+        // adding recommendation of user
+        await recombeeClient.send(new rqs.AddPurchase(userId, itemId));
+
+        // recommend some data to the user
+        const recommendations = await recombeeClient.send(new rqs.RecommendItemsToUser(userId, 5));
+
+        return res.status(200).json({
+            err: false,
+            msg: "Recommendation added successfully.",
+            data: recommendations,
+        });
+    } catch (err) {
+        console.log('Err in File-ThumbnailController > Method-addUserRecommendation > : ', err);
+        return res.status(400).json({
+            msg: "err",
+            err: err,
+        });
+    }
+};
 
 module.exports = {
     CreateImageThumbnail,
     SyncCatalog,
     CreateThumbnailOfAllBucketVideoes,
     uploadVideo,
+    addUserRecommendation,
 }
