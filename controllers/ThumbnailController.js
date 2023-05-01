@@ -15,6 +15,7 @@ async function getFilePaths() {
     try {
         
         const files = await fs.promises.readdir(directoryPath);
+        console.log(files.map((file) => path.join(directoryPath, file))) //debug
         return files.map((file) => path.join(directoryPath, file));
     } catch (err) {
         console.log('Error getting directory information:', err);
