@@ -239,6 +239,28 @@ const checkAccountName = async (req, res) => {
     }
 };
 
+const postNewUserWithAccountName = async (req, res) => {
+    const user = {
+        user: req.body
+    }
+
+    const client = await new MongoClient(MONGO_URI, options);
+    try{
+        client.connect();
+        console.log("connected!");
+        const db = client.db('db-name');
+        const result = await db.collection("users").insertOne(user);
+        res.status(200).json({ status: 200, result: result })
+        client.close();
+        console.log("disconnected!");
+    }
+    catch (e){
+        res.status(400).json({ status: 400, message: e.message })
+    }
+}
+
+
+
 
 
 
@@ -253,4 +275,5 @@ module.exports = {
     checkAccountName,
     getVideoUrlById,
     b_getUserExist,
+    postNewUserWithAccountName,
 };

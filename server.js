@@ -13,6 +13,7 @@ const {
     checkAccountName,
     getVideoUrlById,
     b_getUserExist,
+    postNewUserWithAccountName,
 } = require("./handlers");
 
 const {
@@ -37,6 +38,7 @@ express()
     .post("/api/createImageThumbnail", CreateImageThumbnail)
     .get('/api/getVideoUrlById', getVideoUrlById)
     .get('/api/b_getUserExist/:userId', b_getUserExist)
+    .post('/api/postNewUserWithAccountName', postNewUserWithAccountName)
 
     .listen(PORT, () => {
         console.log(`Server launched on port ${PORT}`);
