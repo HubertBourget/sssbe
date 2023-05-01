@@ -12,6 +12,7 @@ const getServerHomePage = async (req, res) => {
     res.status(200).json({status: 200, message:`Sacred Sound Studio Back End Server is currently up and running!`});
 };
 
+// Reviewed Mai 1st
 const postVideoMetaData = async (req, res) => {
     const { videoOwner, videoId, b_isPreparedForReview, b_hasBeenReviewed, b_isApproved, fileUrl } = req.body;
     const VideoMetaData = {
