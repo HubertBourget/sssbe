@@ -240,7 +240,7 @@ const checkAccountName = async (req, res) => {
 };
 
 const postNewUserWithAccountName = async (req, res) => {
-    const { email, username, isArtist } = req.body;
+    const { email, username, isArtist, timestamp } = req.body;
     const user = {
         email,
         username,
