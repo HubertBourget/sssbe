@@ -17,9 +17,9 @@ const postVideoMetaData = async (req, res) => {
     const VideoMetaData = {
         videoOwner,
         videoId,
-        b_isPreparedForReview: false,
-        b_hasBeenReviewed: false,
-        b_isApproved: false,
+        b_isPreparedForReview: b_isPreparedForReview,
+        b_hasBeenReviewed: b_hasBeenReviewed,
+        b_isApproved: b_isApproved,
         fileUrl,
     };
 
