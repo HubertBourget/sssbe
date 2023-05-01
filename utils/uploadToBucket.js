@@ -41,10 +41,10 @@ module.exports = {
         const db = client.db("db-name");
         const collection = db.collection("VideoMetaData");
 
-        const query = { "VideoMetaData.videoId": video_id };
+        const query = { videoId: video_id };
         const update = {
             $set: {
-                "VideoMetaData.ImageThumbnailURL" : imgUrls[0]
+                ImageThumbnailURL: imgUrls[0]
             },
         };
         const options = { returnOriginal: false };
