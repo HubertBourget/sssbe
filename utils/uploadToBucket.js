@@ -32,7 +32,7 @@ module.exports = {
             action: 'read',
             expires: '03-17-2035',
             });
-            imgUrls.push(publicUrl[0]);
+            imgUrls.push(publicUrl[i]);
         }
 
         //uploading ImageURL to MongoDB VideoMetaData document
@@ -44,7 +44,9 @@ module.exports = {
         const query = { videoId: video_id };
         const update = {
             $set: {
-                ImageThumbnailURL: imgUrls[0]
+                ImageThumbnailURL0: imgUrls[0]//,
+                // ImageThumbnailURL1: imgUrls[1],
+                // ImageThumbnailURL2: imgUrls[2]
             },
         };
         const options = { returnOriginal: false };
