@@ -13,9 +13,11 @@ const getServerHomePage = async (req, res) => {
 };
 
 const postVideoMetaData = async (req, res) => {
+    const { videoId, url } = req.body;
     const VideoMetaData = {
-        VideoMetaData: req.body
-    }
+        videoId,
+        url,
+    };
 
     const client = await new MongoClient(MONGO_URI, options);
     try{
@@ -94,7 +96,7 @@ const updateUserProfile = async (req, res) => {
     const client = await MongoClient.connect(MONGO_URI, options);
     try {
         const db = client.db("db-name");
-        const collection = db.collection("users");
+        const collection = db.collection("userAccounts");
 
         const query = { "email": email };
         const update = {
@@ -124,7 +126,7 @@ const getUserProfile = async (req, res) => {
     const client = await new MongoClient(MONGO_URI, options);
     try {
         const db = client.db("db-name");
-        const collection = db.collection('users');
+        const collection = db.collection('userAccounts');
         const user = await collection.findOne({ email: req.params.userId });
         
         if (!user) {
@@ -188,7 +190,7 @@ const { profileImageUrl, email } = req.body;
     const client = await MongoClient.connect(MONGO_URI, options);
     try {
         const db = client.db("db-name");
-        const collection = db.collection("users");
+        const collection = db.collection("userAccounts");
 
         const query = { "email": email };
         const update = {
@@ -218,7 +220,7 @@ const checkAccountName = async (req, res) => {
     const client = await new MongoClient(MONGO_URI, options);
     try {
         const db = client.db("db-name");
-        const collection = db.collection('users');
+        const collection = db.collection('userAccounts');
 
         if (username.length < 3) {
             return res.status(200).json({ taken: true, message: 'Account name already exists' });
@@ -253,7 +255,6 @@ const postNewUserWithAccountName = async (req, res) => {
         client.connect();
         console.log("connected!");
         const db = client.db('db-name');
-        console.log(user);
         const result = await db.collection("userAccounts").insertOne(user);
         res.status(200).json({ status: 200, result: result })
         client.close();
