@@ -146,7 +146,7 @@ const b_getUserExist = async (req, res) => {
     const client = await new MongoClient(MONGO_URI, options);
     try {
         const db = client.db("db-name");
-        const collection = db.collection('users');
+        const collection = db.collection('userAccounts');
         const user = await collection.findOne({ email: req.params.userId });
         
         if (!user) {
@@ -240,9 +240,12 @@ const checkAccountName = async (req, res) => {
 };
 
 const postNewUserWithAccountName = async (req, res) => {
+    const { email, username, isArtist } = req.body;
     const user = {
-        user: req.body
-    }
+        email,
+        username,
+        isArtist
+    };
 
     const client = await new MongoClient(MONGO_URI, options);
     try{
@@ -259,6 +262,7 @@ const postNewUserWithAccountName = async (req, res) => {
         res.status(400).json({ status: 400, message: e.message })
     }
 }
+
 
 
 
