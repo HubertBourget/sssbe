@@ -244,7 +244,8 @@ const postNewUserWithAccountName = async (req, res) => {
     const user = {
         email,
         username,
-        isArtist
+        isArtist,
+        timestamp
     };
 
     const client = await new MongoClient(MONGO_URI, options);
