@@ -44,9 +44,9 @@ module.exports = {
         const query = { videoId: video_id };
         const update = {
             $set: {
-                ImageThumbnailURL0: imgUrls[0]//,
-                // ImageThumbnailURL1: imgUrls[1],
-                // ImageThumbnailURL2: imgUrls[2]
+                ImageThumbnailURL0: imgUrls[0],
+                ImageThumbnailURL1: imgUrls[1],
+                ImageThumbnailURL2: imgUrls[2]
             },
         };
         const options = { returnOriginal: false };
@@ -55,20 +55,18 @@ module.exports = {
 
         if (!result.value) {
             console.log("404")
-            // return res.status(404).json({ error: "No document found with that videoId" });
+            return res.status(404).json({ error: "No document found with that videoId" });
         }
-        // return res.status(200).json({ status: 200, result: result.value });
-    } catch (error) {
-        console.error(error);
-        // return res.status(500).json({ error: error.message });
-    } finally {
-        client.close();
-    }
-
-        console.log("imgUrls :: ", imgUrls);
-        return imgUrls;
-        } catch (err) {
+        return res.status(200).json({ status: 200, result: result.value });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: error.message });
+        } finally {
+            client.close();
+        }} 
+        catch (err) {
         console.log("err in file upload in gcs :: ", err);
+        return res.status(500).json({ error: error.message });
         }
     },
 };
