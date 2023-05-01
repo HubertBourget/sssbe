@@ -147,7 +147,7 @@ const b_getUserExist = async (req, res) => {
     try {
         const db = client.db("db-name");
         const collection = db.collection('userAccounts');
-        const user = await collection.findOne({ email: req.params.userId });
+        const user = await collection.findOne({ "user.email": req.params.userId });
         
         if (!user) {
             return res.status(404).json({ exist: false, message: 'User not found' });
