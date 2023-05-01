@@ -17,7 +17,7 @@ const {
 } = require("./handlers");
 
 const {
-    postCreateImageThumbnail,
+    CreateImageThumbnail,
 } = require("./controllers/ThumbnailController");
 
 
@@ -35,7 +35,7 @@ express()
     .get('/api/getUserProfile/:userId', getUserProfile)
     .post('/api/postProfileImage', postProfileImage)
     .get('/api/checkAccountName/:username', checkAccountName)
-    .post("/api/postCreateImageThumbnail", postCreateImageThumbnail)
+    .post("/api/postCreateImageThumbnail", CreateImageThumbnail)
     .get('/api/getVideoUrlById', getVideoUrlById)
     .get('/api/b_getUserExist/:userId', b_getUserExist)
     .post('/api/postNewUserWithAccountName', postNewUserWithAccountName)
