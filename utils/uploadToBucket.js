@@ -23,7 +23,7 @@ module.exports = {
 
         
         for (let i = 0; i < url.length; i++) {
-            console.log(url)
+            console.log(url);
             let data = await storage.bucket(bucketName).upload(url[i], {
             destination: `${folder}/${fileName}`,
             });
