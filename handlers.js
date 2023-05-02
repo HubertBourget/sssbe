@@ -59,8 +59,8 @@ const getPreReviewedVideoList = async (req, res) => {
 
 // Reviewed Mai 1st
 const updateVideoMetaData = async (req, res) => {
-    const { videoId, title, description, category } = req.body;
-
+    const { videoId, b_isPreparedForReview, title, description, category, selectedImageThumbnail } = req.body;
+    console.log(req.body);
     if (!videoId) {
         return res.status(400).json({ error: "Missing videoId parameter" });
     }
@@ -73,10 +73,11 @@ const updateVideoMetaData = async (req, res) => {
         const query = { videoId: videoId };
         const update = {
             $set: {
-                b_isPreparedForReview: true,
+                b_isPreparedForReview: b_isPreparedForReview,
                 title: title,
                 description: description,
                 category: category,
+                selectedImageThumbnail: selectedImageThumbnail
             },
         };
         const options = { returnOriginal: false };
