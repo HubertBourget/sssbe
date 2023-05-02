@@ -71,7 +71,7 @@ const updateVideoMetaData = async (req, res) => {
         const db = client.db("db-name");
         const collection = db.collection("VideoMetaData");
 
-        const query = { "VideoMetaData.videoId": videoId };
+        const query = { videoId: videoId };
         const update = {
             $set: {
                 b_isPreparedForReview: true,
