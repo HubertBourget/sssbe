@@ -10,7 +10,7 @@ const {
     updateUserProfile,
     getUserProfile,
     postProfileImage,
-    checkAccountName,
+    getCheckAccountName,
     getVideoUrlById,
     b_getUserExist,
     postNewUserWithAccountName,
@@ -34,7 +34,7 @@ express()
     .post("/api/updateUserProfile", updateUserProfile)
     .get('/api/getUserProfile/:userId', getUserProfile)
     .post('/api/postProfileImage', postProfileImage)
-    .get('/api/checkAccountName', checkAccountName)
+    .get('/api/getCheckAccountName', getCheckAccountName)
     .post('/api/postCreateImageThumbnail', CreateImageThumbnail)
     .get('/api/getVideoUrlById', getVideoUrlById)
     .get('/api/b_getUserExist/:userId', b_getUserExist)

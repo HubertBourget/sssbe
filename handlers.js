@@ -131,6 +131,7 @@ const updateUserProfile = async (req, res) => {
     }
 };
 
+// Reviewed Mai 1st
 const getUserProfile = async (req, res) => {
     const client = await new MongoClient(MONGO_URI, options);
     try {
@@ -174,6 +175,7 @@ const b_getUserExist = async (req, res) => {
     }
 };
 
+// Reviewed Mai 1st
 const getVideoUrlById = async (req, res) => {
     const client = await new MongoClient(MONGO_URI, options);
     try {
@@ -225,7 +227,7 @@ const postProfileImage = async (req, res) => {
 }
 
 // Reviewed Mai 1st
-const checkAccountName = async (req, res) => {
+const getCheckAccountName = async (req, res) => {
     const { accountName, email } = req.query;
     console.log(accountName + email);
     const client = await new MongoClient(MONGO_URI, options);
@@ -289,7 +291,7 @@ module.exports = {
     updateUserProfile,
     getUserProfile,
     postProfileImage,
-    checkAccountName,
+    getCheckAccountName,
     getVideoUrlById,
     b_getUserExist,
     postNewUserWithAccountName,
