@@ -242,8 +242,7 @@ const checkAccountName = async (req, res) => {
         if (existingUser && existingUser.email == email) {
             return res.status(200).json({ taken: false, message: 'This is your current account name.' });
         }
-
-        if (existingUser) {
+        else if (existingUser) {
             return res.status(200).json({ taken: true, message: 'Account name already exists.' });
         }
 
