@@ -37,9 +37,9 @@ router.post("/uploadVideo", uploadVideo);
 router.post("/allVideo/createImageThumbnail", CreateThumbnailOfAllBucketVideoes);
 
 /**
- * @description This method will take userId and itemId(id of video) as an input and will add purchase in recombee database and also will return 5 recommendations for user.
- * @param, userId, itemId (body)
- * @returns It will return 5 recommendations for user.
+ * @description This method will take userId itemId(id of video) and numOfRecomms as an input and will add purchase in recombee database and also will return default 5 recomms for user.
+ * @param, userId, itemId, numOfRecomms (body) 
+ * @returns Default it will return 5 recommes for user.
  */
 router.post("/addUserRecommendation", addUserRecommendation);
 
