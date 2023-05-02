@@ -28,7 +28,7 @@ const CreateImageThumbnail = async function(req, res) {
             video_url, 
             video_id,
             email,
-            time_marks = ["1", "6", "10"],
+            time_marks = ["0", "5", "10"],
         } = req.body;
 
         if (!video_url) {
