@@ -32,7 +32,6 @@ module.exports = {
             expires: '03-17-2035',
             });
             imgUrls.push(publicUrl[0]);
-            console.log(`imgUrls: ${imgUrls}`);
         }
 
         //uploading ImageURL to MongoDB VideoMetaData document
