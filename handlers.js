@@ -234,16 +234,20 @@ const checkAccountName = async (req, res) => {
         const collection = db.collection('userAccounts');
 
         if (accountName.length < 3) {
-            return res.status(200).json({ taken: true, message: 'Account name already exists' });
+            return res.status(200).json({ taken: true, message: 'Account name already exists.' });
         }
 
         const existingUser = await collection.findOne({ accountName });
 
-        if (existingUser) {
-            return res.status(200).json({ taken: true, message: 'Account name already exists' });
+        if (existingUser && existingUser.email == email) {
+            return res.status(200).json({ taken: false, message: 'This is your current account name.' });
         }
 
-        return res.status(200).json({ taken: false, message: 'Account name is available' });
+        if (existingUser) {
+            return res.status(200).json({ taken: true, message: 'Account name already exists.' });
+        }
+
+        return res.status(200).json({ taken: false, message: 'Account name is available.' });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Server error' });
