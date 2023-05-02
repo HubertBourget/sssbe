@@ -28,12 +28,10 @@ const postVideoMetaData = async (req, res) => {
     const client = await new MongoClient(MONGO_URI, options);
     try{
         client.connect();
-        console.log("connected!");
         const db = client.db('db-name');
         const result = await db.collection("VideoMetaData").insertOne(VideoMetaData);
         res.status(200).json({ status: 200, result: result })
         client.close();
-        console.log("disconnected!");
     }
     catch (e){
         res.status(400).json({ status: 400, message: e.message })
@@ -229,7 +227,6 @@ const postProfileImage = async (req, res) => {
 // Reviewed Mai 1st
 const getCheckAccountName = async (req, res) => {
     const { accountName, email } = req.query;
-    console.log(accountName + email);
     const client = await new MongoClient(MONGO_URI, options);
     try {
         const db = client.db("db-name");
@@ -270,12 +267,10 @@ const postNewUserWithAccountName = async (req, res) => {
     const client = await new MongoClient(MONGO_URI, options);
     try{
         client.connect();
-        console.log("connected!");
         const db = client.db('db-name');
         const result = await db.collection("userAccounts").insertOne(user);
         res.status(200).json({ status: 200, result: result })
         client.close();
-        console.log("disconnected!");
     }
     catch (e){
         res.status(400).json({ status: 400, message: e.message })
