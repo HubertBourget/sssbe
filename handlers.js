@@ -59,6 +59,7 @@ const getPreReviewedVideoList = async (req, res) => {
     }
 };
 
+// Reviewed Mai 1st
 const updateVideoMetaData = async (req, res) => {
     const { videoId, title, description, category } = req.body;
 
@@ -151,6 +152,7 @@ const getUserProfile = async (req, res) => {
     }
 };
 
+// Reviewed Mai 1st
 const b_getUserExist = async (req, res) => {
     const client = await new MongoClient(MONGO_URI, options);
     try {
@@ -192,7 +194,9 @@ const getVideoUrlById = async (req, res) => {
 
 
 const postProfileImage = async (req, res) => {
-const { profileImageUrl, email } = req.body; 
+    const { profileImageUrl, email } = req.body; 
+
+    console.log(profileImageUrl);
 
     const client = await MongoClient.connect(MONGO_URI, options);
     try {
