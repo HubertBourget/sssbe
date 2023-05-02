@@ -224,9 +224,10 @@ const postProfileImage = async (req, res) => {
     }
 }
 
-// Reviewed Mai 1st
+
 const checkAccountName = async (req, res) => {
-    const { username } = req.params;
+    const { username, email } = req.query;
+    console.log(username + email);
     const client = await new MongoClient(MONGO_URI, options);
     try {
         const db = client.db("db-name");
