@@ -142,9 +142,9 @@ const getUserProfile = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const { bio, artistLink, profileImageUrl } = user;
+        const { username, bio, artistLink, profileImageUrl } = user;
 
-        return res.status(200).json({ bio, artistLink, profileImageUrl });
+        return res.status(200).json({ username, bio, artistLink, profileImageUrl });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Server error' });
