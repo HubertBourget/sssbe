@@ -31,7 +31,7 @@ module.exports = {
             action: 'read',
             expires: '03-17-2035',
             });
-            imgUrls.push(publicUrl[i]);
+            imgUrls.push(publicUrl[0]);
             console.log(`imgUrls: ${imgUrls}`);
         }
 
