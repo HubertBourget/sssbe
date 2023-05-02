@@ -46,8 +46,8 @@ const getPreReviewedVideoList = async (req, res) => {
         await client.connect();
         const collection = client.db('db-name').collection('VideoMetaData');
         const videos = await collection.find({
-            "VideoMetaData.videoOwner": req.query.videoOwner,
-            "VideoMetaData.b_isPreparedForReview": false
+            videoOwner: req.query.videoOwner,
+            b_isPreparedForReview: false
         }).toArray();
         res.json(videos);
     } catch (err) {
