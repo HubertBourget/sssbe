@@ -142,9 +142,9 @@ const getUserProfile = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const { username, bio, artistLink, profileImageUrl } = user;
+        const { accountName, bio, artistLink, profileImageUrl } = user;
 
-        return res.status(200).json({ username, bio, artistLink, profileImageUrl });
+        return res.status(200).json({ accountName, bio, artistLink, profileImageUrl });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Server error' });
@@ -226,18 +226,18 @@ const postProfileImage = async (req, res) => {
 
 
 const checkAccountName = async (req, res) => {
-    const { username, email } = req.query;
-    console.log(username + email);
+    const { accountName, email } = req.query;
+    console.log(accountName + email);
     const client = await new MongoClient(MONGO_URI, options);
     try {
         const db = client.db("db-name");
         const collection = db.collection('userAccounts');
 
-        if (username.length < 3) {
+        if (accountName.length < 3) {
             return res.status(200).json({ taken: true, message: 'Account name already exists' });
         }
 
-        const existingUser = await collection.findOne({ username });
+        const existingUser = await collection.findOne({ accountName });
 
         if (existingUser) {
             return res.status(200).json({ taken: true, message: 'Account name already exists' });
@@ -254,10 +254,10 @@ const checkAccountName = async (req, res) => {
 
 // Reviewed Mai 1st
 const postNewUserWithAccountName = async (req, res) => {
-    const { email, username, isArtist, timestamp } = req.body;
+    const { email, accountName, isArtist, timestamp } = req.body;
     const user = {
         email,
-        username,
+        accountName,
         isArtist,
         timestamp
     };
