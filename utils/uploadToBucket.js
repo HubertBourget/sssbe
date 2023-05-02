@@ -10,7 +10,7 @@ const options = {
 };
 
 module.exports = {
-    upload: async function (url, video_id) {
+    upload: async function (url, video_id, email) {
         let imgUrls = [];
         try {
         const storage = new Storage({
@@ -22,12 +22,12 @@ module.exports = {
 
         
         for (let i = 0; i < url.length; i++) {
-            let data = await storage.bucket(bucketName).upload(url[i], {
-            destination: `${folder}/${fileName}`,
-            });
             const fileName = `${Math.random().toString().substr(2, 6)}--${new Date().toISOString()}--image.jpg`;
+            let data = await storage.bucket(bucketName).upload(url[i], {
+            destination: `${folder}/${email}/${fileName}`,
+            });
             // const [metadata] = await data[0].getMetadata();
-            const publicUrl = await storage.bucket(bucketName).file(`${folder}/${fileName}`).getSignedUrl({
+            const publicUrl = await storage.bucket(bucketName).file(`${folder}/${email}/${fileName}`).getSignedUrl({
             action: 'read',
             expires: '03-17-2035',
             });

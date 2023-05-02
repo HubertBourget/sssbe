@@ -28,6 +28,7 @@ const CreateImageThumbnail = async function(req, res) {
         const { 
             video_url, 
             video_id,
+            email,
             time_marks = ["1", "6", "10"],
         } = req.body;
 
@@ -66,7 +67,7 @@ const CreateImageThumbnail = async function(req, res) {
             ffmpeg(videoFilePath)
             .on('end', (err, files) => {                
                 getFilePaths().then(async (data) => {
-                    await upload(data, video_id);
+                    await upload(data, video_id, email);
                     fse.emptyDir(path.resolve(__dirname,'../Thumbnails'))
                 }).catch((e) => {
                     console.log("e :: ", e);
