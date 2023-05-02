@@ -179,11 +179,11 @@ const getVideoUrlById = async (req, res) => {
     try {
         const db = client.db("db-name");
         const collection = db.collection('VideoMetaData');
-        const videoDocument = await collection.findOne({ "VideoMetaData.videoId": req.query.videoId });
+        const videoDocument = await collection.findOne({ videoId: req.query.videoId });
         if (!videoDocument) {
             return res.status(404).json({ message: 'videoDocument not found: err.404' });
         }
-        const fileUrl = videoDocument.VideoMetaData.fileUrl;
+        const fileUrl = videoDocument.fileUrl;
         return res.status(200).json({ fileUrl });
     } catch (error) {
         console.error(error);
@@ -224,7 +224,7 @@ const postProfileImage = async (req, res) => {
     }
 }
 
-
+// Reviewed Mai 1st
 const checkAccountName = async (req, res) => {
     const { accountName, email } = req.query;
     console.log(accountName + email);
