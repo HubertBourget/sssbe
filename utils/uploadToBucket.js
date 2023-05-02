@@ -23,7 +23,6 @@ module.exports = {
 
         
         for (let i = 0; i < url.length; i++) {
-            console.log(url);
             let data = await storage.bucket(bucketName).upload(url[i], {
             destination: `${folder}/${fileName}`,
             });
@@ -33,6 +32,9 @@ module.exports = {
             action: 'read',
             expires: '03-17-2035',
             });
+            console.log(i);
+            console.log(publicUrl);
+            console.log(publicUrl[i]);
             imgUrls.push(publicUrl[i]);
         }
 
