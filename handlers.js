@@ -40,6 +40,7 @@ const postVideoMetaData = async (req, res) => {
     }
 }
 
+// Reviewed Mai 1st
 const getPreReviewedVideoList = async (req, res) => {
     const client = await new MongoClient(MONGO_URI, options);
     try {
@@ -73,10 +74,10 @@ const updateVideoMetaData = async (req, res) => {
         const query = { "VideoMetaData.videoId": videoId };
         const update = {
             $set: {
-                "VideoMetaData.b_isPreparedForReview": true,
-                "VideoMetaData.title": title,
-                "VideoMetaData.description": description,
-                "VideoMetaData.category": category,
+                b_isPreparedForReview: true,
+                title: title,
+                description: description,
+                category: category,
             },
         };
         const options = { returnOriginal: false };
