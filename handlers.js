@@ -174,17 +174,16 @@ const b_getUserExist = async (req, res) => {
 };
 
 // Reviewed Mai 1st
-const getVideoUrlById = async (req, res) => {
+const getContentById = async (req, res) => {
     const client = await new MongoClient(MONGO_URI, options);
     try {
         const db = client.db("db-name");
         const collection = db.collection('VideoMetaData');
-        const videoDocument = await collection.findOne({ videoId: req.query.videoId });
-        if (!videoDocument) {
-            return res.status(404).json({ message: 'videoDocument not found: err.404' });
+        const contentDocument = await collection.findOne({ videoId: req.query.videoId });
+        if (!contentDocument) {
+            return res.status(404).json({ message: 'contentDocument not found: err.404' });
         }
-        const fileUrl = videoDocument.fileUrl;
-        return res.status(200).json({ fileUrl });
+        return res.status(200).json({ contentDocument });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Server error' });
@@ -287,7 +286,7 @@ module.exports = {
     getUserProfile,
     postProfileImage,
     getCheckAccountName,
-    getVideoUrlById,
+    getContentById,
     b_getUserExist,
     postNewUserWithAccountName,
 };

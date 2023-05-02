@@ -26,7 +26,7 @@ module.exports = {
             let data = await storage.bucket(bucketName).upload(url[i], {
             destination: `${folder}/${email}/${fileName}`,
             });
-            // const [metadata] = await data[0].getMetadata();
+            // const [metadata] = await data[0].getMetadata(); //unused line of code, commented out.
             const publicUrl = await storage.bucket(bucketName).file(`${folder}/${email}/${fileName}`).getSignedUrl({
             action: 'read',
             expires: '03-17-2035',

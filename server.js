@@ -11,7 +11,7 @@ const {
     getUserProfile,
     postProfileImage,
     getCheckAccountName,
-    getVideoUrlById,
+    getContentById,
     b_getUserExist,
     postNewUserWithAccountName,
 } = require("./handlers");
@@ -36,7 +36,7 @@ express()
     .post('/api/postProfileImage', postProfileImage)
     .get('/api/getCheckAccountName', getCheckAccountName)
     .post('/api/postCreateImageThumbnail', CreateImageThumbnail)
-    .get('/api/getVideoUrlById', getVideoUrlById)
+    .get('/api/getContentById', getContentById)
     .get('/api/b_getUserExist/:userId', b_getUserExist)
     .post('/api/postNewUserWithAccountName', postNewUserWithAccountName)
 
