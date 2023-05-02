@@ -98,6 +98,7 @@ const updateVideoMetaData = async (req, res) => {
     }
 };
 
+// Reviewed Mai 1st
 const updateUserProfile = async (req, res) => {
     const { bio, artistLink, email } = req.body;
 
@@ -106,7 +107,7 @@ const updateUserProfile = async (req, res) => {
         const db = client.db("db-name");
         const collection = db.collection("userAccounts");
 
-        const query = { "email": email };
+        const query = { email: email };
         const update = {
             $set: {
                 bio,
@@ -192,12 +193,9 @@ const getVideoUrlById = async (req, res) => {
     }
 };
 
-
+// Reviewed Mai 1st
 const postProfileImage = async (req, res) => {
     const { profileImageUrl, email } = req.body; 
-
-    console.log(profileImageUrl);
-
     const client = await MongoClient.connect(MONGO_URI, options);
     try {
         const db = client.db("db-name");
@@ -226,6 +224,7 @@ const postProfileImage = async (req, res) => {
     }
 }
 
+// Reviewed Mai 1st
 const checkAccountName = async (req, res) => {
     const { username } = req.params;
     const client = await new MongoClient(MONGO_URI, options);
@@ -252,6 +251,7 @@ const checkAccountName = async (req, res) => {
     }
 };
 
+// Reviewed Mai 1st
 const postNewUserWithAccountName = async (req, res) => {
     const { email, username, isArtist, timestamp } = req.body;
     const user = {
@@ -275,11 +275,6 @@ const postNewUserWithAccountName = async (req, res) => {
         res.status(400).json({ status: 400, message: e.message })
     }
 }
-
-
-
-
-
 
 
 module.exports = {
