@@ -32,7 +32,7 @@ module.exports = {
             action: 'read',
             expires: '03-17-2035',
             });
-            imgUrls.push(publicUrl); //[i]
+            imgUrls.push(publicUrl[i]);
         }
 
         //uploading ImageURL to MongoDB VideoMetaData document
