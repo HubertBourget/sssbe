@@ -19,14 +19,13 @@ module.exports = {
         });
         const bucketName = process.env.BUCKET_NAME;
         const folder = process.env.BUCKET_FOLDER;
-        const fileName = `${Math.random().toString().substr(2, 6)}--${new Date().toISOString()}--image.jpg`;
 
         
         for (let i = 0; i < url.length; i++) {
             let data = await storage.bucket(bucketName).upload(url[i], {
             destination: `${folder}/${fileName}`,
             });
-
+            const fileName = `${Math.random().toString().substr(2, 6)}--${new Date().toISOString()}--image.jpg`;
             // const [metadata] = await data[0].getMetadata();
             const publicUrl = await storage.bucket(bucketName).file(`${folder}/${fileName}`).getSignedUrl({
             action: 'read',
