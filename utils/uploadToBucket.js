@@ -27,12 +27,12 @@ module.exports = {
             destination: `${folder}/${fileName}`,
             });
 
-            const [metadata] = await data[0].getMetadata();
+            // const [metadata] = await data[0].getMetadata();
             const publicUrl = await storage.bucket(bucketName).file(`${folder}/${fileName}`).getSignedUrl({
             action: 'read',
             expires: '03-17-2035',
             });
-            imgUrls.push(publicUrl[i]);
+            imgUrls.push(publicUrl); //[i]
         }
 
         //uploading ImageURL to MongoDB VideoMetaData document
@@ -55,9 +55,10 @@ module.exports = {
 
         if (!result.value) {
             console.log("404")
-            return res.status(404).json({ error: "No document found with that videoId" });
+            // return res.status(404).json({ error: "No document found with that videoId" });
         }
-        return res.status(200).json({ status: 200, result: result.value });
+        return result;
+        // return res.status(200).json({ status: 200, result: result.value });
         } catch (error) {
             console.error(error);
             return res.status(500).json({ error: error.message });
@@ -66,7 +67,7 @@ module.exports = {
         }} 
         catch (err) {
         console.log("err in file upload in gcs :: ", err);
-        return res.status(500).json({ error: error.message });
+        // return res.status(500).json({ error: error.message });
         }
     },
 };
