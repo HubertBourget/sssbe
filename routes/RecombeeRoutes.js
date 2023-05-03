@@ -3,7 +3,9 @@ const router = express.Router();
 const { 
     SyncCatalog, 
     AddUserRecommendation,
-    AddItemProperties,
+    AddItemProperty,
+    GetItemProperty,
+    DeleteItemProperty,
 } = require("../controllers/RecombeeController");
 
 /**
@@ -22,9 +24,23 @@ router.post("/addUserRecommendation", AddUserRecommendation);
 
 /**
  * @description This method will add properties of item like title, category, description into the recombee.
- * @param, title, category, description, etc... (body) 
- * @returns Default it will return 5 recommes for user.
+ * @param, name, dataType (body) 
+ * @returns It will return just success response.
  */
-router.post("/addItemProperties", AddItemProperties);
+router.post("/addItemProperty", AddItemProperty);
+
+/**
+ * @description This method will get all the properties of the item which is added to the recombee.
+ * @param, No need to pass anything
+ * @returns It will return array of all the properties.
+ */
+router.get("/getItemProperty", GetItemProperty);
+
+/**
+ * @description This api will delete the item property.
+ * @param, name (body)
+ * @returns It will return success response.
+ */
+router.post("/deleteItemProperty", DeleteItemProperty);
 
 module.exports = router;

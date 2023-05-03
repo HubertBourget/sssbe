@@ -82,12 +82,12 @@ const AddUserRecommendation = async function (req, res) {
 
 /**
  * @method POST
- * @route "/addItemProperties"
- * @description This api 
- * @param, userId, itemId, numOfRecomms (body)
- * @returns Default it will return 5 recommes for user.
+ * @route "/addItemProperty"
+ * @description This api will add the property (title, description, category, etc...) of the item to the recombee
+ * @param, name, dataType (body)
+ * @returns It will return success response if property added successfully otherwise will return error.
  */
-const AddItemProperties = async function (req, res) {
+const AddItemProperty = async function (req, res) {
     try {
         // get userId and itemId from the body
         let { name, dataType } = req.body;
@@ -129,11 +129,89 @@ const AddItemProperties = async function (req, res) {
 
         return res.status(200).json({
             err: false,
-            msg: "Recommendation added successfully.",
-            data: response,
+            msg: "Property added successfully.",
+            data: [],
         });
     } catch (err) {
-        console.log('Err in File-RecombeeController > Method-addUserRecommendation > : ', err);
+        console.log('Err in File-RecombeeController > Method-AddItemProperties > : ', err);
+        return res.status(400).json({
+            msg: "err",
+            err: err,
+        });
+    }
+};
+
+/**
+ * @method GET
+ * @route "/getItemProperty"
+ * @description This api will get all the properties of the item and will return list
+ * @param, No need to pass anything
+ * @returns It will return array of all the properties.
+ */
+const GetItemProperty = async function (req, res) {
+    try {
+        // get all properties of item
+        let response = await recombeeClient.send(new rqs.ListItemProperties());
+
+        return res.status(200).json({
+            err: false,
+            msg: "Property list got successfully.",
+            data: response || [],
+        });
+    } catch (err) {
+        console.log('Err in File-RecombeeController > Method-GetItemProperties > : ', err);
+        return res.status(400).json({
+            msg: "err",
+            err: err,
+        });
+    }
+};
+
+/**
+ * @method POST
+ * @route "/deleteItemProperty"
+ * @description This api will delete the item property.
+ * @param, name (body)
+ * @returns It will return success response.
+ */
+const DeleteItemProperty = async function (req, res) {
+    try {
+        // get property name from the body
+        let { name } = req.body;
+
+        // validate data
+        if (!name) {
+            return res.status(400).json({
+                err: true,
+                error: `Property name is required!`,
+            });
+        }
+
+        // get list of item properties
+        let allExistedProperties = await recombeeClient.send(new rqs.ListItemProperties());
+
+        // check if property already exist or not
+        let isExist = allExistedProperties.filter((item) => item.name === name);
+
+        // if property already exist then return
+        if (!isExist.length) {
+            return res.status(400).json({
+                err: true,
+                error: "This property not exist!",
+                data: [],
+            });
+        }
+
+        // delete item property
+        await recombeeClient.send(new rqs.DeleteItemProperty(name));
+
+        return res.status(200).json({
+            err: false,
+            msg: "Item property deleted successfully.",
+            data: [],
+        });
+    } catch (err) {
+        console.log('Err in File-RecombeeController > Method-DeleteItemProperty > : ', err);
         return res.status(400).json({
             msg: "err",
             err: err,
@@ -144,5 +222,7 @@ const AddItemProperties = async function (req, res) {
 module.exports = {
     SyncCatalog,
     AddUserRecommendation,
-    AddItemProperties,
+    AddItemProperty,
+    GetItemProperty,
+    DeleteItemProperty,
 }
