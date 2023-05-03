@@ -2,10 +2,8 @@ const express = require("express");
 const router = express.Router();
 const { 
     CreateImageThumbnail, 
-    SyncCatalog, 
     CreateThumbnailOfAllBucketVideoes, 
-    uploadVideo,
-    addUserRecommendation,
+    UploadVideo,
 } = require("../controllers/ThumbnailController");
 
 /**
@@ -16,18 +14,11 @@ const {
 router.post("/createImageThumbnail", CreateImageThumbnail);
 
 /**
- * @description This method will take Ids of all the users and approved videoes from the database. Then it will add new users and videoes(items) to the recombee.
- * @param, No need to pass any params or body
- * @returns This will return success message while other processes like get Ids from database and sync it with the recombee will be run in background.
- */
-router.post("/syncCatalog", SyncCatalog);
-
-/**
  * @description This method will download video locally and then will upload video to the google cloud storage and at last it will delete downloaded video.
  * @param, video_url (body)
  * @returns This will return success message while other processes like download and upload video to the google cloud storage will be run in background.
  */
-router.post("/uploadVideo", uploadVideo);
+router.post("/uploadVideo", UploadVideo);
 
 /**
  * @description This method will get all the video url from google cloud storage, then will download one by one and will create thumbnail from their video and will upload to the google cloud storage.
@@ -35,12 +26,5 @@ router.post("/uploadVideo", uploadVideo);
  * @returns This will return success message while other processes like creating thumbnail and upload to GCS will be run in background
  */
 router.post("/allVideo/createImageThumbnail", CreateThumbnailOfAllBucketVideoes);
-
-/**
- * @description This method will take userId itemId(id of video) and numOfRecomms as an input and will add purchase in recombee database and also will return default 5 recomms for user.
- * @param, userId, itemId, numOfRecomms (body) 
- * @returns Default it will return 5 recommes for user.
- */
-router.post("/addUserRecommendation", addUserRecommendation);
 
 module.exports = router;

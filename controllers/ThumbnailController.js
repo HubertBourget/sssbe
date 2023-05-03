@@ -1,15 +1,9 @@
 const fs = require("fs");
 const fse = require("fs-extra");
 const request = require("request");
-const { RecombeeSync } = require("../utils/RecombeeSync");
 const { StoreAndUpload } = require("../utils/StoreVideoAndCreateThumbnail");
 const path = require("path");
 const { bucket, thumbnailDir } = require("../utils/constants");
-const recombee = require('recombee-api-client');
-const rqs = recombee.requests;
-const { recombeeClient } = require("../utils/constants");
-const Video = require("../models/Video");
-const User = require("../models/User");
   
 /**
  * @method POST
@@ -50,29 +44,6 @@ const CreateImageThumbnail = async function(req, res) {
             err: true,
             error: err,
         });
-    }
-};
-
-/**
- * @method POST
- * @route "/syncCatalog"
- * @description This method will take Ids of all the users and approved videoes from the database. Then it will add new users and videoes(items) to the recombee.
- * @param, No need to pass any params or body
- * @returns This will return success message while other processes like get Ids from database and sync it with the recombee will be run in background.
- */
-const SyncCatalog = async function (req, res) {
-    try {
-        // sync our database with the recombee platform
-        RecombeeSync();
-        return res.status(200).json({
-            msg: "Data syncing successfully."
-        });
-    } catch (err) {
-        console.log('Err in File-ThumbnailController > Method-SyncCatalog > : ', err);
-        return res.status(400).json({
-            msg: "err",
-            err: err,
-        })
     }
 };
 
@@ -124,7 +95,7 @@ const CreateThumbnailOfAllBucketVideoes = async (req, res) => {
  * @param, video_url (body)
  * @returns This will return success message while other processes like download and upload video to the google cloud storage will be run in background.
  */
-const uploadVideo = async (req, res) => {
+const UploadVideo = async (req, res) => {
     try {
         let { video_url } = req.body;
 
@@ -167,62 +138,8 @@ const uploadVideo = async (req, res) => {
     }
 };
 
-/**
- * @method POST
- * @route "/addUserRecommendation"
- * @description This method will take userId itemId(id of video) and numOfRecomms as an input and will add purchase in recombee database and also will return default 5 recomms for user.
- * @param, userId, itemId, numOfRecomms (body)
- * @returns Default it will return 5 recommes for user.
- */
-const addUserRecommendation = async function (req, res) {
-    try {
-        // get userId and itemId from the body
-        let { userId, itemId, numOfRecomms = 5 } = req.body;
-
-        // validate body data
-        if (!userId || !itemId) {
-            return res.status(400).json({
-                err: true,
-                error: "Please provide userId and itemId!",
-            });
-        }
-
-        // find user and item in our database
-        let user = await User.findOne({ _id: userId });
-        let item = await Video.findOne({ _id: itemId });
-
-        // if user or item not exist in our database then return error
-        if (!user || !item) {
-            return res.status(400).json({
-                err: true,
-                error: `${user ? "Item" : "User"} not exist!`,
-            });
-        }
-
-        // adding recommendation of user
-        await recombeeClient.send(new rqs.AddPurchase(userId, itemId, { cascadeCreate: true }));
-
-        // recommend some data to the user
-        const recommendations = await recombeeClient.send(new rqs.RecommendItemsToUser(userId, numOfRecomms));
-
-        return res.status(200).json({
-            err: false,
-            msg: "Recommendation added successfully.",
-            data: recommendations,
-        });
-    } catch (err) {
-        console.log('Err in File-ThumbnailController > Method-addUserRecommendation > : ', err);
-        return res.status(400).json({
-            msg: "err",
-            err: err,
-        });
-    }
-};
-
 module.exports = {
     CreateImageThumbnail,
-    SyncCatalog,
     CreateThumbnailOfAllBucketVideoes,
-    uploadVideo,
-    addUserRecommendation,
+    UploadVideo,
 }
