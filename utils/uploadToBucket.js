@@ -34,11 +34,11 @@ module.exports = {
             imgUrls.push(publicUrl[0]);
         }
 
-        //uploading ImageURL to MongoDB VideoMetaData document
+        //uploading ImageURL to MongoDB ContentMetaData document
         const client = await MongoClient.connect(MONGO_URI, options);
     try {
         const db = client.db("db-name");
-        const collection = db.collection("VideoMetaData");
+        const collection = db.collection("ContentMetaData");
 
         const query = { videoId: video_id };
         const update = {

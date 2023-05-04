@@ -13,9 +13,9 @@ const getServerHomePage = async (req, res) => {
 };
 
 // Reviewed Mai 1st
-const postVideoMetaData = async (req, res) => {
+const postContentMetaData = async (req, res) => {
     const { videoOwner, videoId, timestamp,  fileUrl, isOnlyAudio, b_isPreparedForReview, b_hasBeenReviewed, b_isApproved } = req.body;
-    const VideoMetaData = {
+    const ContentMetaData = {
         videoOwner,
         videoId,
         timestamp,
@@ -30,7 +30,7 @@ const postVideoMetaData = async (req, res) => {
     try{
         client.connect();
         const db = client.db('db-name');
-        const result = await db.collection("VideoMetaData").insertOne(VideoMetaData);
+        const result = await db.collection("ContentMetaData").insertOne(ContentMetaData);
         res.status(200).json({ status: 200, result: result })
         client.close();
     }
@@ -44,7 +44,7 @@ const getPreReviewedVideoList = async (req, res) => {
     const client = await new MongoClient(MONGO_URI, options);
     try {
         await client.connect();
-        const collection = client.db('db-name').collection('VideoMetaData');
+        const collection = client.db('db-name').collection('ContentMetaData');
         const videos = await collection.find({
             videoOwner: req.query.videoOwner,
             b_isPreparedForReview: false
@@ -59,7 +59,7 @@ const getPreReviewedVideoList = async (req, res) => {
 };
 
 // Reviewed Mai 1st
-const updateVideoMetaData = async (req, res) => {
+const updateContentMetaData = async (req, res) => {
     const { videoId, b_isPreparedForReview, title, description, category, selectedImageThumbnail } = req.body;
     console.log(req.body);
     if (!videoId) {
@@ -69,7 +69,7 @@ const updateVideoMetaData = async (req, res) => {
     const client = await MongoClient.connect(MONGO_URI, options);
     try {
         const db = client.db("db-name");
-        const collection = db.collection("VideoMetaData");
+        const collection = db.collection("ContentMetaData");
 
         const query = { videoId: videoId };
         const update = {
@@ -180,7 +180,7 @@ const getContentById = async (req, res) => {
     const client = await new MongoClient(MONGO_URI, options);
     try {
         const db = client.db("db-name");
-        const collection = db.collection('VideoMetaData');
+        const collection = db.collection('ContentMetaData');
         const contentDocument = await collection.findOne({ videoId: req.query.videoId });
         if (!contentDocument) {
             return res.status(404).json({ message: 'contentDocument not found: err.404' });
@@ -281,9 +281,9 @@ const postNewUserWithAccountName = async (req, res) => {
 
 module.exports = {
     getServerHomePage,
-    postVideoMetaData,
+    postContentMetaData,
     getPreReviewedVideoList,
-    updateVideoMetaData,
+    updateContentMetaData,
     updateUserProfile,
     getUserProfile,
     postProfileImage,

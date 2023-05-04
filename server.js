@@ -4,9 +4,9 @@ const PORT = process.env.PORT || 8000;
 
 const {
     getServerHomePage,
-    postVideoMetaData,
+    postContentMetaData,
     getPreReviewedVideoList,
-    updateVideoMetaData,
+    updateContentMetaData,
     updateUserProfile,
     getUserProfile,
     postProfileImage,
@@ -28,9 +28,9 @@ express()
     }))
     .use(express.json())
     .get('/', getServerHomePage)
-    .post("/api/postVideoMetaData", postVideoMetaData)
+    .post("/api/postContentMetaData", postContentMetaData)
     .get("/api/getPreReviewedVideoList", getPreReviewedVideoList)
-    .post("/api/updateVideoMetaData", updateVideoMetaData)
+    .post("/api/updateContentMetaData", updateContentMetaData)
     .post("/api/updateUserProfile", updateUserProfile)
     .get('/api/getUserProfile/:userId', getUserProfile)
     .post('/api/postProfileImage', postProfileImage)
