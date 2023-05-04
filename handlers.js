@@ -14,15 +14,16 @@ const getServerHomePage = async (req, res) => {
 
 // Reviewed Mai 1st
 const postVideoMetaData = async (req, res) => {
-    const { videoOwner, videoId, timestamp, b_isPreparedForReview, b_hasBeenReviewed, b_isApproved, fileUrl } = req.body;
+    const { videoOwner, videoId, timestamp,  fileUrl, isAudio, b_isPreparedForReview, b_hasBeenReviewed, b_isApproved } = req.body;
     const VideoMetaData = {
         videoOwner,
         videoId,
         timestamp,
+        fileUrl,
+        isAudio,
         b_isPreparedForReview: b_isPreparedForReview,
         b_hasBeenReviewed: b_hasBeenReviewed,
         b_isApproved: b_isApproved,
-        fileUrl,
     };
 
     const client = await new MongoClient(MONGO_URI, options);
