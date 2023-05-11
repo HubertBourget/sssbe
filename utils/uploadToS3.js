@@ -23,7 +23,7 @@ module.exports = {
                     destination: path.join(folder, fileName),
                 });
 
-                imgUrls.push(data[0].metadata.selfLink);
+                imgUrls.push(data[0].metadata.mediaLink);
             }
 
             return imgUrls;

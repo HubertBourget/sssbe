@@ -99,36 +99,67 @@ const UploadVideo = async (req, res) => {
     try {
         let { video_url } = req.body;
 
-        // request package is used for download video
-        request.get(video_url)
+        if (!video_url && !req.file) {
+            return res.status(400).json({
+                err: true,
+                error: "Please provide video!!",
+            })
+        }
 
-        // handle error if any occur while downloading the video
-        .on('error', (err) => {
-            console.log("Err in File-ThumbnailController > Method-CreateThumbnailOfAllBucketVideoes > download video from req.get :: ", err);
-        })  
-
-        // createWriteStream will download video as Temp.mp4 in main directory
-        .pipe(fs.createWriteStream("Temp.mp4"))
-
-        // after successfully download the video we will upload it to the google cloud storage
-        .on('finish', async () => {         
-    
+        if (req.file) {
             // create a unique file name with 6 digin random number and current date
             const fileName = `${Math.random().toString().substr(2, 6)}--${new Date().toISOString()}--video.mp4`;
 
             // uploading video to the bucket
-            await bucket.upload("Temp.mp4", {
+            let data = await bucket.upload(req.file.path, {
                 destination: path.join(process.env.BUCKET_VIDEO_FOLDER, fileName),
                 contentType: 'video/mp4'
             });
 
             // removing video which is stored in our main directory named "Temp.mp4"
-            await fse.remove(path.resolve(__dirname,'../Temp.mp4'));
-        });
+            fse.emptyDir(path.resolve(__dirname,'../Uploads'));
+
+            return res.status(200).json({
+                msg: "success",
+                data: {
+                    video_url: data[0].metadata.mediaLink
+                },
+            });
+        } else {
+            // request package is used for download video
+            request.get(video_url)
+    
+            // handle error if any occur while downloading the video
+            .on('error', (err) => {
+                console.log("Err in File-ThumbnailController > Method-CreateThumbnailOfAllBucketVideoes > download video from req.get :: ", err);
+            })  
+    
+            // createWriteStream will download video as Temp.mp4 in main directory
+            .pipe(fs.createWriteStream("Temp.mp4"))
+    
+            // after successfully download the video we will upload it to the google cloud storage
+            .on('finish', async () => {         
         
-        return res.status(200).json({
-            msg: "success",
-        });
+                // create a unique file name with 6 digin random number and current date
+                const fileName = `${Math.random().toString().substr(2, 6)}--${new Date().toISOString()}--video.mp4`;
+    
+                // uploading video to the bucket
+                const data = await bucket.upload("Temp.mp4", {
+                    destination: path.join(process.env.BUCKET_VIDEO_FOLDER, fileName),
+                    contentType: 'video/mp4'
+                });
+    
+                // removing video which is stored in our main directory named "Temp.mp4"
+                await fse.remove(path.resolve(__dirname,'../Temp.mp4'));
+
+                return res.status(200).json({
+                    msg: "success",
+                    data: {
+                        video_url: data[0].metadata.mediaLink
+                    },
+                })
+            });
+        }
     } catch (err) {
         console.log('Err in File-ThumbnailController > Method-uploadVideo > : ', err);
         return res.status(400).json({

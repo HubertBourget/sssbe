@@ -1,5 +1,7 @@
 const express = require("express");
 const router = express.Router();
+const multer  = require('multer');
+const upload = multer({ dest: 'Uploads/' });
 const { 
     CreateImageThumbnail, 
     CreateThumbnailOfAllBucketVideoes, 
@@ -18,7 +20,7 @@ router.post("/createImageThumbnail", CreateImageThumbnail);
  * @param, video_url (body)
  * @returns This will return success message while other processes like download and upload video to the google cloud storage will be run in background.
  */
-router.post("/uploadVideo", UploadVideo);
+router.post("/uploadVideo", upload.single("video_url"), UploadVideo);
 
 /**
  * @description This method will get all the video url from google cloud storage, then will download one by one and will create thumbnail from their video and will upload to the google cloud storage.
