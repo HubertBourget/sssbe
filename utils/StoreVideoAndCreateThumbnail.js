@@ -16,58 +16,68 @@ const { upload } = require("./uploadToS3");
  */
 const StoreAndUpload = async function (video_url, time_marks) {
     try {
-        // request package is used for download video
-        request.get(video_url)
+        await new Promise((resolve, reject) => {
+            // request package is used for download video
+            request.get(video_url)
+                // handle error if any occur while downloading the video
+                .on('error', (err) => {
+                    console.log("Err in File-StoreVideoAndCreateThumbnail > Method-StoreAndUpload > download video from req.get :: ", err);
+                    reject(err);
+                })
+                // createWriteStream will download video as Temp.mp4 in main directory
+                .pipe(fs.createWriteStream("Temp.mp4"))
+                // after successfully download the video we will upload it to the google cloud storage
+                .on('finish', () => {
+                    resolve();
+                });
+        });
 
-        // handle error if any occur while downloading the video
-        .on('error', (err) => {
-            console.log("Err in File-StoreVideoAndCreateThumbnail > Method-StoreAndUpload > download video from req.get :: ", err);
-        })
+        const videoFilePath = path.resolve(__dirname, '../Temp.mp4');
+        const directoryPath = path.resolve(__dirname, '../Thumbnails');
+        let fileName = "image";
 
-        // createWriteStream will download video as Temp.mp4 in main directory
-        .pipe(fs.createWriteStream("Temp.mp4"))
-
-        // after successfully download the video we will upload it to the google cloud storage
-        .on('finish', () => {         
-            const videoFilePath = path.resolve(__dirname, '../Temp.mp4');
-            let fileName = "image"
-
+        await new Promise((resolve, reject) => {
             // read video
             ffmpeg(videoFilePath)
-
-            .on('end', (err, files) => {                
-                // get paths of all the files contains in "directoryPath"
-                getFilePaths(directoryPath).then(async (data) => {
-
-                    // upload images to the google cloud storage
-                    await upload(data);
-
-                    // delete all the thumbnails which are generated and stored in directoryPath
-                    fse.emptyDir(path.resolve(__dirname,'../Thumbnails'));
-
-                    // delete Temp.mp4 video which we have downloaded locally
-                    await fse.remove(videoFilePath);
-                }).catch((e) => {
-                    console.log("Err in File-StoreVideoAndCreateThumbnail > Method-StoreAndUpload > getFilePaths :: ", e);
+                .on('end', (err, files) => {
+                    if (err) {
+                        console.log("Err in File-StoreVideoAndCreateThumbnail > Method-StoreAndUpload > get video by ffmpeg :: ", err);
+                        reject(err);
+                    } else {
+                        resolve(files);
+                    }
+                })
+                .screenshots({
+                    count: 1,
+                    timemarks: time_marks,
+                    filename: fileName + ".jpg",
+                    folder: directoryPath,
+                    fastSeek: true
                 });
-            })
-
-            // handle error if any occur while downloading the video
-            .on('error', (err) => {
-                console.log("Err in File-StoreVideoAndCreateThumbnail > Method-StoreAndUpload > get video by ffmpeg :: ", err);
-            })
-
-            // creates thumbnails
-            .screenshots({
-                count: 1,
-                timemarks: time_marks,
-                filename: fileName+ ".jpg",
-                folder: directoryPath,
-                fastSeek: true
-            });
         });
+
+        // get paths of all the files contains in "directoryPath"
+        const data = await getFilePaths(directoryPath);
+
+        // upload images to the google cloud storage
+        let uploadedThumbnailsUrls = await upload(data);
+
+        // delete all the thumbnails which are generated and stored in directoryPath
+        await fse.emptyDir(directoryPath);
+
+        // delete Temp.mp4 video which we have downloaded locally
+        await fse.remove(videoFilePath);
+
+        return {
+            err: false,
+            data: uploadedThumbnailsUrls,
+        }
     } catch (err) {
         console.log('Err in File-StoreVideoAndCreateThumbnail > Method-StoreAndUpload > : ', err);
+        return {
+            err: true,
+            error: err,
+        }
     }
 }
 

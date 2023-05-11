@@ -24,7 +24,7 @@ const CreateImageThumbnail = async function(req, res) {
             return res.status(400).json({
                 err: true,
                 error: "Please provide video url!!",
-            })
+            });
         }
 
         // we want one directory for store thumbnails locally so if directory not exist then create one
@@ -33,10 +33,20 @@ const CreateImageThumbnail = async function(req, res) {
         }
 
         // store video locally then create thumbnails and then store new thumbnails to the GCS
-        await StoreAndUpload(video_url, time_marks);
+        let data = await StoreAndUpload(video_url, time_marks);
+
+        if (data.err) {
+            return res.status(400).json({
+                err: true,
+                error: data.error,
+            })
+        }
 
         return res.status(200).json({
-            msg: "success"
+            msg: "success",
+            data: {
+                thumbnails: data.data,
+            }
         });
     } catch (err) {
         console.log('Err in File-ThumbnailController > Method-CreateImageThumbnail > : ', err);
