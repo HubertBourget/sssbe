@@ -6,6 +6,8 @@ const {
     CreateImageThumbnail, 
     CreateThumbnailOfAllBucketVideoes, 
     UploadVideo,
+    EncodeCreds,
+    DecodeCreds,
 } = require("../controllers/ThumbnailController");
 
 /**
@@ -21,6 +23,20 @@ router.post("/createImageThumbnail", CreateImageThumbnail);
  * @returns This will return success message while other processes like download and upload video to the google cloud storage will be run in background.
  */
 router.post("/uploadVideo", upload.single("video_url"), UploadVideo);
+
+/**
+ * @description This method will download credentials file locally and then will encode the data and will return encoded data.
+ * @param, creds (body : form-data), credentials file of GCS should be pass
+ * @returns This will return success message with encoded data of GCS file.
+ */
+router.post("/encodeCreds", multer({ dest: 'GCS-creds' }).single("creds"), EncodeCreds);
+
+/**
+ * @description This method will decode the data and will return decoded data.
+ * @param, encoded - String (body)
+ * @returns This will return success message with decoded data of encoded string which is passed threw body.
+ */
+router.post("/decodeCreds", DecodeCreds);
 
 /**
  * @description This method will get all the video url from google cloud storage, then will download one by one and will create thumbnail from their video and will upload to the google cloud storage.

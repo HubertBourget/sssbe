@@ -179,8 +179,80 @@ const UploadVideo = async (req, res) => {
     }
 };
 
+/**
+ * @method POST
+ * @route "/encodeCreds"
+ * @description This method will download credentials file locally and then will encode the data and will return encoded data.
+ * @param, creds (body : form-data), credentials file of GCS should be pass
+ * @returns This will return success message with encoded data of GCS file.
+ */
+const EncodeCreds = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                err: true,
+                error: "Please provide creds file!!",
+            })
+        }
+
+        const jsonString = fs.readFileSync(path.join(__dirname, "../", req.file.path));
+        const encoded = Buffer.from(JSON.stringify(JSON.parse(jsonString))).toString("base64");
+
+        // removing downloaded creds file
+        fse.emptyDir(path.resolve(__dirname,'../GCS-creds'));
+    
+        return res.status(200).json({
+            msg: "success",
+            data: {
+                encoded,
+            },
+        });
+    } catch (err) {
+        console.log('Err in File-ThumbnailController > Method-EncodeCreds > : ', err);
+        return res.status(400).json({
+            msg: "err",
+            err: err,
+        })
+    }
+};
+
+/**
+ * @method POST
+ * @route "/decodeCreds"
+ * @description This method will decode the data and will return decoded data.
+ * @param, encoded - String (body)
+ * @returns This will return success message with decoded data of encoded string which is passed threw body.
+ */
+const DecodeCreds = async (req, res) => {
+    try {
+        if (!req.body.encoded) {
+            return res.status(400).json({
+                err: true,
+                error: "Please provide encoded value!!",
+            })
+        }
+
+        const decoded = new Buffer.from(process.env.CREDS, 'base64').toString('ascii');
+    
+        return res.status(200).json({
+            msg: "success",
+            data: {
+                decoded: JSON.parse(decoded),
+            },
+        });
+    } catch (err) {
+        console.log('Err in File-ThumbnailController > Method-DecodeCreds > : ', err);
+        return res.status(400).json({
+            msg: "err",
+            err: err,
+        })
+    }
+};
+
 module.exports = {
     CreateImageThumbnail,
     CreateThumbnailOfAllBucketVideoes,
     UploadVideo,
+    EncodeCreds,
+    DecodeCreds,
 }
