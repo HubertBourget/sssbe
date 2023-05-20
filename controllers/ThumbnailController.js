@@ -20,7 +20,7 @@ async function getFilePaths() {
         console.log('Error getting directory information:', err);
         return [];
     }
-}  
+} 
 
 const CreateImageThumbnail = async function(req, res) {
     try {
@@ -65,13 +65,16 @@ const CreateImageThumbnail = async function(req, res) {
 
             ffmpeg(videoFilePath)
             .on('end', (err, files) => {                
-                getFilePaths().then(async (data) => {
-                    await upload(data, video_id, email);
-                    fse.emptyDir(path.resolve(__dirname,'../Thumbnails'))
-                }).catch((e) => {
-                    console.log("e :: ", e);
-                });
-
+                try {
+                    getFilePaths().then(async (data) => {
+                        await upload(data, video_id, email);
+                        fse.emptyDir(path.resolve(__dirname,'../Thumbnails'))
+                    }).catch((e) => {
+                        console.log("e :: ", e);
+                    });
+                } catch (err) {
+                    console.log('Error generating thumbnail:', err);
+                }
             })
             .on('error', (err) => {
                 console.log('Error:', err.message);
@@ -91,7 +94,7 @@ const CreateImageThumbnail = async function(req, res) {
             msg: "success"
         })
     } catch (err) {
-        console.log('err : ', err);
+        console.log("Error generating thumbnail:", err);
         return res.status(400).json({
             err: true,
             error: err,
