@@ -286,17 +286,17 @@ const getContentByArtist = async (req, res) => {
         console.log('Endpoint triggered')
         await client.connect();
         console.log('Client connected')
-        // const db = client.db('db-name');
-        // const collection = db.collection('ContentMetaData');
-        // const { artistId } = req.query;
+        const db = client.db('db-name');
+        const collection = db.collection('ContentMetaData');
+        const { artistId } = req.query;
 
-        // const contentDocuments = await collection.find({ contentOwner: artistId }).toArray();
+        const contentDocuments = await collection.find({ contentOwner: artistId }).toArray();
 
-        // if (!contentDocuments || contentDocuments.length === 0) {
-        //     return res.status(404).json({ message: 'No content found for the artist' });
-        // }
+        if (!contentDocuments || contentDocuments.length === 0) {
+            return res.status(404).json({ message: 'No content found for the artist' });
+        }
 
-        return res.status(200).json({  }); //contentDocuments
+        return res.status(200).json({ contentDocuments });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Server error' });
