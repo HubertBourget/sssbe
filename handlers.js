@@ -301,6 +301,30 @@ const getContentByArtist = async (req, res) => {
     }
 };
 
+const getApprovedVideoContent = async (req, res) => {
+    const client = await new MongoClient(MONGO_URI, options);
+
+    try {
+        await client.connect();
+        console.log('Client connected')
+        const collection = client.db('db-name').collection('ContentMetaData');
+        
+        // Find documents where both isOnlyAudio is false and b_isApproved is true
+        const contentDocuments = await collection.find({ isOnlyAudio: false, b_isApproved: true }).toArray();
+        
+        res.json(contentDocuments);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    } finally {
+        client.close();
+    }
+};
+
+
+
+
+
 
 
 module.exports = {
@@ -316,4 +340,5 @@ module.exports = {
     b_getUserExist,
     postNewUserWithAccountName,
     getContentByArtist,
+    getApprovedVideoContent,
 };

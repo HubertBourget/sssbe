@@ -15,6 +15,7 @@ const {
     b_getUserExist,
     postNewUserWithAccountName,
     getContentByArtist,
+    getApprovedVideoContent,
 } = require("./handlers");
 
 const {
@@ -41,6 +42,7 @@ express()
     .get('/api/b_getUserExist/:userId', b_getUserExist)
     .post('/api/postNewUserWithAccountName', postNewUserWithAccountName)
     .get('/api/getContentByArtist', getContentByArtist)
+    .get('/api/getApprovedVideoContent', getApprovedVideoContent)
 
     .listen(PORT, () => {
         console.log(`Server launched on port ${PORT}`);
