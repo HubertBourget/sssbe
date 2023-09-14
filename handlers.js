@@ -288,25 +288,12 @@ const getContentByArtist = async (req, res) => {
         const collection = client.db('db-name').collection('ContentMetaData');
         const { artistId } = req.query;
         const contentDocuments = await collection.find({ contentOwner: artistId }).toArray();
-        res.json(contentDocuments);
+        res.json([1,2,3 ]); //contentDocuments
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Server error' });
     } finally {
         client.close();
-    }
-};
-
-const x = async (req, res) => {
-    try {
-        await client.connect();
-        
-        
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    } finally {
-        await client.close();
     }
 };
 
