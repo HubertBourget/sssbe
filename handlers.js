@@ -283,15 +283,16 @@ const getContentByArtist = async (req, res) => {
     const client = new MongoClient(MONGO_URI, options);
 
     try {
+        console.log('Endpoint triggered')
         await client.connect();
         const db = client.db('db-name');
         const collection = db.collection('ContentMetaData');
-        const artistId = req.params.artistId; // Assuming you're passing artistId as a route parameter
+        const { artistId } = req.query;
 
         const contentDocuments = await collection.find({ contentOwner: artistId }).toArray();
 
         if (!contentDocuments || contentDocuments.length === 0) {
-        return res.status(404).json({ message: 'No content found for the artist' });
+            return res.status(404).json({ message: 'No content found for the artist' });
         }
 
         return res.status(200).json({ contentDocuments });
@@ -302,6 +303,7 @@ const getContentByArtist = async (req, res) => {
         client.close();
     }
 };
+
 
 
 module.exports = {
