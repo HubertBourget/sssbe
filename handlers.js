@@ -278,6 +278,31 @@ const postNewUserWithAccountName = async (req, res) => {
     }
 }
 
+//Created in September 2023
+const getContentByArtist = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+
+    try {
+        await client.connect();
+        const db = client.db('db-name');
+        const collection = db.collection('ContentMetaData');
+        const artistId = req.params.artistId; // Assuming you're passing artistId as a route parameter
+
+        const contentDocuments = await collection.find({ contentOwner: artistId }).toArray();
+
+        if (!contentDocuments || contentDocuments.length === 0) {
+        return res.status(404).json({ message: 'No content found for the artist' });
+        }
+
+        return res.status(200).json({ contentDocuments });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    } finally {
+        client.close();
+    }
+};
+
 
 module.exports = {
     getServerHomePage,
@@ -291,4 +316,5 @@ module.exports = {
     getContentById,
     b_getUserExist,
     postNewUserWithAccountName,
+    getContentByArtist,
 };

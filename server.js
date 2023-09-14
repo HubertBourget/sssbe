@@ -14,6 +14,7 @@ const {
     getContentById,
     b_getUserExist,
     postNewUserWithAccountName,
+    getContentByArtist,
 } = require("./handlers");
 
 const {
@@ -39,13 +40,8 @@ express()
     .get('/api/getContentById', getContentById)
     .get('/api/b_getUserExist/:userId', b_getUserExist)
     .post('/api/postNewUserWithAccountName', postNewUserWithAccountName)
+    .get('/api/getContentByArtist/:artistId', getContentByArtist)
 
     .listen(PORT, () => {
         console.log(`Server launched on port ${PORT}`);
 });
-
-    
-
-
-
-
