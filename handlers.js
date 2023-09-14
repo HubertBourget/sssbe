@@ -280,28 +280,33 @@ const postNewUserWithAccountName = async (req, res) => {
 
 //Created in September 2023
 const getContentByArtist = async (req, res) => {
-    const client = new MongoClient(MONGO_URI, options);
+    const client = await new MongoClient(MONGO_URI, options);
 
     try {
-        console.log('Endpoint triggered')
         await client.connect();
         console.log('Client connected')
-        const db = client.db('db-name');
-        const collection = db.collection('ContentMetaData');
+        const collection = client.db('db-name').collection('ContentMetaData');
         const { artistId } = req.query;
-
         const contentDocuments = await collection.find({ contentOwner: artistId }).toArray();
-
-        if (!contentDocuments || contentDocuments.length === 0) {
-            return res.status(404).json({ message: 'No content found for the artist' });
-        }
-
-        return res.status(200).json({ contentDocuments });
+        res.json(contentDocuments);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Server error' });
     } finally {
         client.close();
+    }
+};
+
+const x = async (req, res) => {
+    try {
+        await client.connect();
+        
+        
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    } finally {
+        await client.close();
     }
 };
 
