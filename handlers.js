@@ -283,10 +283,15 @@ const getContentByArtist = async (req, res) => {
     const client = await new MongoClient(MONGO_URI, options);
 
     try {
+        const { artistId } = req.query;
+        if (!artistId) {
+        return res.status(400).json({ message: 'Missing artistId parameter' });
+        }
+
         await client.connect();
         console.log('Client connected')
         const collection = client.db('db-name').collection('ContentMetaData');
-        const contentDocuments = await collection.find({ contentOwner: req.query.artistId }).toArray();
+        const contentDocuments = await collection.find({ contentOwner: artistId }).toArray();
         res.json(req.query.artistId); //contentDocuments
     } catch (error) {
         console.error(error);
