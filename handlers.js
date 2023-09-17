@@ -289,7 +289,6 @@ const getContentByArtist = async (req, res) => {
         }
 
         await client.connect();
-        console.log('Client connected')
         const collection = client.db('db-name').collection('ContentMetaData');
         const contentDocuments = await collection.find({ videoOwner: artistId }).toArray();
         res.json(contentDocuments);
