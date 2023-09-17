@@ -306,12 +306,11 @@ const getApprovedVideoContent = async (req, res) => {
 
     try {
         await client.connect();
-        console.log('Client connected')
         const collection = client.db('db-name').collection('ContentMetaData');
         
         // Find documents where both isOnlyAudio is false and b_isApproved is true
         const contentDocuments = await collection.find({ isOnlyAudio: false, b_isApproved: true }).toArray();
-        
+        console.log(contentDocuments);
         res.json(contentDocuments);
     } catch (error) {
         console.error(error);
