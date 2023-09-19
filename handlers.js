@@ -319,7 +319,30 @@ const getApprovedVideoContent = async (req, res) => {
     }
 };
 
+const deleteContent = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
 
+    try {
+        await client.connect();
+        const collection = client.db('db-name').collection('ContentMetaData');
+
+        const videoId = req.query.videoId;
+
+        // Delete the document with the specified videoId
+        const result = await collection.deleteOne({ videoId });
+
+        if (result.deletedCount === 0) {
+        return res.status(404).json({ message: 'Video not found' });
+        }
+
+        res.status(200).json({ message: 'Video deleted successfully' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    } finally {
+        client.close();
+    }
+};
 
 
 
@@ -339,4 +362,5 @@ module.exports = {
     postNewUserWithAccountName,
     getContentByArtist,
     getApprovedVideoContent,
+    deleteContent,
 };

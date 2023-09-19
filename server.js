@@ -16,6 +16,7 @@ const {
     postNewUserWithAccountName,
     getContentByArtist,
     getApprovedVideoContent,
+    deleteContent,
 } = require("./handlers");
 
 const {
@@ -43,6 +44,7 @@ express()
     .post('/api/postNewUserWithAccountName', postNewUserWithAccountName)
     .get('/api/getContentByArtist', getContentByArtist)
     .get('/api/getApprovedVideoContent', getApprovedVideoContent)
+    .delete('/api/deleteContent', deleteContent)
 
     .listen(PORT, () => {
         console.log(`Server launched on port ${PORT}`);
