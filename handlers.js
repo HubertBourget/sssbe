@@ -323,6 +323,7 @@ const deleteContent = async (req, res) => {
     const client = new MongoClient(MONGO_URI, options);
 
     try {
+        console.log("Delete endpoint reached.");
         await client.connect();
         const collection = client.db('db-name').collection('ContentMetaData');
 
