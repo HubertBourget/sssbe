@@ -325,8 +325,7 @@ const deleteContent = async (req, res) => {
     try {
         console.log("Delete endpoint reached.");
         await client.connect();
-        const collection = client.db('db-name').collection('ContentMetaData');
-
+        const collection = client.db('db-name').collection('ContentMetaData')
         const videoId = req.query.videoId;
         const userId = req.headers['user-id']; // Extract user ID from the custom header
 
