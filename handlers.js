@@ -328,7 +328,7 @@ const deleteContent = async (req, res) => {
         const collection = client.db('db-name').collection('ContentMetaData');
 
         const videoId = req.query.videoId;
-        const userId = req.headers['x-user-id']; // Extract user ID from the custom header
+        const userId = req.headers['user-id']; // Extract user ID from the custom header
 
         // Check if the user making the request is the owner of the content
         const contentDocument = await collection.findOne({ videoId, videoOwner: userId });
