@@ -328,12 +328,25 @@ const deleteContent = async (req, res) => {
         const collection = client.db('db-name').collection('ContentMetaData');
 
         const videoId = req.query.videoId;
+        const userId = req.user.id; // Assuming you have user information in the request after authentication
+
+        // Find the document with the specified videoId
+        const contentDocument = await collection.findOne({ videoId });
+
+        if (!contentDocument) {
+            return res.status(404).json({ message: 'Video not found' });
+        }
+
+        // Check if the authenticated user is the owner of the video
+        if (contentDocument.videoOwner !== userId) {
+            return res.status(403).json({ message: 'Unauthorized: You do not have permission to delete this video' });
+        }
 
         // Delete the document with the specified videoId
         const result = await collection.deleteOne({ videoId });
 
         if (result.deletedCount === 0) {
-        return res.status(404).json({ message: 'Video not found' });
+            return res.status(404).json({ message: 'Video not found' });
         }
 
         res.status(200).json({ message: 'Video deleted successfully' });
@@ -344,6 +357,7 @@ const deleteContent = async (req, res) => {
         client.close();
     }
 };
+
 
 
 
