@@ -25,27 +25,29 @@ const {
 
 
 express()
-    .use(cors({
-    origin: ['https://sacredsound.app', 'https://test.sacredsound.app'], //"*"
-    methods: ['GET','POST','DELETE','UPDATE','PUT','PATCH']
-    }))
-    .use(express.json())
-    .get('/', getServerHomePage)
-    .post("/api/postContentMetaData", postContentMetaData)
-    .get("/api/getPreReviewedVideoList", getPreReviewedVideoList)
-    .post("/api/updateContentMetaData", updateContentMetaData)
-    .post("/api/updateUserProfile", updateUserProfile)
-    .get('/api/getUserProfile/:userId', getUserProfile)
-    .post('/api/postProfileImage', postProfileImage)
-    .get('/api/getCheckAccountName', getCheckAccountName)
-    .post('/api/postCreateImageThumbnail', CreateImageThumbnail)
-    .get('/api/getContentById', getContentById)
-    .get('/api/b_getUserExist/:userId', b_getUserExist)
-    .post('/api/postNewUserWithAccountName', postNewUserWithAccountName)
-    .get('/api/getContentByArtist', getContentByArtist)
-    .get('/api/getApprovedVideoContent', getApprovedVideoContent)
-    .delete('/api/deleteContent', deleteContent)
+  .use(
+    cors({
+      origin: "*", //['https://sacredsound.app', 'https://test.sacredsound.app']
+      methods: ["GET", "POST", "DELETE", "UPDATE", "PUT", "PATCH"],
+    })
+  )
+  .use(express.json())
+  .get("/", getServerHomePage)
+  .post("/api/postContentMetaData", postContentMetaData)
+  .get("/api/getPreReviewedVideoList", getPreReviewedVideoList)
+  .post("/api/updateContentMetaData", updateContentMetaData)
+  .post("/api/updateUserProfile", updateUserProfile)
+  .get("/api/getUserProfile/:userId", getUserProfile)
+  .post("/api/postProfileImage", postProfileImage)
+  .get("/api/getCheckAccountName", getCheckAccountName)
+  .post("/api/postCreateImageThumbnail", CreateImageThumbnail)
+  .get("/api/getContentById", getContentById)
+  .get("/api/b_getUserExist/:userId", b_getUserExist)
+  .post("/api/postNewUserWithAccountName", postNewUserWithAccountName)
+  .get("/api/getContentByArtist", getContentByArtist)
+  .get("/api/getApprovedVideoContent", getApprovedVideoContent)
+  .delete("/api/deleteContent", deleteContent)
 
-    .listen(PORT, () => {
-        console.log(`Server launched on port ${PORT}`);
-});
+  .listen(PORT, () => {
+    console.log(`Server launched on port ${PORT}`);
+  });
