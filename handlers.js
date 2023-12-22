@@ -353,25 +353,86 @@ const deleteContent = async (req, res) => {
     }
 };
 
+const encodeCreds = async (req, res) => {
+    try {
+    if (!req.body) {
+        return res.status(400).json({
+        err: true,
+        error: "Invalid request body!!",
+        });
+    }
 
+    const jsonString = JSON.stringify(req.body);
+    const encoded = Buffer.from(jsonString).toString("base64");
 
+    return res.status(200).json({
+        msg: "success",
+        data: {
+        encoded,
+        },
+    });
+    } catch (err) {
+    console.log(
+        "Err in File-ThumbnailController > Method-EncodeCreds > : ",
+        err
+    );
+    return res.status(400).json({
+        msg: "err",
+        err: err,
+    });
+    }
+};
 
+const decodeCreds = async(req, res) => {
+    try {
+        const encodedData = process.env.ENCODED_KEY;
 
+        if (!encodedData) {
+        return res.status(400).json({
+            err: true,
+            error: "Encoded data not found in environment variable!!",
+        });
+        }
+
+        const decodedJsonString = Buffer.from(encodedData, "base64").toString(
+        "utf-8"
+        );
+        const decodedObject = JSON.parse(decodedJsonString);
+
+        return res.status(200).json({
+        msg: "success",
+        data: {
+            decodedObject,
+        },
+        });
+    } catch (err) {
+        console.log(
+        "Err in File-ThumbnailController > Method-DecodeCreds > : ",
+        err
+        );
+        return res.status(400).json({
+        msg: "err",
+        err: err,
+        });
+    }
+}
 
 
 module.exports = {
-    getServerHomePage,
-    postContentMetaData,
-    getPreReviewedVideoList,
-    updateContentMetaData,
-    updateUserProfile,
-    getUserProfile,
-    postProfileImage,
-    getCheckAccountName,
-    getContentById,
-    b_getUserExist,
-    postNewUserWithAccountName,
-    getContentByArtist,
-    getApprovedVideoContent,
-    deleteContent,
+  getServerHomePage,
+  postContentMetaData,
+  getPreReviewedVideoList,
+  updateContentMetaData,
+  updateUserProfile,
+  getUserProfile,
+  postProfileImage,
+  getCheckAccountName,
+  getContentById,
+  b_getUserExist,
+  postNewUserWithAccountName,
+  getContentByArtist,
+  getApprovedVideoContent,
+  deleteContent,
+  encodeCreds,
+  decodeCreds,
 };

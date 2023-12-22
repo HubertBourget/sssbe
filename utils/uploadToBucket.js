@@ -2,7 +2,9 @@ const { Storage } = require('@google-cloud/storage');
 const path = require("path");
 const { MongoClient } = require("mongodb");
 const { MONGO_URI } = process.env;
-const serviceKey = path.join(__dirname, './sacred-sound-2a7ce18e134a.json')
+
+//pre-removal commented out:
+// const serviceKey = path.join(__dirname, './sacred-sound-2a7ce18e134a.json')
 
 const options = {
     useNewUrlParser: true,
@@ -13,10 +15,13 @@ module.exports = {
     upload: async function (url, video_id, email) {
         let imgUrls = [];
         try {
-        const storage = new Storage({
-            keyFilename: serviceKey,
-            projectId: process.env.PROJECT_ID,
-        });
+            // Fetch the decrypted key from the endpoint
+            const { data: decryptedKey } = await axios.post("/api/decodeCreds");
+
+            const storage = new Storage({
+                credentials: JSON.parse(decryptedKey),
+                projectId: process.env.PROJECT_ID,
+            });
         const bucketName = process.env.BUCKET_NAME;
         const folder = process.env.BUCKET_FOLDER;
 

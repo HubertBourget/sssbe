@@ -1,22 +1,25 @@
 const express = require("express");
 const cors = require('cors');
+const bodyParser = require("body-parser");
 const PORT = process.env.PORT || 8000;
 
 const {
-    getServerHomePage,
-    postContentMetaData,
-    getPreReviewedVideoList,
-    updateContentMetaData,
-    updateUserProfile,
-    getUserProfile,
-    postProfileImage,
-    getCheckAccountName,
-    getContentById,
-    b_getUserExist,
-    postNewUserWithAccountName,
-    getContentByArtist,
-    getApprovedVideoContent,
-    deleteContent,
+  getServerHomePage,
+  postContentMetaData,
+  getPreReviewedVideoList,
+  updateContentMetaData,
+  updateUserProfile,
+  getUserProfile,
+  postProfileImage,
+  getCheckAccountName,
+  getContentById,
+  b_getUserExist,
+  postNewUserWithAccountName,
+  getContentByArtist,
+  getApprovedVideoContent,
+  deleteContent,
+  encodeCreds,
+  decodeCreds,
 } = require("./handlers");
 
 const {
@@ -32,6 +35,7 @@ express()
     })
   )
   .use(express.json())
+  .use(bodyParser.json())
   .get("/", getServerHomePage)
   .post("/api/postContentMetaData", postContentMetaData)
   .get("/api/getPreReviewedVideoList", getPreReviewedVideoList)
@@ -47,6 +51,8 @@ express()
   .get("/api/getContentByArtist", getContentByArtist)
   .get("/api/getApprovedVideoContent", getApprovedVideoContent)
   .delete("/api/deleteContent", deleteContent)
+  .post("/api/encodeCreds", encodeCreds)
+  .post("/api/decodeCreds", decodeCreds)
 
   .listen(PORT, () => {
     console.log(`Server launched on port ${PORT}`);
