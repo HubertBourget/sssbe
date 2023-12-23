@@ -111,6 +111,7 @@ const updateUserProfile = async (req, res) => {
         const query = { email: email };
         const update = {
             $set: {
+                accountName,
                 bio,
                 artistLink,
             },
