@@ -102,6 +102,7 @@ const updateContentMetaData = async (req, res) => {
 // Reviewed Mai 1st
 const updateUserProfile = async (req, res) => {
     const { accountName, bio, artistLink, email } = req.body;
+    console.log(req.body); //debugging
 
     const client = await MongoClient.connect(MONGO_URI, options);
     try {
