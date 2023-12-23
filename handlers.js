@@ -101,7 +101,7 @@ const updateContentMetaData = async (req, res) => {
 
 // Reviewed Mai 1st
 const updateUserProfile = async (req, res) => {
-    const { bio, artistLink, email } = req.body;
+    const { accountName, bio, artistLink, email } = req.body;
 
     const client = await MongoClient.connect(MONGO_URI, options);
     try {
@@ -232,7 +232,6 @@ const getCheckAccountName = async (req, res) => {
     const { accountName, email } = req.query;
     const client = await new MongoClient(MONGO_URI, options);
     try {
-        console.log("checking account name...")
         const db = client.db("db-name");
         const collection = db.collection('userAccounts');
 
