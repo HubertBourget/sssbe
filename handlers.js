@@ -2,7 +2,7 @@
 const { MongoClient } = require("mongodb");
 require("dotenv").config();
 const { MONGO_URI } = process.env;
-const { RecombeeSync } = require("../utils/RecombeeSync");
+const { SyncRecombee } = require("../utils/SyncRecombee");
 const recombee = require("recombee-api-client");
 const rqs = recombee.requests;
 const { recombeeClient, propertyDataTypes } = require("../utils/constants");
@@ -425,7 +425,7 @@ const decodeCreds = async(req, res) => {
 const syncCatalog = async function (req, res) {
     try {
         // sync our database with the recombee platform
-        await RecombeeSync();
+        await SyncRecombee();
         return res.status(200).json({
         msg: "Data syncing successfully.",
         });

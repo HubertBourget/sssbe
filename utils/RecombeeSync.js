@@ -4,7 +4,7 @@ const UserRecombee = require("../models/UserRecombee");
 const VideoRecombeeModel = require("../models/VideoRecombee");
 const { recombeeClient } = require("../utils/constants");
 
-const RecombeeSync = async () => {
+const SyncRecombee = async () => {
     try {
         // Fetch existing videoes and users from recombee concurrently
         const [existVideoes, existUsers] = await Promise.all([
@@ -39,10 +39,10 @@ const RecombeeSync = async () => {
         })
         );
     } catch (err) {
-        console.log("Error in RecombeeSync:", err);
+        console.log("Error in SyncRecombee:", err);
     }
 };
 
 module.exports = {
-    RecombeeSync,
+    SyncRecombee,
 };
