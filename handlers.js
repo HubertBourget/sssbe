@@ -5,7 +5,7 @@ const { MONGO_URI } = process.env;
 const { SyncRecombee } = require("./utils/SyncRecombee");
 const recombee = require("recombee-api-client");
 const rqs = recombee.requests;
-const { recombeeClient, propertyDataTypes } = require("./utils/constants");
+// const { recombeeClient, propertyDataTypes } = require("./utils/constants");
 
 const options = {
     useNewUrlParser: true,
