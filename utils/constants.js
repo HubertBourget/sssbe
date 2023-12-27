@@ -6,7 +6,7 @@ const recombee = require("recombee-api-client");
 const recombeeClient = new recombee.ApiClient(
   process.env.RECOMBEE_DB,
   process.env.RECOMBEE_API_TOKEN,
-  { region: process.env.RECOMBEE_REGION, timeout: 30000 }
+  { region: process.env.RECOMBEE_REGION}
 );
 
 // property of item should be contain data type from this
