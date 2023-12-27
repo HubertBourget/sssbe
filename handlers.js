@@ -275,7 +275,7 @@ const postNewUserWithAccountName = async (req, res) => {
     try{
         client.connect();
         const db = client.db('db-name');
-        const result = await db.collection("useraccounts").insertOne(user);
+        const result = await db.collection("userAccounts").insertOne(user);
         res.status(200).json({ status: 200, result: result })
         client.close();
     }
