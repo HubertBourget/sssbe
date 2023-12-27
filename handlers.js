@@ -425,7 +425,7 @@ const decodeCreds = async(req, res) => {
 const syncCatalog = async function (req, res) {
     try {
         // sync our database with the recombee platform
-        RecombeeSync();
+        await RecombeeSync();
         return res.status(200).json({
         msg: "Data syncing successfully.",
         });
