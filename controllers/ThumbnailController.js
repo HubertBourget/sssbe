@@ -3,7 +3,6 @@ const fs = require("fs");
 const fse = require("fs-extra");
 const request = require("request");
 const { upload } = require("../utils/uploadToBucket");
-const Video = require("../models/Video");
 const { url } = require("inspector");
 const dir = './Thumbnails';
 const directoryPath = path.resolve(__dirname,'../Thumbnails');
