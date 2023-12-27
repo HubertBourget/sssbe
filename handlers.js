@@ -2,6 +2,10 @@
 const { MongoClient } = require("mongodb");
 require("dotenv").config();
 const { MONGO_URI } = process.env;
+const { RecombeeSync } = require("../utils/RecombeeSync");
+const recombee = require("recombee-api-client");
+const rqs = recombee.requests;
+const { recombeeClient, propertyDataTypes } = require("../utils/constants");
 
 const options = {
     useNewUrlParser: true,
@@ -102,7 +106,6 @@ const updateContentMetaData = async (req, res) => {
 // Reviewed Mai 1st
 const updateUserProfile = async (req, res) => {
     const { accountName, bio, artistLink, email } = req.body;
-    console.log(req.body); //debugging
 
     const client = await MongoClient.connect(MONGO_URI, options);
     try {
@@ -419,6 +422,24 @@ const decodeCreds = async(req, res) => {
     }
 }
 
+const syncCatalog = async function (req, res) {
+    try {
+        // sync our database with the recombee platform
+        RecombeeSync();
+        return res.status(200).json({
+        msg: "Data syncing successfully.",
+        });
+    } catch (err) {
+        console.log(
+        "Err in File-RecombeeController > Method-SyncCatalog > : ",
+        err
+        );
+        return res.status(400).json({
+        msg: "err",
+        err: err,
+        });
+    }
+};
 
 module.exports = {
   getServerHomePage,
@@ -437,4 +458,5 @@ module.exports = {
   deleteContent,
   encodeCreds,
   decodeCreds,
+  syncCatalog,
 };

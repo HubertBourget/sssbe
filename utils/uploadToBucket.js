@@ -34,7 +34,7 @@ module.exports = {
             // const [metadata] = await data[0].getMetadata(); //unused line of code, commented out.
             const publicUrl = await storage.bucket(bucketName).file(`${folder}/${email}/${fileName}`).getSignedUrl({
             action: 'read',
-            expires: '03-17-2035',
+            expires: '11-11-2099',
             });
             imgUrls.push(publicUrl[0]);
         }

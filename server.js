@@ -20,6 +20,7 @@ const {
   deleteContent,
   encodeCreds,
   decodeCreds,
+  syncCatalog,
 } = require("./handlers");
 
 const {
@@ -51,8 +52,13 @@ express()
   .get("/api/getContentByArtist", getContentByArtist)
   .get("/api/getApprovedVideoContent", getApprovedVideoContent)
   .delete("/api/deleteContent", deleteContent)
+  
+  //Key encryption:
   .post("/api/encodeCreds", encodeCreds)
   .post("/api/decodeCreds", decodeCreds)
+
+  //Recombee:
+  .post("/api/syncCatalog", syncCatalog)
 
   .listen(PORT, () => {
     console.log(`Server launched on port ${PORT}`);
