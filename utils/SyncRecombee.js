@@ -2,7 +2,7 @@ const recombee = require("recombee-api-client");
 const rqs = recombee.requests;
 const UserRecombee = require("../models/UserRecombee");
 const VideoRecombeeModel = require("../models/VideoRecombee");
-const { recombeeClient } = require("../utils/constants");
+const { recombeeClient } = require("./constants");
 
 const SyncRecombee = async () => {
     try {
