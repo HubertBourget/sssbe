@@ -3,7 +3,7 @@ const { MongoClient } = require("mongodb");
 require("dotenv").config();
 const { MONGO_URI } = process.env;
 const { SyncRecombee } = require("./utils/SyncRecombee");
-const recombeeClient = require("recombee-api-client");
+const { recombeeClient } = require("recombee-api-client");
 const { AddUser } = require("recombee-api-client").requests;
 
 const options = {
@@ -28,18 +28,19 @@ const postNewUserWithAccountName = async (req, res) => {
     try {
         client.connect();
         const db = client.db("db-name");
-
-        // Step 1: Create user in your MongoDB database
         const result = await db.collection("userAccounts").insertOne(user);
 
-        // Step 2: Add user to Recombee
+        // If the user was successfully created in MongoDB, proceed to add to Recombee
         if (result.insertedId) {
-        await addUserToRecombee(result.insertedId.toString());
+        const userId = email;
+        await recombeeClient.send(new AddUser(userId));
+        console.log("User added to Recombee successfully.");
         } else {
         console.log("Failed to create user in MongoDB.");
-        res
-            .status(400)
-            .json({ status: 400, message: "Failed to create user in MongoDB." });
+        res.status(400).json({
+            status: 400,
+            message: "Failed to create user in MongoDB.",
+        });
         }
 
         res.status(200).json({ status: 200, result: result });
@@ -49,19 +50,7 @@ const postNewUserWithAccountName = async (req, res) => {
     } finally {
         client.close();
     }
-    };
-
-    async function addUserToRecombee(userId) {
-    try {
-        // Add user to Recombee
-        await recombeeClient.send(new AddUser(userId));
-        console.log("User added to Recombee successfully.");
-    } catch (error) {
-        console.error("Error adding user to Recombee:", error.message);
-        // Handle error based on the specific use case
-    }
-}
-
+};
 
 const postContentMetaData = async (req, res) => {
     const { videoOwner, videoId, timestamp,  fileUrl, isOnlyAudio, b_isPreparedForReview, b_hasBeenReviewed, b_isApproved } = req.body;
