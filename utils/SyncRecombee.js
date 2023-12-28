@@ -1,8 +1,3 @@
-const recombee = require("recombee-api-client");
-const rqs = recombee.requests;
-const UserRecombee = require("../models/UserRecombee");
-const VideoRecombeeModel = require("../models/VideoRecombee");
-const { recombeeClient } = require("./constants");
 const { MONGO_URI } = process.env;
 
 const { MongoClient } = require("mongodb");
@@ -28,17 +23,38 @@ async function getAllUsers() {
   }
 }
 
+async function getAllContent() {
+  const client = new MongoClient(MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+
+  try {
+    await client.connect();
+    const database = client.db("db-name");
+    const collection = database.collection("ContentMetaData");
+
+    // Fetch all documents in the collection
+    const content = await collection.find({}).toArray();
+
+    return content;
+  } finally {
+    await client.close();
+  }
+}
 
 const SyncRecombee = async () => {
   try {
     // Fetch all users and videos from MongoDB
     const allUsers = await getAllUsers();
+    const allContent = await getAllContent();
 
     // Construct a JSON response with information about all users and videos
     const jsonResponse = {
       success: true,
       users: allUsers,
-    }; //   videos: allVideos,
+      content: allContent,
+    };
 
     return jsonResponse;
   } catch (error) {
