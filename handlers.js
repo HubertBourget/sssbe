@@ -4,8 +4,7 @@ require("dotenv").config();
 const { MONGO_URI } = process.env;
 const { SyncRecombee } = require("./utils/SyncRecombee");
 const recombee = require("recombee-api-client");
-const rqs = recombee.requests;
-// const { recombeeClient, propertyDataTypes } = require("./utils/constants");
+const { AddUser } = require("recombee-api-client").requests;
 
 const options = {
     useNewUrlParser: true,
@@ -16,7 +15,54 @@ const getServerHomePage = async (req, res) => {
     res.status(200).json({status: 200, message:`Sacred Sound Studio Back End Server is currently up and running!`});
 };
 
-// Reviewed Mai 1st
+const postNewUserWithAccountName = async (req, res) => {
+    const { email, accountName, isArtist, timestamp } = req.body;
+    const user = {
+        email,
+        accountName,
+        isArtist,
+        timestamp,
+    };
+
+    const client = await new MongoClient(MONGO_URI, options);
+    try {
+        client.connect();
+        const db = client.db("db-name");
+
+        // Step 1: Create user in your MongoDB database
+        const result = await db.collection("userAccounts").insertOne(user);
+
+        // Step 2: Add user to Recombee
+        if (result.insertedId) {
+        await addUserToRecombee(result.insertedId.toString());
+        } else {
+        console.log("Failed to create user in MongoDB.");
+        res
+            .status(400)
+            .json({ status: 400, message: "Failed to create user in MongoDB." });
+        }
+
+        res.status(200).json({ status: 200, result: result });
+    } catch (e) {
+        console.error("Error creating user:", e.message);
+        res.status(500).json({ status: 500, message: "Internal server error" });
+    } finally {
+        client.close();
+    }
+    };
+
+    async function addUserToRecombee(userId) {
+    try {
+        // Add user to Recombee
+        await recombeeClient.send(new AddUser(userId));
+        console.log("User added to Recombee successfully.");
+    } catch (error) {
+        console.error("Error adding user to Recombee:", error.message);
+        // Handle error based on the specific use case
+    }
+}
+
+
 const postContentMetaData = async (req, res) => {
     const { videoOwner, videoId, timestamp,  fileUrl, isOnlyAudio, b_isPreparedForReview, b_hasBeenReviewed, b_isApproved } = req.body;
     const ContentMetaData = {
@@ -43,7 +89,6 @@ const postContentMetaData = async (req, res) => {
     }
 }
 
-// Reviewed Mai 1st
 const getPreReviewedVideoList = async (req, res) => {
     const client = await new MongoClient(MONGO_URI, options);
     try {
@@ -62,7 +107,6 @@ const getPreReviewedVideoList = async (req, res) => {
     }
 };
 
-// Reviewed Mai 1st
 const updateContentMetaData = async (req, res) => {
     const { videoId, b_isPreparedForReview, title, description, category, selectedImageThumbnail, tags } = req.body;
     console.log(req.body);
@@ -103,7 +147,6 @@ const updateContentMetaData = async (req, res) => {
     }
 };
 
-// Reviewed Mai 1st
 const updateUserProfile = async (req, res) => {
     const { accountName, bio, artistLink, email } = req.body;
 
@@ -137,7 +180,6 @@ const updateUserProfile = async (req, res) => {
     }
 };
 
-// Reviewed Mai 1st
 const getUserProfile = async (req, res) => {
     const client = await new MongoClient(MONGO_URI, options);
     try {
@@ -160,7 +202,6 @@ const getUserProfile = async (req, res) => {
     }
 };
 
-// Reviewed Mai 1st
 const b_getUserExist = async (req, res) => {
     const client = await new MongoClient(MONGO_URI, options);
     try {
@@ -181,7 +222,6 @@ const b_getUserExist = async (req, res) => {
     }
 };
 
-// Reviewed Mai 1st
 const getContentById = async (req, res) => {
     const client = await new MongoClient(MONGO_URI, options);
     try {
@@ -200,7 +240,6 @@ const getContentById = async (req, res) => {
     }
 };
 
-// Reviewed Mai 1st
 const postProfileImage = async (req, res) => {
     const { profileImageUrl, email } = req.body; 
     const client = await MongoClient.connect(MONGO_URI, options);
@@ -231,7 +270,6 @@ const postProfileImage = async (req, res) => {
     }
 }
 
-// Reviewed Mai 1st
 const getCheckAccountName = async (req, res) => {
     const { accountName, email } = req.query;
     const client = await new MongoClient(MONGO_URI, options);
@@ -261,30 +299,6 @@ const getCheckAccountName = async (req, res) => {
     }
 };
 
-// Reviewed Mai 1st
-const postNewUserWithAccountName = async (req, res) => {
-    const { email, accountName, isArtist, timestamp } = req.body;
-    const user = {
-        email,
-        accountName,
-        isArtist,
-        timestamp
-    };
-
-    const client = await new MongoClient(MONGO_URI, options);
-    try{
-        client.connect();
-        const db = client.db('db-name');
-        const result = await db.collection("userAccounts").insertOne(user);
-        res.status(200).json({ status: 200, result: result })
-        client.close();
-    }
-    catch (e){
-        res.status(400).json({ status: 400, message: e.message })
-    }
-}
-
-//Created in September 2023
 const getContentByArtist = async (req, res) => {
     const client = await new MongoClient(MONGO_URI, options);
 
