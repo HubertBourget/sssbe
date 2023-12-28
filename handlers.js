@@ -45,6 +45,7 @@ const postNewUserWithAccountName = async (req, res) => {
         const addUserRequest = new AddUser(userId, userProperties);
 
         // Send the request to Recombee
+        console.log(addUserRequest);
         await recombeeClient.send(addUserRequest);
         console.log("User added to Recombee successfully.");
         } else {
