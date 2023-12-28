@@ -34,8 +34,14 @@ const postNewUserWithAccountName = async (req, res) => {
         // If the user was successfully created in MongoDB, proceed to add to Recombee
         if (result.insertedId) {
         const userId = email;
-        console.log(recombeeClient);
-        await recombeeClient.send(new AddUser(userId));
+
+        const userProperties = {
+            accountName: accountName,
+            isArtist: isArtist,
+            timestamp: timestamp,
+            // Add more properties as needed
+        };
+        await recombeeClient.send(new AddUser(userId, userProperties));
         console.log("User added to Recombee successfully.");
         } else {
         console.log("Failed to create user in MongoDB.");
