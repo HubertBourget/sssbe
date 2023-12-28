@@ -30,7 +30,6 @@ async function getAllContent() {
         // Construct a JSON response with information about all users and videos
         const jsonResponse = {
         success: true,
-        users: allUsers,
         content: allContent,
         };
 
