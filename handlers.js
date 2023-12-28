@@ -3,7 +3,7 @@ const { MongoClient } = require("mongodb");
 require("dotenv").config();
 const { MONGO_URI } = process.env;
 const { SyncRecombee } = require("./utils/SyncRecombee");
-const recombee = require("recombee-api-client");
+const recombeeClient = require("recombee-api-client");
 const { AddUser } = require("recombee-api-client").requests;
 
 const options = {
