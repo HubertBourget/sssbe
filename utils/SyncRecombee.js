@@ -37,7 +37,6 @@ const SyncRecombee = async () => {
     // Construct a JSON response with information about all users and videos
     const jsonResponse = {
       success: true,
-      message: "SyncRecombee process completed successfully.",
       users: allUsers,
     }; //   videos: allVideos,
 

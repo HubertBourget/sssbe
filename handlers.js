@@ -429,8 +429,7 @@ const syncCatalog = async function (req, res) {
 
     if (syncRecombeeResponse.success) {
       return res.status(200).json({
-        msg: "Data syncing successfully.",
-        data: syncRecombeeResponse, // Include the response data if needed
+        data: syncRecombeeResponse
       });
     } else {
       return res.status(400).json({
