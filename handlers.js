@@ -41,19 +41,15 @@ const postNewUserWithAccountName = async (req, res) => {
             timestamp: timestamp,
             // Add more properties as needed
           };
-        // Create an AddUser request with both the user ID and properties
-        const addUserRequest = new AddUser(userId, userProperties);
+          // Create a SetUserValues request with both the user ID and properties
+          const setUserValuesRequest = new SetUserValues(
+            userId,
+            userProperties
+          );
 
-        // Send the request to Recombee
-        console.log(addUserRequest);
-        // await recombeeClient.send(addUserRequest);
-        
-        //
-        const response = await recombeeClient.send(addUserRequest);
-        console.log("Recombee API response:", response);
-        //
-
-        console.log("User added to Recombee successfully.");
+          // Send the request to Recombee
+          await recombeeClient.send(setUserValuesRequest);
+          console.log("setUserValuesRequest:" + setUserValuesRequest);
         } else {
         console.log("Failed to create user in MongoDB.");
         res.status(400).json({
