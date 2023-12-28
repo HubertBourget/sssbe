@@ -58,7 +58,7 @@ express()
   .post("/api/decodeCreds", decodeCreds)
 
   //Recombee:
-  .post("/api/syncCatalog", syncCatalog)
+  .get("/api/syncCatalog", syncCatalog)
 
   .listen(PORT, () => {
     console.log(`Server launched on port ${PORT}`);

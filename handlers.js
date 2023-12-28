@@ -423,27 +423,28 @@ const decodeCreds = async(req, res) => {
 }
 
 const syncCatalog = async function (req, res) {
-  try {
-    // sync our database with the recombee platform
-    const syncRecombeeResponse = await SyncRecombee();
+    try {
+        // sync our database with the recombee platform
+        const syncRecombeeResponse = await SyncRecombee();
 
-    if (syncRecombeeResponse.success) {
-      return res.status(200).json({
-        data: syncRecombeeResponse
-      });
-    } else {
-      return res.status(400).json({
-        msg: "Data syncing failed.",
-        error: syncRecombeeResponse.error || "Unknown error",
-      });
+
+        if (syncRecombeeResponse.success) {
+        return res.status(200).json({
+            data: syncRecombeeResponse
+        });
+        } else {
+        return res.status(400).json({
+            msg: "Data syncing failed.",
+            error: syncRecombeeResponse.error || "Unknown error",
+        });
+        }
+    } catch (err) {
+        console.log("Error in File-RecombeeController > Method-SyncCatalog:", err);
+        return res.status(500).json({
+        msg: "Internal server error",
+        error: err.message || "An error occurred.",
+        });
     }
-  } catch (err) {
-    console.log("Error in File-RecombeeController > Method-SyncCatalog:", err);
-    return res.status(500).json({
-      msg: "Internal server error",
-      error: err.message || "An error occurred.",
-    });
-  }
 };
 
 
