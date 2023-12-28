@@ -15,6 +15,7 @@ const getServerHomePage = async (req, res) => {
     res.status(200).json({status: 200, message:`Sacred Sound Studio Back End Server is currently up and running!`});
 };
 
+
 const postNewUserWithAccountName = async (req, res) => {
     const { email, accountName, isArtist, timestamp } = req.body;
     const user = {
