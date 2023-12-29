@@ -56,6 +56,24 @@ const postNewUserWithAccountName = async (req, res) => {
                 recombeeClient.send(request)
                 )
             );
+
+            // Now that properties are added, set values for the user
+            const userProperties = {
+                accountName: accountName,
+                isArtist: isArtist,
+                timestamp: timestamp, 
+            };
+
+            // Create a SetUserValues request with both the user ID and properties
+            const setUserValuesRequest = new SetUserValues(
+                userId,
+                userProperties
+            );
+
+            // Send the request to set user values
+            await recombeeClient.send(setUserValuesRequest);
+
+            console.log("User and properties added successfully!");
         } else {
         console.log("Failed to create user in MongoDB.");
         res.status(400).json({
