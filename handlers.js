@@ -493,10 +493,17 @@ const syncCatalog = async (req, res) => {
 
 const getRecommendations = async (req, res) => {
     try{
-
+        const userId = req.params.userId;
+        console.log("getRecommendations's UserId is: " + userId);
+        const { recombeeClient } = require("./utils/constants");
+        const rqs = recombeeClient.requests;
     }
-    catch{
-
+    catch (err){
+        console.log("Error in File-RecombeeController > Method-getRecommendations:", err);
+        return res.status(500).json({
+        msg: "Internal server error",
+        error: err.message || "An error occurred.",
+        });
     }
 };
 
