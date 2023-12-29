@@ -27,7 +27,6 @@ const postNewUserWithAccountName = async (req, res) => {
 
     const client = await new MongoClient(MONGO_URI, options);
     const { recombeeClient } = require("./utils/constants");
-    const rqs = recombeeClient.requests;
     try {
         client.connect();
         const db = client.db("db-name");
@@ -182,7 +181,6 @@ const updateUserProfile = async (req, res) => {
         }
         else {
             const { recombeeClient } = require("./utils/constants");
-            const rqs = recombeeClient.requests;
             // Set values for the user properties in Recombee
             const userProperties = {
                 accountName: accountName,
@@ -496,7 +494,6 @@ const getRecommendations = async (req, res) => {
         const userId = req.params.userId;
         console.log("getRecommendations's UserId is: " + userId);
         const { recombeeClient } = require("./utils/constants");
-        const rqs = recombeeClient.requests;
         const count = 3;
 
         const getRecommendationsRequest = new RecommendItemsToUser(userId, count, {
