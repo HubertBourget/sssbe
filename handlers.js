@@ -5,8 +5,6 @@ const { MONGO_URI } = process.env;
 const { SyncRecombee } = require("./utils/SyncRecombee");
 const { recombeeClient } = require("./utils/constants");
 const { AddUser } = require("recombee-api-client").requests;
-const { SetUserValues } = require("recombee-api-client").requests;
-
 
 const options = {
     useNewUrlParser: true,
@@ -35,23 +33,28 @@ const postNewUserWithAccountName = async (req, res) => {
 
         // If the user was successfully created in MongoDB, proceed to add to Recombee
         if (result.insertedId) {
-          const userId = email;
+            const userId = email;
+            const addUserRequest = new AddUser(userId);
+            await recombeeClient.send(addUserRequest);
 
-          const userProperties = {
-            accountName: accountName,
-            isArtist: isArtist,
-            timestamp: timestamp,
-            // Add more properties as needed
-          };
-          // Create a SetUserValues request with both the user ID and properties
-          const setUserValuesRequest = new SetUserValues(
-            userId,
-            userProperties
-          );
+            // Define the properties to be added (initialize)
+            const propertiesToAdd = [
+                { name: "accountName", type: "string" },
+                { name: "isArtist", type: "boolean" },
+                { name: "timestamp", type: "timestamp" },
+            ];
 
-          // Send the request to Recombee
-          await recombeeClient.send(setUserValuesRequest);
-          console.log("setUserValuesRequest:" + setUserValuesRequest);
+            // Create an array of AddUserProperty requests
+            const addUserPropertyRequests = propertiesToAdd.map(
+                (property) => new AddUserProperty(property.name, property.type)
+            );
+
+            // Send requests to add user properties
+            await Promise.all(
+                addUserPropertyRequests.map((request) =>
+                recombeeClient.send(request)
+                )
+            );
         } else {
         console.log("Failed to create user in MongoDB.");
         res.status(400).json({
