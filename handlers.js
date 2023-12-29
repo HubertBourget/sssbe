@@ -5,7 +5,7 @@ const { MONGO_URI } = process.env;
 const { SyncRecombee } = require("./utils/SyncRecombee");
 const { recombeeClient } = require("./utils/constants");
 const rqs = recombeeClient.requests;
-// const { AddUser } = require("recombee-api-client").requests;
+const { AddUser, AddUserProperty } = require("recombee-api-client").requests;
 
 const options = {
     useNewUrlParser: true,
@@ -35,7 +35,7 @@ const postNewUserWithAccountName = async (req, res) => {
         // If the user was successfully created in MongoDB, proceed to add to Recombee
         if (result.insertedId) {
             const userId = email;
-            const addUserRequest = new rqs.AddUser(userId);
+            const addUserRequest = new AddUser(userId);
             await recombeeClient.send(addUserRequest);
 
             // Define the properties to be added (initialize)
@@ -47,7 +47,7 @@ const postNewUserWithAccountName = async (req, res) => {
 
             // Create an array of AddUserProperty requests
             const addUserPropertyRequests = propertiesToAdd.map(
-                (property) => new rqs.AddUserProperty(property.name, property.type)
+                (property) => new AddUserProperty(property.name, property.type)
             );
 
             // Send requests to add user properties
