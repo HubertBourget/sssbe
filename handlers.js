@@ -497,6 +497,7 @@ const getRecommendations = async (req, res) => {
         console.log("getRecommendations's UserId is: " + userId);
         const { recombeeClient } = require("./utils/constants");
         const rqs = recombeeClient.requests;
+        const count = 3;
 
         const getRecommendationsRequest = new RecommendItemsToUser(userId, count, {
             'scenario': 'scenario_1',
