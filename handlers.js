@@ -4,7 +4,8 @@ require("dotenv").config();
 const { MONGO_URI } = process.env;
 const { SyncRecombee } = require("./utils/SyncRecombee");
 const { recombeeClient } = require("./utils/constants");
-const { AddUser } = require("recombee-api-client").requests;
+const rqs = recombeeClient.requests;
+// const { AddUser } = require("recombee-api-client").requests;
 
 const options = {
     useNewUrlParser: true,
@@ -46,7 +47,7 @@ const postNewUserWithAccountName = async (req, res) => {
 
             // Create an array of AddUserProperty requests
             const addUserPropertyRequests = propertiesToAdd.map(
-                (property) => new AddUserProperty(property.name, property.type)
+                (property) => new rqs.AddUserProperty(property.name, property.type)
             );
 
             // Send requests to add user properties
