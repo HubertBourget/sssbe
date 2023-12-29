@@ -187,6 +187,7 @@ const updateUserProfile = async (req, res) => {
             };
 
             // Create a SetUserValues request with both the user ID and properties
+            const userId = query.email;
             const setUserValuesRequest = new SetUserValues(
                 userId,
                 userProperties
