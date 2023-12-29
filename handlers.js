@@ -179,7 +179,21 @@ const updateUserProfile = async (req, res) => {
             return res.status(404).json({ error: "No document found with that email" });
         }
         else {
-            addUserPropertyOnRecombee();
+            // Set values for the user properties in Recombee
+            const userProperties = {
+                accountName: accountName,
+                bio: bio,
+                artistLink: artistLink,
+            };
+
+            // Create a SetUserValues request with both the user ID and properties
+            const setUserValuesRequest = new SetUserValues(
+                userId,
+                userProperties
+            );
+
+            // Send the request to set user values
+            await recombeeClient.send(setUserValuesRequest);
         }
 
         return res.status(200).json({ status: 200, result: result.value });
