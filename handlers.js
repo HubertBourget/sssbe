@@ -5,7 +5,7 @@ const { MONGO_URI } = process.env;
 const { SyncRecombee } = require("./utils/SyncRecombee");
 
 
-const { AddUser, AddUserProperty, SetUserValues } = require("recombee-api-client").requests;
+const { AddUser, AddUserProperty, SetUserValues, RecommendItemsToUser } = require("recombee-api-client").requests;
 
 const options = {
     useNewUrlParser: true,
@@ -497,6 +497,20 @@ const getRecommendations = async (req, res) => {
         console.log("getRecommendations's UserId is: " + userId);
         const { recombeeClient } = require("./utils/constants");
         const rqs = recombeeClient.requests;
+
+        const getRecommendationsRequest = new RecommendItemsToUser(userId, count, {
+            'scenario': 'scenario_1',
+        });
+        await recombeeClient.send(getRecommendationsRequest).then((response) => {
+            console.log(response);
+    })
+    .catch((error) => {
+        console.log(error);
+    });
+
+
+
+
     }
     catch (err){
         console.log("Error in File-RecombeeController > Method-getRecommendations:", err);
