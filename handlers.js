@@ -38,26 +38,7 @@ const postNewUserWithAccountName = async (req, res) => {
             const addUserRequest = new AddUser(userId);
             await recombeeClient.send(addUserRequest);
 
-            // Define the properties to be added (initialize)
-            const propertiesToAdd = [
-                { name: "accountName", type: "string" },
-                { name: "isArtist", type: "boolean" },
-                { name: "timestamp", type: "timestamp" },
-            ];
-
-            // Create an array of AddUserProperty requests
-            const addUserPropertyRequests = propertiesToAdd.map(
-                (property) => new AddUserProperty(property.name, property.type)
-            );
-
-            // Send requests to add user properties
-            await Promise.all(
-                addUserPropertyRequests.map((request) =>
-                recombeeClient.send(request)
-                )
-            );
-
-            // Now that properties are added, set values for the user
+            // Set values for the user properties
             const userProperties = {
                 accountName: accountName,
                 isArtist: isArtist,
@@ -488,6 +469,28 @@ const syncCatalog = async function (req, res) {
         });
     }
 };
+
+//Archived for later use:
+const addUserPropertyOnRecombee = async function (req, res) {
+    // Define the properties to be added (initialize)
+            const propertiesToAdd = [
+                { name: "accountName", type: "string" },
+                { name: "isArtist", type: "boolean" },
+                { name: "timestamp", type: "timestamp" },
+            ];
+
+            // Create an array of AddUserProperty requests
+            const addUserPropertyRequests = propertiesToAdd.map(
+                (property) => new AddUserProperty(property.name, property.type)
+            );
+
+            // Send requests to add user properties
+            await Promise.all(
+                addUserPropertyRequests.map((request) =>
+                recombeeClient.send(request)
+                )
+            );
+}
 
 
 module.exports = {
