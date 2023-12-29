@@ -21,6 +21,7 @@ const {
   encodeCreds,
   decodeCreds,
   syncCatalog,
+  getRecommendations,
 } = require("./handlers");
 
 const {
@@ -52,13 +53,14 @@ express()
   .get("/api/getContentByArtist", getContentByArtist)
   .get("/api/getApprovedVideoContent", getApprovedVideoContent)
   .delete("/api/deleteContent", deleteContent)
-  
+
   //Key encryption:
   .post("/api/encodeCreds", encodeCreds)
   .post("/api/decodeCreds", decodeCreds)
 
   //Recombee:
   .get("/api/syncCatalog", syncCatalog)
+  .get("/api/getRecommendations/:userId", getRecommendations)
 
   .listen(PORT, () => {
     console.log(`Server launched on port ${PORT}`);

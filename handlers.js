@@ -3,8 +3,8 @@ const { MongoClient } = require("mongodb");
 require("dotenv").config();
 const { MONGO_URI } = process.env;
 const { SyncRecombee } = require("./utils/SyncRecombee");
-const { recombeeClient } = require("./utils/constants");
-const rqs = recombeeClient.requests;
+
+
 const { AddUser, AddUserProperty, SetUserValues } = require("recombee-api-client").requests;
 
 const options = {
@@ -26,6 +26,8 @@ const postNewUserWithAccountName = async (req, res) => {
     };
 
     const client = await new MongoClient(MONGO_URI, options);
+    const { recombeeClient } = require("./utils/constants");
+    const rqs = recombeeClient.requests;
     try {
         client.connect();
         const db = client.db("db-name");
@@ -179,6 +181,8 @@ const updateUserProfile = async (req, res) => {
             return res.status(404).json({ error: "No document found with that email" });
         }
         else {
+            const { recombeeClient } = require("./utils/constants");
+            const rqs = recombeeClient.requests;
             // Set values for the user properties in Recombee
             const userProperties = {
                 accountName: accountName,
@@ -428,7 +432,7 @@ const encodeCreds = async (req, res) => {
     }
 };
 
-const decodeCreds = async(req, res) => {
+const decodeCreds = async (req, res) => {
     try {
         const encodedData = process.env.ENCODED_KEY;
 
@@ -462,7 +466,7 @@ const decodeCreds = async(req, res) => {
     }
 }
 
-const syncCatalog = async function (req, res) {
+const syncCatalog = async (req, res) => {
     try {
         // sync our database with the recombee platform
         const syncRecombeeResponse = await SyncRecombee();
@@ -484,6 +488,15 @@ const syncCatalog = async function (req, res) {
         msg: "Internal server error",
         error: err.message || "An error occurred.",
         });
+    }
+};
+
+const getRecommendations = async (req, res) => {
+    try{
+
+    }
+    catch{
+
     }
 };
 
@@ -527,4 +540,5 @@ module.exports = {
     encodeCreds,
     decodeCreds,
     syncCatalog,
+    getRecommendations,
 };
