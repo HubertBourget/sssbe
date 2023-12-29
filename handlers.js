@@ -16,7 +16,6 @@ const getServerHomePage = async (req, res) => {
     res.status(200).json({status: 200, message:`Sacred Sound Studio Back End Server is currently up and running!`});
 };
 
-
 const postNewUserWithAccountName = async (req, res) => {
     const { email, accountName, isArtist, timestamp } = req.body;
     const user = {
@@ -178,6 +177,9 @@ const updateUserProfile = async (req, res) => {
 
         if (!result.value) {
             return res.status(404).json({ error: "No document found with that email" });
+        }
+        else {
+            addUserPropertyOnRecombee();
         }
 
         return res.status(200).json({ status: 200, result: result.value });
@@ -474,9 +476,8 @@ const syncCatalog = async function (req, res) {
 const addUserPropertyOnRecombee = async function (req, res) {
     // Define the properties to be added (initialize)
             const propertiesToAdd = [
-                { name: "accountName", type: "string" },
-                { name: "isArtist", type: "boolean" },
-                { name: "timestamp", type: "timestamp" },
+              { name: "bio", type: "string" },
+              { name: "artistLink", type: "string" },
             ];
 
             // Create an array of AddUserProperty requests
