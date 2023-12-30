@@ -4,8 +4,13 @@ require("dotenv").config();
 const { MONGO_URI } = process.env;
 const { SyncRecombee } = require("./utils/SyncRecombee");
 
-
-const { AddUser, AddUserProperty, SetUserValues, RecommendItemsToUser } = require("recombee-api-client").requests;
+const {
+  AddUser,
+  AddUserProperty,
+  SetUserValues,
+  RecommendItemsToUser,
+  SetItemValues,
+} = require("recombee-api-client").requests;
 
 const options = {
     useNewUrlParser: true,
@@ -25,9 +30,9 @@ const postNewUserWithAccountName = async (req, res) => {
         timestamp,
     };
 
-    const client = await new MongoClient(MONGO_URI, options);
-    const { recombeeClient } = require("./utils/constants");
     try {
+        const client = await new MongoClient(MONGO_URI, options);
+        const { recombeeClient } = require("./utils/constants");
         client.connect();
         const db = client.db("db-name");
         const result = await db.collection("userAccounts").insertOne(user);
@@ -40,35 +45,32 @@ const postNewUserWithAccountName = async (req, res) => {
 
             // Set values for the user properties
             const userProperties = {
-                accountName: accountName,
-                isArtist: isArtist,
-                timestamp: timestamp, 
-            };
+            accountName: accountName,
+            isArtist: isArtist,
+            timestamp: timestamp,
+        };
 
-            // Create a SetUserValues request with both the user ID and properties
-            const setUserValuesRequest = new SetUserValues(
-                userId,
-                userProperties
-            );
+        // Create a SetUserValues request with both the user ID and properties
+        const setUserValuesRequest = new SetUserValues(userId, userProperties);
 
-            // Send the request to set user values
-            await recombeeClient.send(setUserValuesRequest);
+        // Send the request to set user values
+        await recombeeClient.send(setUserValuesRequest);
 
-            console.log("User and properties added successfully!");
-        } else {
+        console.log("User and properties added successfully!");
+      } else {
         console.log("Failed to create user in MongoDB.");
         res.status(400).json({
-            status: 400,
-            message: "Failed to create user in MongoDB.",
+          status: 400,
+          message: "Failed to create user in MongoDB.",
         });
-        }
+      }
 
-        res.status(200).json({ status: 200, result: result });
+      res.status(200).json({ status: 200, result: result });
     } catch (e) {
-        console.error("Error creating user:", e.message);
-        res.status(500).json({ status: 500, message: "Internal server error" });
+      console.error("Error creating user:", e.message);
+      res.status(500).json({ status: 500, message: "Internal server error" });
     } finally {
-        client.close();
+      client.close();
     }
 };
 
@@ -368,14 +370,19 @@ const getApprovedVideoContent = async (req, res) => {
 };
 
 const deleteContent = async (req, res) => {
-    const client = new MongoClient(MONGO_URI, options);
+    
 
     try {
         console.log("Delete endpoint reached.");
+        const client = new MongoClient(MONGO_URI, options);
+        const { recombeeClient } = require("./utils/constants");
         await client.connect();
         const collection = client.db('db-name').collection('ContentMetaData')
-        const videoId = req.query.videoId;
-        const userId = req.headers['user-id']; // Extract user ID from the custom header
+        // const videoId = req.query.videoId;
+        const videoId = "bca3fbd5-7dc0-4cf2-af55-662f0da5c5f3"
+
+        // const userId = req.headers['user-id']; // Extract user ID from the custom header
+        const userId = "testtest1@hotmail.com"
 
         // Check if the user making the request is the owner of the content
         const contentDocument = await collection.findOne({ videoId, videoOwner: userId });
@@ -389,6 +396,21 @@ const deleteContent = async (req, res) => {
 
         if (result.deletedCount === 0) {
             return res.status(404).json({ message: 'Video not found' });
+        }
+        else {
+          // Set values for the user properties
+            const itemProperties = {
+                deleted: true,
+            };
+
+            // Create a SetUserValues request with both the user ID and properties
+            const setItemValuesRequest = new SetItemValues(
+                videoId,
+                itemProperties
+            );
+
+            // Send the request to set user values
+            await recombeeClient.send(setItemValuesRequest);
         }
 
         res.status(200).json({ message: 'Video deleted successfully' });
