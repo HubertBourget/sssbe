@@ -378,11 +378,8 @@ const deleteContent = async (req, res) => {
         const { recombeeClient } = require("./utils/constants");
         await client.connect();
         const collection = client.db('db-name').collection('ContentMetaData')
-        // const videoId = req.query.videoId;
-        const videoId = "bca3fbd5-7dc0-4cf2-af55-662f0da5c5f3"
-
-        // const userId = req.headers['user-id']; // Extract user ID from the custom header
-        const userId = "testtest1@hotmail.com"
+        const videoId = req.query.videoId;
+        const userId = req.headers['user-id']; // Extract user ID from the custom header
 
         // Check if the user making the request is the owner of the content
         const contentDocument = await collection.findOne({ videoId, videoOwner: userId });
