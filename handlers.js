@@ -583,6 +583,7 @@ const addUserOnRecombee = async (req, res) => {
     }catch (e){
         console.error("Error in addUserOnRecombee operations:", e.message);
         console.error("Error details:", e);
+        res.status(500).json({ status: 500, message: "Internal server error" });
     }
 }
 
