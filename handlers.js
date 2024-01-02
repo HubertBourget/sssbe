@@ -505,8 +505,8 @@ const syncCatalog = async (req, res) => {
 };
 
 const getRecommendations = async (req, res) => {
+    const userId = req.params.userId;
     try{
-        const userId = req.params.userId;
         const { recombeeClient } = require("./utils/constants");
         const count = 3;
 
@@ -518,10 +518,6 @@ const getRecommendations = async (req, res) => {
         await recombeeClient.send(getRecommendationsRequest).then((response) => {
             console.log(response);
     })
-
-
-
-
 
     }
     catch (err){
