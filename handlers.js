@@ -30,8 +30,9 @@ const postNewUserWithAccountName = async (req, res) => {
         timestamp,
     };
 
+    const client = await new MongoClient(MONGO_URI, options);
     try {
-        const client = await new MongoClient(MONGO_URI, options);
+        
         const { recombeeClient } = require("./utils/constants");
         client.connect();
         const db = client.db("db-name");
@@ -57,21 +58,21 @@ const postNewUserWithAccountName = async (req, res) => {
         await recombeeClient.send(setUserValuesRequest);
 
         console.log("User and properties added successfully!");
-      } else {
-        console.log("Failed to create user in MongoDB.");
-        res.status(400).json({
-          status: 400,
-          message: "Failed to create user in MongoDB.",
-        });
-      }
+        } else {
+            console.log("Failed to create user in MongoDB.");
+            res.status(400).json({
+            status: 400,
+            message: "Failed to create user in MongoDB.",
+            });
+        }
 
-      res.status(200).json({ status: 200, result: result });
-    } catch (e) {
-      console.error("Error creating user:", e.message);
-      res.status(500).json({ status: 500, message: "Internal server error" });
-    } finally {
-      client.close();
-    }
+        res.status(200).json({ status: 200, result: result });
+        } catch (e) {
+        console.error("Error creating user:", e.message);
+        res.status(500).json({ status: 500, message: "Internal server error" });
+        } finally {
+        client.close();
+        }
 };
 
 const postContentMetaData = async (req, res) => {
