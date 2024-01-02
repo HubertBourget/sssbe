@@ -554,7 +554,7 @@ const getRecommendations = async (req, res) => {
 };
 
 //Archived for later use:
-const addUserPropertyOnRecombee = async function (req, res) {
+const addUserPropertyOnRecombee = async (req, res) => {
     // Define the properties to be added (initialize)
             const propertiesToAdd = [
               { name: "bio", type: "string" },
@@ -572,6 +572,18 @@ const addUserPropertyOnRecombee = async function (req, res) {
                 recombeeClient.send(request)
                 )
             );
+}
+
+//manual addUser on rRecombee
+const addUserOnRecombee = async (req, res) => {
+    const userId = "xxxXXXYourNameXXXxxx";//manually set the userId here
+    try{
+        const { recombeeClient } = require("./utils/constants");
+        await recombeeClient.send(new AddUser(userId));
+    }catch (e){
+        console.error("Error in addUserOnRecombee operations:", e.message);
+        console.error("Error details:", e);
+    }
 }
 
 
@@ -594,4 +606,5 @@ module.exports = {
     decodeCreds,
     syncCatalog,
     getRecommendations,
+    addUserOnRecombee,
 };

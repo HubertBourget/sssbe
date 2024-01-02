@@ -22,6 +22,7 @@ const {
   decodeCreds,
   syncCatalog,
   getRecommendations,
+  addUserOnRecombee,
 } = require("./handlers");
 
 const {
@@ -61,6 +62,7 @@ express()
   //Recombee:
   .get("/api/syncCatalog", syncCatalog)
   .get("/api/getRecommendations/:userId", getRecommendations)
+  .post("/api/addUserOnRecombee")//For Manual Insertion Only!
 
   .listen(PORT, () => {
     console.log(`Server launched on port ${PORT}`);
