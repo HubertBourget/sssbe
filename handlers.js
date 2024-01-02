@@ -510,20 +510,6 @@ const getRecommendations = async (req, res) => {
         const { recombeeClient } = require("./utils/constants");
         const count = 3;
 
-        try {
-            await recombeeClient.getUser(userId);
-            } catch (error) {
-            // If the user does not exist, create the user
-            if (error.statusCode === 404) {
-                console.log("Creating user for UserId: " + userId);
-                await recombeeClient.createUser(userId);
-            } else {
-                // Handle other errors
-                console.error('Error checking user existence:', error);
-                throw error;
-            }
-        }
-
         console.log("getRecommendations's UserId is: " + userId);
 
         const getRecommendationsRequest = new RecommendItemsToUser(userId, count, {
@@ -532,15 +518,15 @@ const getRecommendations = async (req, res) => {
         await recombeeClient.send(getRecommendationsRequest).then((response) => {
             console.log(response);
     })
-    .catch((error) => {
-        console.log(error);
-    });
+
 
 
 
 
     }
     catch (err){
+        const addUserRequest = new AddUser(userId);
+        await recombeeClient.send(addUserRequest);
         console.log("Error in File-RecombeeController > Method-getRecommendations:", err);
         return res.status(500).json({
         msg: "Internal server error",
