@@ -580,6 +580,7 @@ const addUserOnRecombee = async (req, res) => {
     try{
         const { recombeeClient } = require("./utils/constants");
         await recombeeClient.send(new AddUser(userId));
+        res.status(200).json({ status: 200, message: "User added successfuly on Recombee." });
     }catch (e){
         console.error("Error in addUserOnRecombee operations:", e.message);
         console.error("Error details:", e);
