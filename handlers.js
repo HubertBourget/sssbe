@@ -514,6 +514,7 @@ const getRecommendations = async (req, res) => {
 
         const getRecommendationsRequest = new RecommendItemsToUser(userId, count, {
             'scenario': 'scenario_1',
+            'cascadeCreate': true,
         });
         await recombeeClient.send(getRecommendationsRequest).then((response) => {
             console.log(response);
@@ -521,8 +522,6 @@ const getRecommendations = async (req, res) => {
 
     }
     catch (err){
-        const addUserRequest = new AddUser(userId);
-        await recombeeClient.send(addUserRequest);
         console.log("Error in File-RecombeeController > Method-getRecommendations:", err);
         return res.status(500).json({
         msg: "Internal server error",
