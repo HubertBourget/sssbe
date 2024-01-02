@@ -370,11 +370,8 @@ const getApprovedVideoContent = async (req, res) => {
 };
 
 const deleteContent = async (req, res) => {
-    
-
+    const client = new MongoClient(MONGO_URI, options);
     try {
-        console.log("Delete endpoint reached.");
-        const client = new MongoClient(MONGO_URI, options);
         const { recombeeClient } = require("./utils/constants");
         await client.connect();
         const collection = client.db('db-name').collection('ContentMetaData')
