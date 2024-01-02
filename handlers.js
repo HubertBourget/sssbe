@@ -32,20 +32,16 @@ const postNewUserWithAccountName = async (req, res) => {
 
     const client = await new MongoClient(MONGO_URI, options);
     try {
-        
         const { recombeeClient } = require("./utils/constants");
         client.connect();
         const db = client.db("db-name");
-        const result = await db.collection("userAccounts").insertOne(user);
 
-        // If the user was successfully created in MongoDB, proceed to add to Recombee
-        if (result.insertedId) {
-            const userId = email;
-            const addUserRequest = new AddUser(userId);
-            await recombeeClient.send(addUserRequest);
+        // Add the user to Recombee
+        const userId = email;
+        await recombeeClient.send(new AddUser(userId));
 
-            // Set values for the user properties
-            const userProperties = {
+        // Set values for the user properties
+        const userProperties = {
             accountName: accountName,
             isArtist: isArtist,
             timestamp: timestamp,
@@ -54,26 +50,37 @@ const postNewUserWithAccountName = async (req, res) => {
         // Create a SetUserValues request with both the user ID and properties
         const setUserValuesRequest = new SetUserValues(userId, userProperties);
 
+        // Continue with MongoDB operations (inserting the user)
+        const result = await db.collection("userAccounts").insertOne(user);
+
         // Send the request to set user values
         await recombeeClient.send(setUserValuesRequest);
 
-        console.log("User and properties added successfully!");
+        console.log("User and properties added successfully to Recombee!");
+
+        if (result.insertedId) {
+            console.log("User added to MongoDB successfully!");
+            res.status(200).json({ status: 200, result: result });
         } else {
             console.log("Failed to create user in MongoDB.");
             res.status(400).json({
-            status: 400,
-            message: "Failed to create user in MongoDB.",
+                status: 400,
+                message: "Failed to create user in MongoDB.",
             });
         }
-
-        res.status(200).json({ status: 200, result: result });
-        } catch (e) {
+    } catch (e) {
         console.error("Error creating user:", e.message);
+
+        // Log additional information about the error
+        console.error("Error details:", e);
+
+        // Continue with appropriate response to the client
         res.status(500).json({ status: 500, message: "Internal server error" });
-        } finally {
+    } finally {
         client.close();
-        }
+    }
 };
+
 
 const postContentMetaData = async (req, res) => {
     const { videoOwner, videoId, timestamp,  fileUrl, isOnlyAudio, b_isPreparedForReview, b_hasBeenReviewed, b_isApproved } = req.body;
