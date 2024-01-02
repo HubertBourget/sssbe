@@ -506,8 +506,8 @@ const syncCatalog = async (req, res) => {
 
 const getRecommendations = async (req, res) => {
     const userId = req.params.userId;
+    const { recombeeClient } = require("./utils/constants");
     try{
-        const { recombeeClient } = require("./utils/constants");
         const count = 3;
 
         console.log("getRecommendations's UserId is: " + userId);
