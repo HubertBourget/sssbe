@@ -36,50 +36,65 @@ const postNewUserWithAccountName = async (req, res) => {
         client.connect();
         const db = client.db("db-name");
 
-        // Add the user to Recombee
-        const userId = email;
-        await recombeeClient.send(new AddUser(userId));
+        // First try-catch block for MongoDB operations
+        try {
+            // Add the user to Recombee
+            const userId = email;
+            
 
-        // Set values for the user properties
-        const userProperties = {
-            accountName: accountName,
-            isArtist: isArtist,
-            timestamp: timestamp,
-        };
+            // Continue with MongoDB operations (inserting the user)
+            const result = await db.collection("userAccounts").insertOne(user);
 
-        // Create a SetUserValues request with both the user ID and properties
-        const setUserValuesRequest = new SetUserValues(userId, userProperties);
+            if (result.insertedId) {
+                console.log("User added to MongoDB successfully!");
+                await recombeeClient.send(new AddUser(userId));
+                res.status(200).json({ status: 200, result: result });
+            } else {
+                console.log("Failed to create user in MongoDB.");
+                res.status(400).json({
+                    status: 400,
+                    message: "Failed to create user in MongoDB.",
+                });
+            }
+        } catch (mongoError) {
+            console.error("Error in MongoDB operations:", mongoError.message);
+            console.error("Error details:", mongoError);
 
-        // Continue with MongoDB operations (inserting the user)
-        const result = await db.collection("userAccounts").insertOne(user);
-
-        // Send the request to set user values
-        await recombeeClient.send(setUserValuesRequest);
-
-        console.log("User and properties added successfully to Recombee!");
-
-        if (result.insertedId) {
-            console.log("User added to MongoDB successfully!");
-            res.status(200).json({ status: 200, result: result });
-        } else {
-            console.log("Failed to create user in MongoDB.");
-            res.status(400).json({
-                status: 400,
-                message: "Failed to create user in MongoDB.",
-            });
+            // Continue with appropriate response to the client
+            res.status(500).json({ status: 500, message: "Internal server error" });
         }
-    } catch (e) {
-        console.error("Error creating user:", e.message);
 
-        // Log additional information about the error
-        console.error("Error details:", e);
+        // Second try-catch block for Recombee operations
+        try {
+            // Set values for the user properties
+            const userId = email;
+            const userProperties = {
+                accountName: accountName,
+                isArtist: isArtist,
+                timestamp: timestamp,
+            };
 
+            // Create a SetUserValues request with both the user ID and properties
+            const setUserValuesRequest = new SetUserValues(userId, userProperties);
+
+            // Send the request to set user values
+            await recombeeClient.send(setUserValuesRequest);
+
+            console.log("User properties added to Recombee successfully!");
+        } catch (recombeeError) {
+            console.error("Error in Recombee operations:", recombeeError.message);
+            console.error("Error details:", recombeeError);
+            // Log the error, but continue with the function execution
+        }
+    } catch (mainError) {
+        console.error("Error in the main function:", mainError.message);
         // Continue with appropriate response to the client
         res.status(500).json({ status: 500, message: "Internal server error" });
     } finally {
         client.close();
     }
 };
+
 
 
 const postContentMetaData = async (req, res) => {
