@@ -576,7 +576,7 @@ const addUserPropertyOnRecombee = async (req, res) => {
 
 //manual addUser on rRecombee
 const addUserOnRecombee = async (req, res) => {
-    const userId = "xxxXXXYourNameXXXxxx";//manually set the userId here
+    const userId = req.params.userId;
     try{
         const { recombeeClient } = require("./utils/constants");
         await recombeeClient.send(new AddUser(userId));
