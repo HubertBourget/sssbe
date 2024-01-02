@@ -120,7 +120,6 @@ const getPreReviewedVideoList = async (req, res) => {
 
 const updateContentMetaData = async (req, res) => {
     const { videoId, b_isPreparedForReview, title, description, category, selectedImageThumbnail, tags } = req.body;
-    console.log(req.body);
     if (!videoId) {
         return res.status(400).json({ error: "Missing videoId parameter" });
     }
@@ -508,9 +507,24 @@ const syncCatalog = async (req, res) => {
 const getRecommendations = async (req, res) => {
     try{
         const userId = req.params.userId;
-        console.log("getRecommendations's UserId is: " + userId);
         const { recombeeClient } = require("./utils/constants");
         const count = 3;
+
+        try {
+            await recombeeClient.getUser(userId);
+            } catch (error) {
+            // If the user does not exist, create the user
+            if (error.statusCode === 404) {
+                console.log("Creating user for UserId: " + userId);
+                await recombeeClient.createUser(userId);
+            } else {
+                // Handle other errors
+                console.error('Error checking user existence:', error);
+                throw error;
+            }
+        }
+
+        console.log("getRecommendations's UserId is: " + userId);
 
         const getRecommendationsRequest = new RecommendItemsToUser(userId, count, {
             'scenario': 'scenario_1',
