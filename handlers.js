@@ -574,7 +574,7 @@ const addUserPropertyOnRecombee = async (req, res) => {
             );
 }
 
-//manual addUser on rRecombee
+//manual addUser on Recombee
 const addUserOnRecombee = async (req, res) => {
     const userId = req.params.userId;
     try{
