@@ -587,7 +587,39 @@ const addUserOnRecombee = async (req, res) => {
         res.status(500).json({ status: 500, message: "Internal server error" });
     }
 }
+//artistLink STRING bio STRING isArtist BOOLEAN timestamp TIMESTAMP
+//manual addUser on Recombee
+const setUserOnRecombee = async (req, res) => {
+    const userId = req.params.userId;
+    try{
+        const { recombeeClient } = require("./utils/constants");
+            const userProperties = {
+                accountName: 'accountName',
+                artistLink: 'artistLink',
+                bio: 'bio',
+                isArtist: true,
+                timestamp: new Date().toISOString(),
+            };
 
+            // Create a SetUserValues request with both the user ID and properties
+            const setUserValuesRequest = new SetUserValues(userId, userProperties);
+
+            // Send the request to set user values
+            await recombeeClient.send(setUserValuesRequest);
+
+
+
+
+        res.status(200).json({ status: 200, message: "User added successfuly on Recombee." });
+
+
+        
+    }catch (e){
+        console.error("Error in addUserOnRecombee operations:", e.message);
+        console.error("Error details:", e);
+        res.status(500).json({ status: 500, message: "Internal server error" });
+    }
+}
 
 module.exports = {
     getServerHomePage,
@@ -609,4 +641,5 @@ module.exports = {
     syncCatalog,
     getRecommendations,
     addUserOnRecombee,
+    setUserOnRecombee
 };
