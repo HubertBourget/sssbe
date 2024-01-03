@@ -63,8 +63,8 @@ express()
   //Recombee:
   .get("/api/syncCatalog", syncCatalog)
   .get("/api/getRecommendations/:userId", getRecommendations)
-  .post("/api/addUserOnRecombee/:userId", addUserOnRecombee) //For Manual Insertion Only!
-  .post("/api/setUserOnRecombee/:userId", setUserOnRecombee) //For Manual Insertion Only!
+  // .post("/api/addUserOnRecombee/:userId", addUserOnRecombee) //For Manual Insertion Only!
+  // .post("/api/setUserOnRecombee/:userId", setUserOnRecombee) //For Manual Insertion Only!
 
   .listen(PORT, () => {
     console.log(`Server launched on port ${PORT}`);
