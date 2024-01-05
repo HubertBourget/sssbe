@@ -530,7 +530,8 @@ const syncCatalog = async (req, res) => {
 const getRecommendations = async (req, res) => {
     const userId = req.params.userId;
     const { recombeeClient } = require("./utils/constants");
-    try{
+    
+    try {
         const count = 3;
 
         console.log("getRecommendations's UserId is: " + userId);
@@ -539,19 +540,21 @@ const getRecommendations = async (req, res) => {
             'scenario': 'scenario_1',
             'cascadeCreate': true,
         });
-        await recombeeClient.send(getRecommendationsRequest).then((response) => {
-            console.log(response);
-    })
 
-    }
-    catch (err){
+        const response = await recombeeClient.send(getRecommendationsRequest);
+        console.log(response);
+
+        return res.json(response);
+
+    } catch (err) {
         console.log("Error in File-RecombeeController > Method-getRecommendations:", err);
         return res.status(500).json({
-        msg: "Internal server error",
-        error: err.message || "An error occurred.",
+            msg: "Internal server error",
+            error: err.message || "An error occurred.",
         });
     }
 };
+
 
 //Archived for later use:
 const addUserPropertyOnRecombee = async (req, res) => {
