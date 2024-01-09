@@ -459,13 +459,13 @@ const { albumId, owner, timestamp } = req.body;
 }
 
 const postAlbumImage = async (req, res) => {
-    const { albumImageUrl, owner } = req.body; 
+    const { albumImageUrl, albumId } = req.body; 
     const client = await MongoClient.connect(MONGO_URI, options);
     try {
         const db = client.db("db-name");
         const collection = db.collection("AlbumMetaData");
 
-        const query = { "owner": owner };
+        const query = { "albumId": albumId };
         const update = {
             $set: {
                 albumImageUrl,
@@ -476,7 +476,7 @@ const postAlbumImage = async (req, res) => {
         const result = await collection.findOneAndUpdate(query, update, options);
 
         if (!result.value) {
-            return res.status(404).json({ error: "No document found with that email" });
+            return res.status(404).json({ error: "No document found with that albumId" });
         }
 
         return res.status(200).json({ status: 200, result: result.value });
