@@ -26,6 +26,7 @@ const {
   setUserOnRecombee,
   postNewAlbum,
   postAlbumImage,
+  updateAlbumMetaData,
 } = require("./handlers");
 
 const {
@@ -59,6 +60,7 @@ express()
   .delete("/api/deleteContent", deleteContent)
   .post("/api/postNewAlbum", postNewAlbum)
   .post("/api/postAlbumImage", postAlbumImage)
+  .post("/api/updateAlbumMetaData", updateAlbumMetaData)
 
   //Key encryption:
   .post("/api/encodeCreds", encodeCreds)
