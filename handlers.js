@@ -96,9 +96,9 @@ const postNewUserWithAccountName = async (req, res) => {
 };
 
 const postContentMetaData = async (req, res) => {
-    const { videoOwner, videoId, timestamp,  fileUrl, isOnlyAudio, b_isPreparedForReview, b_hasBeenReviewed, b_isApproved, albumId } = req.body;
+    const { owner, videoId, timestamp,  fileUrl, isOnlyAudio, b_isPreparedForReview, b_hasBeenReviewed, b_isApproved, albumId } = req.body;
     const ContentMetaData = {
-        videoOwner,
+        owner,
         videoId,
         timestamp,
         fileUrl,
@@ -127,7 +127,7 @@ const getPreReviewedVideoList = async (req, res) => {
         await client.connect();
         const collection = client.db('db-name').collection('ContentMetaData');
         const videos = await collection.find({
-            videoOwner: req.query.videoOwner,
+            owner: req.query.owner,
             b_isPreparedForReview: false
         }).toArray();
         res.json(videos);
@@ -360,7 +360,7 @@ const getContentByArtist = async (req, res) => {
 
         await client.connect();
         const collection = client.db('db-name').collection('ContentMetaData');
-        const contentDocuments = await collection.find({ videoOwner: artistId }).toArray();
+        const contentDocuments = await collection.find({ owner: artistId }).toArray();
         res.json(contentDocuments);
     } catch (error) {
         console.error(error);
@@ -399,7 +399,7 @@ const deleteContent = async (req, res) => {
         const userId = req.headers['user-id']; // Extract user ID from the custom header
 
         // Check if the user making the request is the owner of the content
-        const contentDocument = await collection.findOne({ videoId, videoOwner: userId });
+        const contentDocument = await collection.findOne({ videoId, owner: userId });
 
         if (!contentDocument) {
             return res.status(404).json({ message: 'Video not found or unauthorized' });
@@ -437,9 +437,9 @@ const deleteContent = async (req, res) => {
 };
 
 const postNewAlbum = async (req, res) => {
-const { albumId, videoOwner, timestamp } = req.body;
+const { albumId, owner, timestamp } = req.body;
     const AlbumMetaData = {
-        videoOwner,
+        owner,
         timestamp,
         albumId,
         albumName: '',
@@ -463,7 +463,7 @@ const postAlbumImage = async (req, res) => {
     const client = await MongoClient.connect(MONGO_URI, options);
     try {
         const db = client.db("db-name");
-        const collection = db.collection("AlbumCovers");
+        const collection = db.collection("db-name.AlbumMetaData");
 
         const query = { "email": email };
         const update = {
