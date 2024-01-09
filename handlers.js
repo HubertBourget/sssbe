@@ -459,13 +459,13 @@ const { albumId, owner, timestamp } = req.body;
 }
 
 const postAlbumImage = async (req, res) => {
-    const { albumImageUrl, email } = req.body; 
+    const { albumImageUrl, owner } = req.body; 
     const client = await MongoClient.connect(MONGO_URI, options);
     try {
         const db = client.db("db-name");
         const collection = db.collection("AlbumMetaData");
 
-        const query = { "email": email };
+        const query = { "owner": owner };
         const update = {
             $set: {
                 albumImageUrl,
