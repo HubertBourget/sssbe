@@ -463,7 +463,7 @@ const postAlbumImage = async (req, res) => {
     const client = await MongoClient.connect(MONGO_URI, options);
     try {
         const db = client.db("db-name");
-        const collection = db.collection("db-name.AlbumMetaData");
+        const collection = db.collection("AlbumMetaData");
 
         const query = { "email": email };
         const update = {
