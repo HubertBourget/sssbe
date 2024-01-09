@@ -509,7 +509,7 @@ const { albumId, title, description, visibility } = req.body;
         const result = await collection.findOneAndUpdate(query, update, options);
 
         if (!result.value) {
-            return res.status(404).json({ error: "No document found with that albumId" });
+            return res.status(404).json({ error: "No document found with that albumId: ", albumId });
         }
 
         return res.status(200).json({ status: 200, result: result.value });
@@ -520,9 +520,6 @@ const { albumId, title, description, visibility } = req.body;
         client.close();
     }
 }
-
-
-
 
 const encodeCreds = async (req, res) => {
     try {
