@@ -445,6 +445,7 @@ const { albumId, videoOwner, timestamp } = req.body;
         videoOwner,
         timestamp,
         albumId,
+        albumName: '',
     };
 
     const client = await new MongoClient(MONGO_URI, options);
