@@ -95,8 +95,6 @@ const postNewUserWithAccountName = async (req, res) => {
     }
 };
 
-
-
 const postContentMetaData = async (req, res) => {
     const { videoOwner, videoId, timestamp,  fileUrl, isOnlyAudio, b_isPreparedForReview, b_hasBeenReviewed, b_isApproved, albumId } = req.body;
     const ContentMetaData = {
@@ -108,7 +106,6 @@ const postContentMetaData = async (req, res) => {
         b_isPreparedForReview: b_isPreparedForReview,
         b_hasBeenReviewed: b_hasBeenReviewed,
         b_isApproved: b_isApproved,
-        albumId: albumId,
     };
 
     const client = await new MongoClient(MONGO_URI, options);
@@ -461,6 +458,36 @@ const { albumId, videoOwner, timestamp } = req.body;
     }
 }
 
+const postAlbumImage = async (req, res) => {
+    const { albumImageUrl, email } = req.body; 
+    const client = await MongoClient.connect(MONGO_URI, options);
+    try {
+        const db = client.db("db-name");
+        const collection = db.collection("AlbumCovers");
+
+        const query = { "email": email };
+        const update = {
+            $set: {
+                albumImageUrl,
+            },
+        };
+        const options = { returnOriginal: false };
+
+        const result = await collection.findOneAndUpdate(query, update, options);
+
+        if (!result.value) {
+            return res.status(404).json({ error: "No document found with that email" });
+        }
+
+        return res.status(200).json({ status: 200, result: result.value });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: error.message });
+    } finally {
+        client.close();
+    }
+}
+
 const encodeCreds = async (req, res) => {
     try {
     if (!req.body) {
@@ -661,5 +688,6 @@ module.exports = {
     getRecommendations,
     addUserOnRecombee,
     setUserOnRecombee,
-    postNewAlbum
+    postNewAlbum,
+    postAlbumImage,
 };
