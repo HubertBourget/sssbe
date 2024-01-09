@@ -24,6 +24,7 @@ const {
   getRecommendations,
   addUserOnRecombee,
   setUserOnRecombee,
+  postNewAlbum,
 } = require("./handlers");
 
 const {
@@ -55,6 +56,7 @@ express()
   .get("/api/getContentByArtist", getContentByArtist)
   .get("/api/getApprovedVideoContent", getApprovedVideoContent)
   .delete("/api/deleteContent", deleteContent)
+  .post("/api/postNewAlbum", postNewAlbum)
 
   //Key encryption:
   .post("/api/encodeCreds", encodeCreds)

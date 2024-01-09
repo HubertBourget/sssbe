@@ -98,7 +98,7 @@ const postNewUserWithAccountName = async (req, res) => {
 
 
 const postContentMetaData = async (req, res) => {
-    const { videoOwner, videoId, timestamp,  fileUrl, isOnlyAudio, b_isPreparedForReview, b_hasBeenReviewed, b_isApproved } = req.body;
+    const { videoOwner, videoId, timestamp,  fileUrl, isOnlyAudio, b_isPreparedForReview, b_hasBeenReviewed, b_isApproved, albumId } = req.body;
     const ContentMetaData = {
         videoOwner,
         videoId,
@@ -108,6 +108,7 @@ const postContentMetaData = async (req, res) => {
         b_isPreparedForReview: b_isPreparedForReview,
         b_hasBeenReviewed: b_hasBeenReviewed,
         b_isApproved: b_isApproved,
+        albumId: albumId,
     };
 
     const client = await new MongoClient(MONGO_URI, options);
@@ -438,6 +439,27 @@ const deleteContent = async (req, res) => {
     }
 };
 
+const postNewAlbum = async (req, res) => {
+const { albumId, videoOwner, timestamp } = req.body;
+    const AlbumMetaData = {
+        videoOwner,
+        timestamp,
+        albumId,
+    };
+
+    const client = await new MongoClient(MONGO_URI, options);
+    try{
+        client.connect();
+        const db = client.db('db-name');
+        const result = await db.collection("AlbumMetaData").insertOne(AlbumMetaData);
+        res.status(200).json({ status: 200, result: result })
+        client.close();
+    }
+    catch (e){
+        res.status(400).json({ status: 400, message: e.message })
+    }
+}
+
 const encodeCreds = async (req, res) => {
     try {
     if (!req.body) {
@@ -637,5 +659,6 @@ module.exports = {
     syncCatalog,
     getRecommendations,
     addUserOnRecombee,
-    setUserOnRecombee
+    setUserOnRecombee,
+    postNewAlbum
 };
