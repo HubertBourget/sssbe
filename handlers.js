@@ -535,12 +535,17 @@ const updatePartialContentMetaData = async (req, res) => {
 
         const query = { videoId: videoId };
         const update = { $set: {} };
+        let hasValidFields = false;
 
-        // Dynamically add fields to update
         for (const [key, value] of Object.entries(updateFields)) {
             if (value !== undefined) {
                 update.$set[key] = value;
+                hasValidFields = true;
             }
+        }
+
+        if (!hasValidFields) {
+            return res.status(400).json({ error: "No valid fields to update" });
         }
 
         const options = { returnOriginal: false };
