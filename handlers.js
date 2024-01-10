@@ -96,7 +96,7 @@ const postNewUserWithAccountName = async (req, res) => {
 };
 
 const postContentMetaData = async (req, res) => {
-    const { owner, videoId, timestamp,  fileUrl, isOnlyAudio, b_isPreparedForReview, b_hasBeenReviewed, b_isApproved, isAudioOnly } = req.body;
+    const { owner, videoId, timestamp,  fileUrl, b_isPreparedForReview, b_hasBeenReviewed, b_isApproved, isOnlyAudio } = req.body;
     const ContentMetaData = {
         owner,
         videoId,
@@ -106,7 +106,6 @@ const postContentMetaData = async (req, res) => {
         b_isPreparedForReview: b_isPreparedForReview,
         b_hasBeenReviewed: b_hasBeenReviewed,
         b_isApproved: b_isApproved,
-        isAudioOnly,
     };
 
     const client = await new MongoClient(MONGO_URI, options);
@@ -161,7 +160,6 @@ const updateContentMetaData = async (req, res) => {
                 category: category,
                 selectedImageThumbnail: selectedImageThumbnail,
                 tags: tags,
-                // isAudioOnly is intentionally not included here
             }
         };
         const options = { returnOriginal: false };
