@@ -521,6 +521,44 @@ const { albumId, title, description, visibility } = req.body;
     }
 }
 
+const updatePartialContentMetaData = async (req, res) => {
+    const { videoId, ...updateFields } = req.body;
+
+    if (!videoId) {
+        return res.status(400).json({ error: "Missing videoId parameter" });
+    }
+
+    const client = await MongoClient.connect(MONGO_URI, options);
+    try {
+        const db = client.db("db-name");
+        const collection = db.collection("ContentMetaData");
+
+        const query = { videoId: videoId };
+        const update = { $set: {} };
+
+        // Dynamically add fields to update
+        for (const [key, value] of Object.entries(updateFields)) {
+            if (value !== undefined) {
+                update.$set[key] = value;
+            }
+        }
+
+        const options = { returnOriginal: false };
+        const result = await collection.findOneAndUpdate(query, update, options);
+
+        if (!result.value) {
+            return res.status(404).json({ error: "No document found with that videoId" });
+        }
+
+        return res.status(200).json({ status: 200, result: result.value });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: error.message });
+    } finally {
+        client.close();
+    }
+};
+
 const encodeCreds = async (req, res) => {
     try {
     if (!req.body) {
@@ -724,4 +762,5 @@ module.exports = {
     postNewAlbum,
     postAlbumImage,
     updateAlbumMetaData,
+    updatePartialContentMetaData,
 };
