@@ -159,7 +159,7 @@ const updateContentMetaData = async (req, res) => {
                 category: category,
                 selectedImageThumbnail: selectedImageThumbnail,
                 tags: tags,
-                isAudioOnly: isAudioOnly,
+                isAudioOnly: isAudioOnly
             },
         };
         const options = { returnOriginal: false };
