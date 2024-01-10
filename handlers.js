@@ -522,6 +522,7 @@ const { albumId, title, description, visibility } = req.body;
 }
 
 const updatePartialContentMetaData = async (req, res) => {
+    console.log('Received data:', req.body);
     const { videoId, ...updateFields } = req.body;
 
     if (!videoId) {
