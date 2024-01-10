@@ -141,7 +141,8 @@ const getPreReviewedVideoList = async (req, res) => {
 };
 
 const updateContentMetaData = async (req, res) => {
-    const { videoId, b_isPreparedForReview, title, description, category, selectedImageThumbnail, tags } = req.body;
+    const { videoId, b_isPreparedForReview, title, description, category, selectedImageThumbnail, tags, isAudioOnly } = req.body;
+
     if (!videoId) {
         return res.status(400).json({ error: "Missing videoId parameter" });
     }
@@ -152,18 +153,18 @@ const updateContentMetaData = async (req, res) => {
         const collection = db.collection("ContentMetaData");
 
         const query = { videoId: videoId };
-        const update = {
-            $set: {
-                b_isPreparedForReview: b_isPreparedForReview,
-                title: title,
-                description: description,
-                category: category,
-                selectedImageThumbnail: selectedImageThumbnail,
-                tags: tags,
-            },
-        };
-        const options = { returnOriginal: false };
+        const update = { $set: {} };
 
+        // Add fields to the update object only if they are defined
+        if(b_isPreparedForReview !== undefined) update.$set.b_isPreparedForReview = b_isPreparedForReview;
+        if(title !== undefined) update.$set.title = title;
+        if(description !== undefined) update.$set.description = description;
+        if(category !== undefined) update.$set.category = category;
+        if(selectedImageThumbnail !== undefined) update.$set.selectedImageThumbnail = selectedImageThumbnail;
+        if(tags !== undefined) update.$set.tags = tags;
+        if(isAudioOnly !== undefined) update.$set.isAudioOnly = isAudioOnly;
+
+        const options = { returnOriginal: false };
         const result = await collection.findOneAndUpdate(query, update, options);
 
         if (!result.value) {
@@ -178,6 +179,7 @@ const updateContentMetaData = async (req, res) => {
         client.close();
     }
 };
+
 
 const updateUserProfile = async (req, res) => {
     const { accountName, bio, artistLink, email } = req.body;
