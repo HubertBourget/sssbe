@@ -28,6 +28,7 @@ const {
   postAlbumImage,
   updateAlbumMetaData,
   updatePartialContentMetaData,
+  updateReviewStatus,
 } = require("./handlers");
 
 const {
@@ -63,6 +64,7 @@ express()
   .post("/api/postAlbumImage", postAlbumImage)
   .post("/api/updateAlbumMetaData", updateAlbumMetaData)
   .post("/api/updatePartialContentMetaData", updatePartialContentMetaData)
+  .post('/api/updateReviewStatus', updateReviewStatus)
 
   //Key encryption:
   .post("/api/encodeCreds", encodeCreds)

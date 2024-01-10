@@ -567,6 +567,39 @@ const updatePartialContentMetaData = async (req, res) => {
     }
 };
 
+const updateReviewStatus = async (req, res) => {
+    const { videoId, b_isPreparedForReview } = req.body;
+
+    // Input validation
+    if (!videoId || typeof b_isPreparedForReview !== 'boolean') {
+        return res.status(400).json({ message: 'Invalid request' });
+    }
+
+    // Create a new MongoDB client and connect
+    const client = await MongoClient.connect(MONGO_URI, options);
+    try {
+        const db = client.db("db-name");
+        const collection = db.collection("ContentMetaData");
+
+        const result = await collection.updateOne(
+            { videoId: videoId },
+            { $set: { b_isPreparedForReview: b_isPreparedForReview } }
+        );
+
+        if (result.modifiedCount === 0) {
+            return res.status(404).json({ message: 'Video not found or no update needed' });
+        }
+
+        res.json({ message: 'Review status updated successfully', videoId: videoId });
+    } catch (error) {
+        console.error('Error updating review status:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    } finally {
+        // Ensure that the client will close when you finish/error
+        await client.close();
+    }
+};
+
 const encodeCreds = async (req, res) => {
     try {
     if (!req.body) {
@@ -771,4 +804,5 @@ module.exports = {
     postAlbumImage,
     updateAlbumMetaData,
     updatePartialContentMetaData,
+    updateReviewStatus,
 };
