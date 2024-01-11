@@ -497,11 +497,11 @@ const { albumId, title, description, visibility, albumOrder } = req.body;
     try {
         const db = client.db("db-name");
         const collection = db.collection("AlbumMetaData");
-        console.log('updatealbummetadata: ',albumId, title, description, visibility, albumOrder)
+        console.log('updatealbummetadata: ', albumId, title, description, visibility, albumOrder)
         const query = { albumId: albumId };
         const update = {
             $set: {
-                title: title,
+                albumName: title,
                 description: description,
                 visibility: visibility,
                 albumOrder: albumOrder,
