@@ -491,7 +491,7 @@ const postAlbumImage = async (req, res) => {
 }
 
 const updateAlbumMetaData = async (req, res) => {
-const { albumId, title, description, visibility } = req.body;
+const { albumId, title, description, visibility, albumOrder } = req.body;
 
     const client = await MongoClient.connect(MONGO_URI, options);
     try {
@@ -504,6 +504,7 @@ const { albumId, title, description, visibility } = req.body;
                 title: title,
                 description: description,
                 visibility: visibility,
+                albumOrder: albumOrder,
             },
         };
         const options = { returnOriginal: false };
