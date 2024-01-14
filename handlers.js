@@ -96,7 +96,7 @@ const postNewUserWithAccountName = async (req, res) => {
 };
 
 const postContentMetaData = async (req, res) => {
-    const { owner, videoId, albumId, timestamp,  fileUrl, b_isPreparedForReview, b_hasBeenReviewed, b_isApproved, isOnlyAudio } = req.body;
+    const { owner, videoId, albumId, timestamp,  fileUrl, b_isPreparedForReview, b_hasBeenReviewed, b_isApproved, isOnlyAudio, visibility, category } = req.body;
     const ContentMetaData = {
         owner,
         videoId,
@@ -107,6 +107,8 @@ const postContentMetaData = async (req, res) => {
         b_isPreparedForReview: b_isPreparedForReview,
         b_hasBeenReviewed: b_hasBeenReviewed,
         b_isApproved: b_isApproved,
+        visibility: visibility,
+        category: category,
     };
 
     const client = await new MongoClient(MONGO_URI, options);
@@ -141,7 +143,7 @@ const getPreReviewedVideoList = async (req, res) => {
 };
 
 const updateContentMetaData = async (req, res) => {
-    const { videoId, b_isPreparedForReview, title, description, category, selectedImageThumbnail, tags, visibility } = req.body;
+    const { videoId, b_isPreparedForReview, title, description, category, selectedImageThumbnail, tags } = req.body;
 
     if (!videoId) {
         return res.status(400).json({ error: "Missing videoId parameter" });
@@ -161,7 +163,6 @@ const updateContentMetaData = async (req, res) => {
                 category: category,
                 selectedImageThumbnail: selectedImageThumbnail,
                 tags: tags,
-                visibility: visibility,
             }
         };
         const options = { returnOriginal: false };
