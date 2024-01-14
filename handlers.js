@@ -96,11 +96,10 @@ const postNewUserWithAccountName = async (req, res) => {
 };
 
 const postContentMetaData = async (req, res) => {
-    const { owner, videoId, albumId, timestamp,  fileUrl, b_isPreparedForReview, b_hasBeenReviewed, b_isApproved, isOnlyAudio, visibility, category } = req.body;
+    const { owner, videoId, timestamp,  fileUrl, b_isPreparedForReview, b_hasBeenReviewed, b_isApproved, isOnlyAudio, visibility, category } = req.body;
     const ContentMetaData = {
         owner,
         videoId,
-        albumId,
         timestamp,
         fileUrl,
         isOnlyAudio,
