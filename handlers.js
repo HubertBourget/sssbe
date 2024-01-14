@@ -141,7 +141,7 @@ const getPreReviewedVideoList = async (req, res) => {
 };
 
 const updateContentMetaData = async (req, res) => {
-    const { videoId, b_isPreparedForReview, title, description, category, selectedImageThumbnail, tags } = req.body;
+    const { videoId, b_isPreparedForReview, title, description, category, selectedImageThumbnail, tags, visibility } = req.body;
 
     if (!videoId) {
         return res.status(400).json({ error: "Missing videoId parameter" });
@@ -161,6 +161,7 @@ const updateContentMetaData = async (req, res) => {
                 category: category,
                 selectedImageThumbnail: selectedImageThumbnail,
                 tags: tags,
+                visibility: visibility,
             }
         };
         const options = { returnOriginal: false };
