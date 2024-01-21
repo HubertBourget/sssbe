@@ -635,6 +635,8 @@ const { videoId, coverImageUrl } = req.body;
 
 const postBannerImage = async (req, res) => {
     const { bannerImageUrl, email } = req.body; 
+    console.log("bannerImageUrl: ", bannerImageUrl);
+    console.log("email: ", email)
     const client = await MongoClient.connect(MONGO_URI, options);
     try {
         const db = client.db("db-name");
