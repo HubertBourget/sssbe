@@ -239,7 +239,6 @@ const getUserProfile = async (req, res) => {
     try {
         const db = client.db("db-name");
         const collection = db.collection('userAccounts');
-        console.log(req.params.userId)
         const user = await collection.findOne({ email: req.params.userId });
         
         if (!user) {
@@ -634,6 +633,36 @@ const { videoId, coverImageUrl } = req.body;
     }
 }
 
+const postBannerImage = async (req, res) => {
+    const { bannerImageUrl, email } = req.body; 
+    const client = await MongoClient.connect(MONGO_URI, options);
+    try {
+        const db = client.db("db-name");
+        const collection = db.collection("userAccounts");
+
+        const query = { "email": email };
+        const update = {
+            $set: {
+                bannerImageUrl,
+            },
+        };
+        const options = { returnOriginal: false };
+
+        const result = await collection.findOneAndUpdate(query, update, options);
+
+        if (!result.value) {
+            return res.status(404).json({ error: "No document found with that email" });
+        }
+
+        return res.status(200).json({ status: 200, result: result.value });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: error.message });
+    } finally {
+        client.close();
+    }
+}
+
 //Key encoding & decoding
 const encodeCreds = async (req, res) => {
     try {
@@ -841,4 +870,5 @@ module.exports = {
     updatePartialContentMetaData,
     updateReviewStatus,
     postCoverImage,
+    postBannerImage,
 };
