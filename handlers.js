@@ -247,7 +247,7 @@ const getUserProfile = async (req, res) => {
 
         const { accountName, bio, artistLink, profileImageUrl, artistTitle } = user;
 
-        return res.status(200).json({ accountName, bio, artistLink, profileImageUrl });
+        return res.status(200).json({ accountName, bio, artistLink, profileImageUrl, artistTitle });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Server error' });
