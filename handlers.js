@@ -183,7 +183,7 @@ const updateContentMetaData = async (req, res) => {
 
 
 const updateUserProfile = async (req, res) => {
-    const { accountName, bio, artistLink, email } = req.body;
+    const { accountName, bio, artistLink, email, artistTitle } = req.body;
 
     const client = await MongoClient.connect(MONGO_URI, options);
     try {
@@ -196,6 +196,7 @@ const updateUserProfile = async (req, res) => {
                 accountName,
                 bio,
                 artistLink,
+                artistTitle,
             },
         };
         const options = { returnOriginal: false };
