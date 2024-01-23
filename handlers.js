@@ -245,7 +245,7 @@ const getUserProfile = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const { accountName, bio, artistLink, profileImageUrl } = user;
+        const { accountName, bio, artistLink, profileImageUrl, artistTitle } = user;
 
         return res.status(200).json({ accountName, bio, artistLink, profileImageUrl });
     } catch (error) {
