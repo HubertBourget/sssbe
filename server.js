@@ -31,6 +31,7 @@ const {
   updateReviewStatus,
   postCoverImage,
   postBannerImage,
+  updateTrackThumbnail,
 } = require("./handlers");
 
 const {
@@ -69,6 +70,7 @@ express()
   .post('/api/updateReviewStatus', updateReviewStatus)
   .post('/api/postCoverImage', postCoverImage)
   .post('/api/postBannerImage', postBannerImage)
+  .post('/api/updateTrackThumbnail', updateTrackThumbnail)
 
   //Key encryption:
   .post("/api/encodeCreds", encodeCreds)

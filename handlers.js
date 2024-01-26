@@ -666,6 +666,34 @@ const postBannerImage = async (req, res) => {
     }
 }
 
+const updateTrackThumbnail = async (req, res) => {
+    const { videoId, thumbnailUrl } = req.body;
+    const db = client.db("db-name");
+
+    if (!videoId || !thumbnailUrl) {
+        return res.status(400).send("Missing videoId or thumbnailUrl");
+    }
+
+    try {
+        const tracksCollection = db.collection('tracks');
+
+        // Update the thumbnail URL for the given track
+        const updateResult = await tracksCollection.updateOne(
+            { _id: ObjectId(videoId) }, // Convert string ID to ObjectId
+            { $set: { thumbnailUrl: thumbnailUrl } }
+        );
+
+        if (updateResult.matchedCount === 0) {
+            return res.status(404).send("Track not found");
+        }
+
+        res.status(200).send("Thumbnail updated successfully");
+    } catch (error) {
+        console.error("Error updating track thumbnail:", error);
+        res.status(500).send("Internal Server Error");
+    }
+};
+
 //Key encoding & decoding
 const encodeCreds = async (req, res) => {
     try {
@@ -874,4 +902,5 @@ module.exports = {
     updateReviewStatus,
     postCoverImage,
     postBannerImage,
+    updateTrackThumbnail,
 };
