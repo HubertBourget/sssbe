@@ -676,11 +676,11 @@ const updateTrackThumbnail = async (req, res) => {
     }
 
     try {
-        const tracksCollection = db.collection('tracks');
+        const tracksCollection = db.collection('ContentMetaData');
 
         // Update the thumbnail URL for the given track
         const updateResult = await tracksCollection.updateOne(
-            { _id: ObjectId(videoId) }, // Convert string ID to ObjectId
+            { _id: videoId }, // No ObjectId conversion if videoId is a string
             { $set: { thumbnailUrl: thumbnailUrl } }
         );
 
@@ -692,8 +692,11 @@ const updateTrackThumbnail = async (req, res) => {
     } catch (error) {
         console.error("Error updating track thumbnail:", error);
         res.status(500).send("Internal Server Error");
+    } finally {
+        client.close();
     }
 };
+
 
 //Key encoding & decoding
 const encodeCreds = async (req, res) => {
