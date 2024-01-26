@@ -682,7 +682,7 @@ const updateTrackThumbnail = async (req, res) => {
 
         // Update the thumbnail URL for the given track
         const updateResult = await tracksCollection.updateOne(
-            { _id: videoId }, // No ObjectId conversion if videoId is a string
+            { videoId: videoId }, // No ObjectId conversion if videoId is a string
             { $set: { selectedImageThumbnail: thumbnailUrl } }
         );
 
