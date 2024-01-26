@@ -667,8 +667,9 @@ const postBannerImage = async (req, res) => {
 }
 
 const updateTrackThumbnail = async (req, res) => {
-    console.log("Endpoint reached")
     const { videoId, thumbnailUrl } = req.body;
+    console.log("videoId :", videoId)
+    console.log("thumbnailUrl :", thumbnailUrl)
     const client = await MongoClient.connect(MONGO_URI, options);
     const db = client.db("db-name");
 
@@ -682,7 +683,7 @@ const updateTrackThumbnail = async (req, res) => {
         // Update the thumbnail URL for the given track
         const updateResult = await tracksCollection.updateOne(
             { _id: videoId }, // No ObjectId conversion if videoId is a string
-            { $set: { thumbnailUrl: thumbnailUrl } }
+            { $set: { selectedImageThumbnail: thumbnailUrl } }
         );
 
         if (updateResult.matchedCount === 0) {
