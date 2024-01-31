@@ -32,6 +32,7 @@ const {
   postCoverImage,
   postBannerImage,
   updateTrackThumbnail,
+  getVideoMetadata,
 } = require("./handlers");
 
 const {
@@ -71,6 +72,7 @@ express()
   .post('/api/postCoverImage', postCoverImage)
   .post('/api/postBannerImage', postBannerImage)
   .post('/api/updateTrackThumbnail', updateTrackThumbnail)
+  .get("/api/getVideoMetadata/:videoId", getVideoMetadata)
 
   //Key encryption:
   .post("/api/encodeCreds", encodeCreds)

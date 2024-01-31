@@ -697,6 +697,43 @@ const updateTrackThumbnail = async (req, res) => {
     }
 };
 
+const getVideoMetadata = async (req, res) => {
+    const { videoId } = req.params;
+    const client = await new MongoClient(MONGO_URI, options);
+    
+    try {
+        await client.connect();
+        const db = client.db("db-name");
+        const videosCollection = db.collection('ContentMetaData'); 
+        
+        // Query for the video by videoId
+        const video = await videosCollection.findOne({ videoId: videoId }, {
+            projection: { videoOwner: 1, title: 1, selectedImageThumbnail: 1 }
+        });
+        
+        if (!video) {
+            // If no video is found, return a 404 response
+            return res.status(404).json({ message: 'Video not found' });
+        }
+        
+        // If a video is found, return the video metadata
+        // Adjusting the backend response
+        return res.status(200).json({
+            videoOwner: video.videoOwner,
+            title: video.title,
+            selectedImageThumbnail: video.selectedImageThumbnail || null
+        });
+
+        
+    } catch (error) {
+        console.error("Failed to retrieve video metadata:", error);
+        res.status(500).json({ message: 'Internal server error' });
+    } finally {
+        await client.close();
+    }
+};
+
+
 
 //Key encoding & decoding
 const encodeCreds = async (req, res) => {
@@ -907,4 +944,5 @@ module.exports = {
     postCoverImage,
     postBannerImage,
     updateTrackThumbnail,
+    getVideoMetadata,
 };
