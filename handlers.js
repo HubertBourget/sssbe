@@ -738,6 +738,39 @@ const getVideoMetadata = async (req, res) => {
     }
 };
 
+const getAlbumsByArtist = async (req, res) => {
+    const client = await new MongoClient(MONGO_URI, options);
+
+    try {
+        const { artistId } = req.query; // Assuming artistId is the email of the user
+        if (!artistId) {
+            return res.status(400).json({ message: 'Missing artistId parameter' });
+        }
+
+        await client.connect();
+        const db = client.db('db-name');
+        // Assuming 'Albums' is the collection where album data is stored
+        const albumsCollection = db.collection('AlbumMetaData');
+
+        // Find albums where the 'owner' field matches the artistId (user's email)
+        const albums = await albumsCollection.find({ owner: artistId }).toArray();
+
+        if(albums.length === 0) {
+            // If no albums are found, send a message indicating such
+            return res.status(404).json({ message: 'No albums found for the given artistId' });
+        }
+
+        res.json(albums);
+    } catch (error) {
+        console.error(`An error occurred fetching albums for artistId ${artistId}:`, error);
+        return res.status(500).json({ message: 'Server error' });
+    } finally {
+        if (client) {
+            await client.close();
+        }
+    }
+};
+
 
 
 //Key encoding & decoding
@@ -950,4 +983,5 @@ module.exports = {
     postBannerImage,
     updateTrackThumbnail,
     getVideoMetadata,
+    getAlbumsByArtist,
 };

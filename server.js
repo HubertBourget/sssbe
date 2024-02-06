@@ -33,6 +33,7 @@ const {
   postBannerImage,
   updateTrackThumbnail,
   getVideoMetadata,
+  getAlbumsByArtist,
 } = require("./handlers");
 
 const {
@@ -61,7 +62,7 @@ express()
   .get("/api/getContentById", getContentById)
   .get("/api/b_getUserExist/:userId", b_getUserExist)
   .post("/api/postNewUserWithAccountName", postNewUserWithAccountName)
-  .get("/api/getContentByArtist", getContentByArtist)
+  
   .get("/api/getApprovedVideoContent", getApprovedVideoContent)
   .delete("/api/deleteContent", deleteContent)
   .post("/api/postNewAlbum", postNewAlbum)
@@ -73,6 +74,8 @@ express()
   .post('/api/postBannerImage', postBannerImage)
   .post('/api/updateTrackThumbnail', updateTrackThumbnail)
   .get("/api/getVideoMetadata/:videoId", getVideoMetadata)
+  .get("/api/getAlbumsByArtist", getAlbumsByArtist)
+  
 
   //Key encryption:
   .post("/api/encodeCreds", encodeCreds)
