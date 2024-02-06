@@ -499,13 +499,12 @@ const postAlbumImage = async (req, res) => {
 }
 
 const updateAlbumMetaData = async (req, res) => {
-const { albumId, title, description, visibility, albumOrder } = req.body;
-
+    const { albumId, title, description, visibility, albumOrder, albumImageUrl } = req.body;
     const client = await MongoClient.connect(MONGO_URI, options);
     try {
         const db = client.db("db-name");
         const collection = db.collection("AlbumMetaData");
-        console.log('updatealbummetadata: ', albumId, title, description, visibility, albumOrder)
+        console.log('updatealbummetadata: ', albumId, title, description, visibility, albumOrder, albumImageUrl)
         const query = { albumId: albumId };
         const update = {
             $set: {
@@ -513,6 +512,7 @@ const { albumId, title, description, visibility, albumOrder } = req.body;
                 description: description,
                 visibility: visibility,
                 albumOrder: albumOrder,
+                albumImageUrl: albumImageUrl
             },
         };
         const options = { returnOriginal: false };
