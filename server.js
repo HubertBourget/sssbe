@@ -62,7 +62,7 @@ express()
   .get("/api/getContentById", getContentById)
   .get("/api/b_getUserExist/:userId", b_getUserExist)
   .post("/api/postNewUserWithAccountName", postNewUserWithAccountName)
-  
+  .get("/api/getContentByArtist", getContentByArtist)
   .get("/api/getApprovedVideoContent", getApprovedVideoContent)
   .delete("/api/deleteContent", deleteContent)
   .post("/api/postNewAlbum", postNewAlbum)
