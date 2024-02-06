@@ -771,6 +771,28 @@ const getAlbumsByArtist = async (req, res) => {
     }
 };
 
+const getAlbumById = async (req, res) => {
+    const client = await new MongoClient(MONGO_URI, options);
+    try {
+        await client.connect();
+        const db = client.db("db-name");
+        const albumsCollection = db.collection('AlbumMetaData');
+        const albumId = req.query.albumId; // Retrieve the albumId from query parameters
+        const albumDocument = await albumsCollection.findOne({ albumId: albumId });
+
+        if (!albumDocument) {
+            return res.status(404).json({ message: 'Album not found' });
+        }
+
+        return res.status(200).json(albumDocument);
+    } catch (error) {
+        console.error(`An error occurred while fetching album by id ${albumId}:`, error);
+        return res.status(500).json({ message: 'Server error' });
+    } finally {
+        await client.close();
+    }
+};
+
 
 
 //Key encoding & decoding
@@ -984,4 +1006,5 @@ module.exports = {
     updateTrackThumbnail,
     getVideoMetadata,
     getAlbumsByArtist,
+    getAlbumById,
 };

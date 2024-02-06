@@ -34,6 +34,7 @@ const {
   updateTrackThumbnail,
   getVideoMetadata,
   getAlbumsByArtist,
+  getAlbumById,
 } = require("./handlers");
 
 const {
@@ -75,6 +76,7 @@ express()
   .post('/api/updateTrackThumbnail', updateTrackThumbnail)
   .get("/api/getVideoMetadata/:videoId", getVideoMetadata)
   .get("/api/getAlbumsByArtist", getAlbumsByArtist)
+  .get("/api/getAlbumById", getAlbumById)
   
 
   //Key encryption:
