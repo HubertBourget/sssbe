@@ -332,19 +332,23 @@ const getCheckAccountName = async (req, res) => {
         const db = client.db("db-name");
         const collection = db.collection('userAccounts');
 
+        // Check if the account name is too short
         if (accountName.length < 3) {
-            return res.status(200).json({ taken: true, message: 'Account name already exists.' });
+            return res.status(200).json({ taken: true, message: 'Account names need to be at least 3 characters long.' });
         }
 
         const existingUser = await collection.findOne({ accountName });
 
-        if (existingUser && existingUser.email == email) {
+        // Check if the account name is taken by the current user
+        if (existingUser && existingUser.email === email) {
             return res.status(200).json({ taken: false, message: 'This is your current account name.' });
         }
+        // Check if the account name is taken by another user
         else if (existingUser) {
             return res.status(200).json({ taken: true, message: 'Account name already exists.' });
         }
 
+        // The account name is not taken and is of valid length
         return res.status(200).json({ taken: false, message: 'Account name is available.' });
     } catch (error) {
         console.error(error);
@@ -353,6 +357,7 @@ const getCheckAccountName = async (req, res) => {
         await client.close();
     }
 };
+
 
 const getContentByArtist = async (req, res) => {
     const client = await new MongoClient(MONGO_URI, options);
