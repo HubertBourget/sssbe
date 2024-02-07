@@ -504,20 +504,23 @@ const updateAlbumMetaData = async (req, res) => {
     try {
         const db = client.db("db-name");
         const collection = db.collection("AlbumMetaData");
-        console.log('updatealbummetadata: ', albumId, title, description, visibility, albumOrder, albumImageUrl)
+        
+        // Log for debugging
+        console.log('updateAlbumMetaData: ', albumId, title, description, visibility, albumOrder, albumImageUrl);
+
+        // Construct the update document based on provided fields
+        const updateDoc = { $set: {} };
+        if (title !== undefined) updateDoc.$set.albumName = title;
+        if (description !== undefined) updateDoc.$set.description = description;
+        if (visibility !== undefined) updateDoc.$set.visibility = visibility;
+        if (albumOrder !== undefined) updateDoc.$set.albumOrder = albumOrder;
+        // Conditionally include albumImageUrl if it's provided
+        if (albumImageUrl !== undefined) updateDoc.$set.albumImageUrl = albumImageUrl;
+
         const query = { albumId: albumId };
-        const update = {
-            $set: {
-                albumName: title,
-                description: description,
-                visibility: visibility,
-                albumOrder: albumOrder,
-                albumImageUrl: albumImageUrl
-            },
-        };
         const options = { returnOriginal: false };
 
-        const result = await collection.findOneAndUpdate(query, update, options);
+        const result = await collection.findOneAndUpdate(query, updateDoc, options);
 
         if (!result.value) {
             return res.status(404).json({ error: "No document found with that albumId: ", albumId });
@@ -530,7 +533,7 @@ const updateAlbumMetaData = async (req, res) => {
     } finally {
         client.close();
     }
-}
+};
 
 const updatePartialContentMetaData = async (req, res) => {
     console.log('Received data:', req.body);
