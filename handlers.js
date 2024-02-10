@@ -537,6 +537,7 @@ const updateAlbumMetaData = async (req, res) => {
 const updatePartialContentMetaData = async (req, res) => {
     console.log('Received data:', req.body);
     const { videoId, ...updateFields } = req.body;
+    console.log("updatePartialContentMetaData - req.body: ", req.body);
 
     if (!videoId) {
         return res.status(400).json({ error: "Missing videoId parameter" });
@@ -725,7 +726,6 @@ const getVideoMetadata = async (req, res) => {
         }
         
         // If a video is found, return the video metadata
-        // Adjusting the backend response
         return res.status(200).json({
             videoId: videoId,
             videoOwner: video.videoOwner,
