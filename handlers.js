@@ -803,7 +803,7 @@ const deleteAlbum = async (req, res) => {
 
     try {
         await client.connect();
-        const db = client.db(dbName);
+        const db = client.db("db-name");
         const collection = db.collection('AlbumMetaData');
 
         // First, verify that the album belongs to the artist
