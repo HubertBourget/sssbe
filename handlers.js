@@ -181,7 +181,6 @@ const updateContentMetaData = async (req, res) => {
     }
 };
 
-
 const updateUserProfile = async (req, res) => {
     const { accountName, bio, artistLink, email, artistTitle } = req.body;
 
@@ -796,6 +795,38 @@ const getAlbumById = async (req, res) => {
     }
 };
 
+const deleteAlbum = async (req, res) => {
+    const albumId = req.params.albumId;
+    const artistId = req.query.artistId; // Assuming artistId is passed as a query parameter
+
+    const client = new MongoClient(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+
+    try {
+        await client.connect();
+        const db = client.db(dbName);
+        const collection = db.collection('AlbumMetaData');
+
+        // First, verify that the album belongs to the artist
+        const album = await collection.findOne({ albumId: albumId });
+        if (!album) {
+            return res.status(404).json({ message: "Album not found." });
+        }
+
+        if (album.owner !== artistId) {
+            return res.status(403).json({ message: "You do not have permission to delete this album." });
+        }
+
+        // If the artistId matches the album's owner, proceed with the deletion
+        await collection.deleteOne({ albumId: albumId });
+        res.status(200).json({ message: "Album successfully deleted." });
+    } catch (error) {
+        console.error(`Failed to delete album: ${error}`);
+        res.status(500).json({ message: "Internal server error." });
+    } finally {
+        await client.close();
+    }
+};
+
 
 
 //Key encoding & decoding
@@ -1010,4 +1041,5 @@ module.exports = {
     getVideoMetadata,
     getAlbumsByArtist,
     getAlbumById,
+    deleteAlbum,
 };

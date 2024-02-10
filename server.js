@@ -35,6 +35,7 @@ const {
   getVideoMetadata,
   getAlbumsByArtist,
   getAlbumById,
+  deleteAlbum
 } = require("./handlers");
 
 const {
@@ -77,6 +78,7 @@ express()
   .get("/api/getVideoMetadata/:videoId", getVideoMetadata)
   .get("/api/getAlbumsByArtist", getAlbumsByArtist)
   .get("/api/getAlbumById", getAlbumById)
+  .delete("/api/deleteAlbum/:albumId", deleteAlbum)
   
 
   //Key encryption:
