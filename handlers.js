@@ -403,7 +403,7 @@ const deleteContent = async (req, res) => {
     try {
         const { recombeeClient } = require("./utils/constants");
         await client.connect();
-        const collection = client.db('db-name').collection('ContentMetaData')
+        const collection = client.db('db-name').collection('ContentMetaData');
         const videoId = req.query.videoId;
         const userId = req.headers['user-id']; // Extract user ID from the custom header
 
@@ -414,26 +414,20 @@ const deleteContent = async (req, res) => {
             return res.status(404).json({ message: 'Video not found or unauthorized' });
         }
 
-        // Delete the document with the specified videoId
+        // Try to update Recombee first
+        try {
+            const itemProperties = { deleted: true };
+            const setItemValuesRequest = new SetItemValues(videoId, itemProperties);
+            await recombeeClient.send(setItemValuesRequest);
+        } catch (recombeeError) {
+            console.error('Recombee error, proceeding with MongoDB deletion:', recombeeError);
+        }
+
+        // Proceed to delete the document with the specified videoId in MongoDB
         const result = await collection.deleteOne({ videoId });
 
         if (result.deletedCount === 0) {
             return res.status(404).json({ message: 'Video not found' });
-        }
-        else {
-          // Set values for the user properties
-            const itemProperties = {
-                deleted: true,
-            };
-
-            // Create a SetUserValues request with both the user ID and properties
-            const setItemValuesRequest = new SetItemValues(
-                videoId,
-                itemProperties
-            );
-
-            // Send the request to set user values
-            await recombeeClient.send(setItemValuesRequest);
         }
 
         res.status(200).json({ message: 'Video deleted successfully' });
@@ -444,6 +438,7 @@ const deleteContent = async (req, res) => {
         client.close();
     }
 };
+
 
 const postNewAlbum = async (req, res) => {
 const { albumId, owner, timestamp } = req.body;
