@@ -729,7 +729,8 @@ const getVideoMetadata = async (req, res) => {
             videoId: videoId,
             videoOwner: video.videoOwner,
             title: video.title,
-            selectedImageThumbnail: video.selectedImageThumbnail || null
+            selectedImageThumbnail: video.selectedImageThumbnail || null,
+            fileUrl: video.fileUrl,
         });
 
         
