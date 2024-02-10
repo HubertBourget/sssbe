@@ -535,7 +535,6 @@ const updateAlbumMetaData = async (req, res) => {
 };
 
 const updatePartialContentMetaData = async (req, res) => {
-    console.log('Received data:', req.body);
     const { videoId, ...updateFields } = req.body;
     console.log("updatePartialContentMetaData - req.body: ", req.body);
 
@@ -929,7 +928,7 @@ const getRecommendations = async (req, res) => {
     try {
         const count = 3;
 
-        console.log("getRecommendations's UserId is: " + userId);
+        // console.log("getRecommendations's UserId is: " + userId);
 
         const getRecommendationsRequest = new RecommendItemsToUser(userId, count, {
             'scenario': 'scenario_1',
@@ -937,7 +936,7 @@ const getRecommendations = async (req, res) => {
         });
 
         const response = await recombeeClient.send(getRecommendationsRequest);
-        console.log(response);
+        // console.log(response);
 
         return res.json(response);
 
