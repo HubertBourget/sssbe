@@ -357,7 +357,6 @@ const getCheckAccountName = async (req, res) => {
     }
 };
 
-
 const getContentByArtist = async (req, res) => {
     const client = await new MongoClient(MONGO_URI, options);
 
@@ -438,7 +437,6 @@ const deleteContent = async (req, res) => {
         client.close();
     }
 };
-
 
 const postNewAlbum = async (req, res) => {
 const { albumId, owner, timestamp } = req.body;
