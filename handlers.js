@@ -710,7 +710,6 @@ const getVideoMetadata = async (req, res) => {
         const video = await videosCollection.findOne({ videoId: videoId }, {
             projection: { videoOwner: 1, title: 1, selectedImageThumbnail: 1, fileUrl:1 }
         });
-        console.log(video)
         
         if (!video) {
             // If no video is found, return a 404 response
