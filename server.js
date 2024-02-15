@@ -46,7 +46,7 @@ const {
 express()
   .use(
     cors({
-      origin: "*", //['https://sacredsound.app', 'https://test.sacredsound.app']
+      origin: ['https://sacredsound.app'], // "*"
       methods: ["GET", "POST", "DELETE", "UPDATE", "PUT", "PATCH"],
     })
   )
