@@ -605,7 +605,7 @@ const updateReviewStatus = async (req, res) => {
 };
 
 const postCoverImage = async (req, res) => {
-const { videoId, coverImageUrl } = req.body; 
+const { videoId, selectedImageThumbnail } = req.body; 
     const client = await MongoClient.connect(MONGO_URI, options);
     try {
         const db = client.db("db-name");
@@ -614,7 +614,7 @@ const { videoId, coverImageUrl } = req.body;
         const query = { "videoId": videoId };
         const update = {
             $set: {
-                coverImageUrl,
+                selectedImageThumbnail,
             },
         };
         const options = { returnOriginal: false };
