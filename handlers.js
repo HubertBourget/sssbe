@@ -872,6 +872,7 @@ const encodeCreds = async (req, res) => {
 const decodeCreds = async (req, res) => {
     try {
         const encodedData = process.env.ENCODED_KEY;
+        
 
         if (!encodedData) {
         return res.status(400).json({
