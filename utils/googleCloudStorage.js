@@ -4,11 +4,15 @@ const { Storage } = require('@google-cloud/storage');
 const initializeStorage = () => {
     try {
         const encodedData = process.env.ENCODED_KEY;
+        
         if (!encodedData) {
             throw new Error("Encoded Google Cloud credentials not found.");
         }
         const decodedJsonString = Buffer.from(encodedData, "base64").toString("utf-8");
         const credentials = JSON.parse(decodedJsonString);
+        console.log(encodedData)
+        console.log(credentials);
+        console.log(process.env.PROJECT_ID)
 
         const storage = new Storage({
             credentials,
