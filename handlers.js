@@ -412,14 +412,26 @@ const deleteContent = async (req, res) => {
         if (!contentDocument) {
             return res.status(404).json({ message: 'Video not found or unauthorized' });
         }
-
-        // Try to update Recombee first
         try {
             const itemProperties = { deleted: true };
             const setItemValuesRequest = new SetItemValues(videoId, itemProperties);
             await recombeeClient.send(setItemValuesRequest);
         } catch (recombeeError) {
             console.error('Recombee error, proceeding with MongoDB deletion:', recombeeError);
+        }
+
+        // Delete the file from Google Cloud Storage
+        const fileUrl = contentDocument.fileUrl;
+        // Extract bucket name and file path from fileUrl
+        const matches = fileUrl.match(/https:\/\/firebasestorage.googleapis.com\/v0\/b\/([^\/]+)\/o\/([^?]+)/);
+        if (matches && matches.length >= 3) {
+            const bucketName = matches[1];
+            const filePath = decodeURIComponent(matches[2]);
+            await storage.bucket(bucketName).file(filePath).delete();
+            console.log(`File ${filePath} deleted from bucket ${bucketName}.`);
+        } else {
+            console.warn('Could not extract bucket name and file path from URL:', fileUrl);
+            // Consider how to handle this case. Maybe log an error or even halt the deletion process, depending on your requirements.
         }
 
         // Proceed to delete the document with the specified videoId in MongoDB
@@ -431,10 +443,12 @@ const deleteContent = async (req, res) => {
 
         res.status(200).json({ message: 'Video deleted successfully' });
     } catch (error) {
-        console.error(error);
+        console.error('Error deleting content:', error);
         return res.status(500).json({ message: 'Server error' });
     } finally {
-        client.close();
+        if (client) {
+            await client.close();
+        }
     }
 };
 
