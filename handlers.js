@@ -369,7 +369,7 @@ const getContentByArtist = async (req, res) => {
 
         await client.connect();
         const collection = client.db('db-name').collection('ContentMetaData');
-        const contentDocuments = await collection.find({ owner: artistId }).toArray();
+        const contentDocuments = await collection.find({ videoOwner: artistId }).toArray();
         res.json(contentDocuments);
     } catch (error) {
         console.error(error);
@@ -872,7 +872,7 @@ const encodeCreds = async (req, res) => {
 const decodeCreds = async (req, res) => {
     try {
         const encodedData = process.env.ENCODED_KEY;
-        
+
 
         if (!encodedData) {
         return res.status(400).json({
