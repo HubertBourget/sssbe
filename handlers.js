@@ -3,13 +3,14 @@ const { MongoClient } = require("mongodb");
 require("dotenv").config();
 const { MONGO_URI } = process.env;
 const { SyncRecombee } = require("./utils/SyncRecombee");
+const storage = require('./utils/googleCloudStorage');
 
 const {
-  AddUser,
-  AddUserProperty,
-  SetUserValues,
-  RecommendItemsToUser,
-  SetItemValues,
+    AddUser,
+    AddUserProperty,
+    SetUserValues,
+    RecommendItemsToUser,
+    SetItemValues,
 } = require("recombee-api-client").requests;
 
 const options = {

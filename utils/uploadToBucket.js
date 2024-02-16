@@ -17,7 +17,7 @@ module.exports = {
         try {
             // Fetch the decrypted key from the endpoint
             const { data: decryptedKey } = await axios.post("/api/decodeCreds");
-
+            
             const storage = new Storage({
                 credentials: JSON.parse(decryptedKey),
                 projectId: process.env.PROJECT_ID,
