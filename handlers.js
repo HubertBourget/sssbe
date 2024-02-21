@@ -736,7 +736,7 @@ const getVideoMetadata = async (req, res) => {
         // If a video is found, return the video metadata
         return res.status(200).json({
             videoId: videoId,
-            videoOwner: video.videoOwner,
+            owner: video.owner,
             title: video.title,
             selectedImageThumbnail: video.selectedImageThumbnail || null,
             fileUrl: video.fileUrl,
