@@ -1035,7 +1035,7 @@ const getItemToItemRecommendations = async (req, res) => {
     const count = 3;
 
     try {
-        const recommendItemsToItemRequest = RecommendItemsToItem(itemId, userId, count, {
+        const recommendItemsToItemRequest = new RecommendItemsToItem(itemId, userId, count, {
                 // optional parameters:
                 'scenario': 'scenario_1',
                 'cascadeCreate': true,
