@@ -695,6 +695,7 @@ const updateTrackThumbnail = async (req, res) => {
     }
 
     try {
+        console.log('thumbnailUrl :', thumbnailUrl)
         const tracksCollection = db.collection('ContentMetaData');
 
         // Update the thumbnail URL for the given track
