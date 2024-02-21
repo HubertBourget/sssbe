@@ -21,7 +21,7 @@ const {
   encodeCreds,
   decodeCreds,
   syncCatalog,
-  getRecommendations,
+  getItemToUserRecommendations,
   addUserOnRecombee,
   setUserOnRecombee,
   postNewAlbum,
@@ -87,7 +87,7 @@ express()
 
   //Recombee:
   .get("/api/syncCatalog", syncCatalog)
-  .get("/api/getRecommendations/:userId", getRecommendations)
+  .get("/api/getItemToUserRecommendations/:userId", getItemToUserRecommendations)
   // .post("/api/addUserOnRecombee/:userId", addUserOnRecombee) //For Manual Insertion Only!
   // .post("/api/setUserOnRecombee/:userId", setUserOnRecombee) //For Manual Insertion Only!
 

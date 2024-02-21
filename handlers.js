@@ -938,7 +938,7 @@ const syncCatalog = async (req, res) => {
     }
 };
 
-const getRecommendations = async (req, res) => {
+const getItemToUserRecommendations = async (req, res) => {
     const userId = req.params.userId;
     const { recombeeClient } = require("./utils/constants");
     
@@ -971,8 +971,8 @@ const getRecommendations = async (req, res) => {
 const addUserPropertyOnRecombee = async (req, res) => {
     // Define the properties to be added (initialize)
             const propertiesToAdd = [
-              { name: "bio", type: "string" },
-              { name: "artistLink", type: "string" },
+                { name: "bio", type: "string" },
+                { name: "artistLink", type: "string" },
             ];
 
             // Create an array of AddUserProperty requests
@@ -1046,7 +1046,7 @@ module.exports = {
     encodeCreds,
     decodeCreds,
     syncCatalog,
-    getRecommendations,
+    getItemToUserRecommendations,
     addUserOnRecombee,
     setUserOnRecombee,
     postNewAlbum,
