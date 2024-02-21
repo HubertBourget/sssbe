@@ -1029,25 +1029,25 @@ const setUserOnRecombee = async (req, res) => {
 }
 
 const getItemToItemRecommendations = async (req, res) => {
-    const { itemId, userId } = req.params; // Assuming you're passing both itemId and targetUserId through the route parameters
+    const { itemId, userId } = req.params;
     const { recombeeClient } = require("./utils/constants");
+    const count = 3;
 
     try {
-        const count = 3; // Number of items to be recommended
-
-        // Optional parameters can be adjusted as needed
         const recommendItemsToItemRequest = new recombeeClient.requests.RecommendItemsToItem(
             itemId, 
             userId, 
             count, 
             {
-                'scenario': 'scenario_1', // Example scenario
+                'scenario': 'scenario_1',
                 'cascadeCreate': true,
             }
         );
 
-        const response = await recombeeClient.send(recommendItemsToItemRequest);
-        
+        const response = await recombeeClient.send(recommendItemsToItemRequest).catch(error => {
+            console.error("Error sending request to Recombee:", error);
+            throw error;
+        });
         return res.json(response);
     } catch (err) {
         console.error("Error in getItemToItemRecommendations:", err);
