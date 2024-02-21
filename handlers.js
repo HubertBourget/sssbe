@@ -365,10 +365,11 @@ const getContentByArtist = async (req, res) => {
         if (!artistId) {
         return res.status(400).json({ message: 'Missing artistId parameter' });
         }
-
+        console.log('fetching getContentByArtist:', artistId)
         await client.connect();
         const collection = client.db('db-name').collection('ContentMetaData');
         const contentDocuments = await collection.find({ owner: artistId }).toArray();
+        console.log('contentDocuments :', contentDocuments)
         res.json(contentDocuments);
     } catch (error) {
         console.error(error);
