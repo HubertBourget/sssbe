@@ -685,6 +685,7 @@ const postBannerImage = async (req, res) => {
 }
 
 const updateTrackThumbnail = async (req, res) => {
+    console.log('updateTrackThumbnail');
     const { videoId, thumbnailUrl } = req.body;
     const client = await MongoClient.connect(MONGO_URI, options);
     const db = client.db("db-name");
