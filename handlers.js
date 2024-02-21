@@ -591,6 +591,7 @@ const updatePartialContentMetaData = async (req, res) => {
 const updateReviewStatus = async (req, res) => {
     const { videoId, b_isPreparedForReview } = req.body;
 
+    console.log("updateReviewStatus :", videoId, b_isPreparedForReview)
     // Input validation
     if (!videoId || typeof b_isPreparedForReview !== 'boolean') {
         return res.status(400).json({ message: 'Invalid request' });
