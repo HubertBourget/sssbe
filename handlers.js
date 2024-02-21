@@ -10,6 +10,7 @@ const {
     AddUserProperty,
     SetUserValues,
     RecommendItemsToUser,
+    RecommendItemsToItem,
     SetItemValues,
 } = require("recombee-api-client").requests;
 
@@ -1034,11 +1035,8 @@ const getItemToItemRecommendations = async (req, res) => {
     const count = 3;
 
     try {
-        const recommendItemsToItemRequest = new recombeeClient.requests.RecommendItemsToItem(
-            itemId, 
-            userId, 
-            count, 
-            {
+        const recommendItemsToItemRequest = RecommendItemsToItem(itemId, userId, count, {
+                // optional parameters:
                 'scenario': 'scenario_1',
                 'cascadeCreate': true,
             }
