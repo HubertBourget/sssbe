@@ -24,6 +24,7 @@ const {
   getItemToUserRecommendations,
   addUserOnRecombee,
   setUserOnRecombee,
+  getItemToItemRecommendations,
   postNewAlbum,
   postAlbumImage,
   updateAlbumMetaData,
@@ -90,6 +91,7 @@ express()
   .get("/api/getItemToUserRecommendations/:userId", getItemToUserRecommendations)
   // .post("/api/addUserOnRecombee/:userId", addUserOnRecombee) //For Manual Insertion Only!
   // .post("/api/setUserOnRecombee/:userId", setUserOnRecombee) //For Manual Insertion Only!
+  .get("/api/getItemToItemRecommendations/:userId/:itemId", getItemToItemRecommendations)
 
   .listen(PORT, () => {
     console.log(`Server launched on port ${PORT}`);

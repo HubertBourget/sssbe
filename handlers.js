@@ -1028,6 +1028,36 @@ const setUserOnRecombee = async (req, res) => {
     }
 }
 
+const getItemToItemRecommendations = async (req, res) => {
+    const { itemId, userId } = req.params; // Assuming you're passing both itemId and targetUserId through the route parameters
+    const { recombeeClient } = require("./utils/constants");
+
+    try {
+        const count = 3; // Number of items to be recommended
+
+        // Optional parameters can be adjusted as needed
+        const recommendItemsToItemRequest = new recombeeClient.requests.RecommendItemsToItem(
+            itemId, 
+            userId, 
+            count, 
+            {
+                'scenario': 'scenario_1', // Example scenario
+                'cascadeCreate': true,
+            }
+        );
+
+        const response = await recombeeClient.send(recommendItemsToItemRequest);
+        
+        return res.json(response);
+    } catch (err) {
+        console.error("Error in getItemToItemRecommendations:", err);
+        return res.status(500).json({
+            msg: "Internal server error",
+            error: err.message || "An error occurred.",
+        });
+    }
+};
+
 module.exports = {
     getServerHomePage,
     postContentMetaData,
@@ -1049,6 +1079,7 @@ module.exports = {
     getItemToUserRecommendations,
     addUserOnRecombee,
     setUserOnRecombee,
+    getItemToItemRecommendations,
     postNewAlbum,
     postAlbumImage,
     updateAlbumMetaData,
