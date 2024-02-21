@@ -240,6 +240,7 @@ const getUserProfile = async (req, res) => {
     try {
         const db = client.db("db-name");
         const collection = db.collection('userAccounts');
+        console.log("getUserProfile :", req.params.userId );
         const user = await collection.findOne({ email: req.params.userId });
         
         if (!user) {
