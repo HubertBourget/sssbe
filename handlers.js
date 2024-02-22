@@ -4,7 +4,7 @@ require("dotenv").config();
 const { MONGO_URI } = process.env;
 const { SyncRecombee } = require("./utils/SyncRecombee");
 const storage = require('./utils/googleCloudStorage');
-const { StoreAndUpload } = require("../utils/StoreVideoAndCreateThumbnail");
+const { StoreAndUpload } = require("./utils/StoreVideoAndCreateThumbnail");
 
 const {
     AddUser,
