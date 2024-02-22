@@ -5,6 +5,7 @@ const { MONGO_URI } = process.env;
 const { SyncRecombee } = require("./utils/SyncRecombee");
 const storage = require('./utils/googleCloudStorage');
 const { StoreAndUpload } = require("./utils/StoreVideoAndCreateThumbnail");
+const fs = require("fs");
 
 const {
     AddUser,
@@ -1095,7 +1096,7 @@ const postCreateImageThumbnail = async (req, res) => {
             }
         });
     } catch (err) {
-        console.log('Err in File-ThumbnailController > Method-CreateImageThumbnail > : ', err);
+        console.log('Err in handler.js > Method-postCreateImageThumbnail > : ', err);
         return res.status(400).json({
             err: true,
             error: err,
