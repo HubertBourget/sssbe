@@ -1058,6 +1058,7 @@ const getItemToItemRecommendations = async (req, res) => {
 };
 
 const postCreateImageThumbnail = async (req, res) => {
+    console.log(req.body)
     try {
         // get video link and capture time from body
         const { 
