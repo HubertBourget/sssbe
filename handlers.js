@@ -946,7 +946,7 @@ const getItemToUserRecommendations = async (req, res) => {
     try {
         const count = 3;
 
-        // console.log("getRecommendations's UserId is: " + userId);
+        console.log("getRecommendations's UserId is: " + userId);
 
         const getRecommendationsRequest = new RecommendItemsToUser(userId, count, {
             'scenario': 'scenario_1',
@@ -954,7 +954,7 @@ const getItemToUserRecommendations = async (req, res) => {
         });
 
         const response = await recombeeClient.send(getRecommendationsRequest);
-        // console.log(response);
+        console.log(response);
 
         return res.json(response);
 
