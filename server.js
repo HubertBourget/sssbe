@@ -40,9 +40,9 @@ const {
   postCreateImageThumbnail,
 } = require("./handlers");
 
-const {
-    CreateImageThumbnail,
-} = require("./controllers/ThumbnailController");
+// const {
+//     CreateImageThumbnail,
+// } = require("./controllers/ThumbnailController");
 
 
 express()

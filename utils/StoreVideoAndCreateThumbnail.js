@@ -6,7 +6,6 @@ const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
 ffmpeg.setFfmpegPath(ffmpegPath);
 const { getFilePaths } = require("./getAllFiles");
-const directoryPath = path.resolve(__dirname,'../Thumbnails');
 const { upload } = require("./uploadToS3");
 
 /**
