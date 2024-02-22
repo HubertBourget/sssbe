@@ -1,106 +1,58 @@
-const path = require("path");
 const fs = require("fs");
 const fse = require("fs-extra");
 const request = require("request");
-const { upload } = require("../utils/uploadToBucket");
-const { url } = require("inspector");
-const dir = './Thumbnails';
-const directoryPath = path.resolve(__dirname,'../Thumbnails');
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
-const ffmpeg = require('fluent-ffmpeg');
-ffmpeg.setFfmpegPath(ffmpegPath);
+const { StoreAndUpload } = require("../utils/StoreVideoAndCreateThumbnail");
+const path = require("path");
+const { bucket, thumbnailDir } = require("../utils/constants");
 
-async function getFilePaths() {
-    try {
-        
-        const files = await fs.promises.readdir(directoryPath);
-        return files.map((file) => path.join(directoryPath, file));
-    } catch (err) {
-        console.log('Error getting directory information:', err);
-        return [];
-    }
-} 
-
+/**
+ * @method POST
+ * @route "/createImageThumbnail"
+ * @description This method will take video_url and time_marks(on which second of video we want to create a thumbnail) as an arguments and then first of all it will download the video locally by using the request package. then it will create a thumbnail and will store that thumbnail to the google cloud storage. and at last also will delete the video which downloaded locally.
+ * @param, time_marks, video_url (body)
+ * @returns This will return success message while other processes like creating thumbnail and upload to GCS will be run in background
+ */
 const CreateImageThumbnail = async function(req, res) {
     try {
+        // get video link and capture time from body
         const { 
             video_url, 
-            video_id,
-            email,
-            time_marks = ["0", "5", "10"],
+            time_marks = ["1"],
         } = req.body;
 
         if (!video_url) {
             return res.status(400).json({
                 err: true,
-                error: "Please provide the video url!",
-            })
+                error: "Please provide video url!!",
+            });
         }
-        if(!video_id) {
+
+        // we want one directory for store thumbnails locally so if directory not exist then create one
+        if (!fs.existsSync(thumbnailDir)){
+            fs.mkdirSync(thumbnailDir);
+        }
+
+        // store video locally then create thumbnails and then store new thumbnails to the GCS
+        let data = await StoreAndUpload(video_url, time_marks);
+
+        if (data.err) {
             return res.status(400).json({
                 err: true,
-                error: "Please provide the video id!",
+                error: data.error,
             })
         }
-
-        if (!fs.existsSync(dir)){
-            fs.mkdirSync(dir);
-        }
-        let destination = process.env.BUCKET_FOLDER;
-
-
-        request.get(video_url)
-        .on('error', (err) => {
-            console.log("err in download video from req.get :: ", err);
-            return res.status(400).json({
-                err: true,
-                error: err
-            });
-        })
-        .pipe(fs.createWriteStream("Temp.mp4"))
-        .on('finish', () => {         
-            const videoFilePath = path.resolve(__dirname, '../Temp.mp4');
-            let fileName = "image"
-
-            ffmpeg(videoFilePath)
-            .on('end', (err, files) => {                
-                try {
-                    getFilePaths().then(async (data) => {
-                        await upload(data, video_id, email);
-                        fse.emptyDir(path.resolve(__dirname,'../Thumbnails'))
-                    }).catch((e) => {
-                        console.log("e :: ", e);
-                    });
-                } catch (err) {
-                    console.log('Error generating thumbnail:', err);
-                }
-            })
-            .on('error', (err) => {
-                console.log('Error:', err.message);
-            })
-            .screenshots({
-                count: 1,
-                timemarks: time_marks,
-                filename: fileName+ ".jpg",
-                folder: path.resolve(__dirname,'../Thumbnails'),
-                fastSeek: true
-            });
-        });
-        
-
 
         return res.status(200).json({
-            msg: "success"
-        })
+            msg: "success",
+            data: {
+                thumbnails: data.data,
+            }
+        });
     } catch (err) {
-        console.log("Error generating thumbnail:", err);
+        console.log('Err in File-ThumbnailController > Method-CreateImageThumbnail > : ', err);
         return res.status(400).json({
             err: true,
             error: err,
         });
     }
 };
-
-module.exports = {
-    CreateImageThumbnail,
-}

@@ -3,9 +3,6 @@ const path = require("path");
 const { MongoClient } = require("mongodb");
 const { MONGO_URI } = process.env;
 
-//pre-removal commented out:
-// const serviceKey = path.join(__dirname, './sacred-sound-2a7ce18e134a.json')
-
 const options = {
     useNewUrlParser: true,
     useUnifiedTopology: true,

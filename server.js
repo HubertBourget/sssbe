@@ -62,7 +62,7 @@ express()
   .get("/api/getUserProfile/:userId", getUserProfile)
   .post("/api/postProfileImage", postProfileImage)
   .get("/api/getCheckAccountName", getCheckAccountName)
-  .post("/api/postCreateImageThumbnail", CreateImageThumbnail)
+  // .post("/api/postCreateImageThumbnail", CreateImageThumbnail) //depreciated
   .get("/api/getContentById", getContentById)
   .get("/api/b_getUserExist/:userId", b_getUserExist)
   .post("/api/postNewUserWithAccountName", postNewUserWithAccountName)
