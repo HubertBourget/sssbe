@@ -4,6 +4,7 @@ require("dotenv").config();
 const { MONGO_URI } = process.env;
 const { SyncRecombee } = require("./utils/SyncRecombee");
 const storage = require('./utils/googleCloudStorage');
+const { StoreAndUpload } = require("../utils/StoreVideoAndCreateThumbnail");
 
 const {
     AddUser,
@@ -1056,6 +1057,51 @@ const getItemToItemRecommendations = async (req, res) => {
     }
 };
 
+const postCreateImageThumbnail = async (req, res) => {
+    try {
+        // get video link and capture time from body
+        const { 
+            video_url, 
+            time_marks = ["1"],
+        } = req.body;
+
+        if (!video_url) {
+            return res.status(400).json({
+                err: true,
+                error: "Please provide video url!!",
+            });
+        }
+
+        // we want one directory for store thumbnails locally so if directory not exist then create one
+        if (!fs.existsSync('Thumbnails')){
+            fs.mkdirSync('Thumbnails');
+        }
+
+        // store video locally then create thumbnails and then store new thumbnails to the GCS
+        let data = await StoreAndUpload(video_url, time_marks);
+
+        if (data.err) {
+            return res.status(400).json({
+                err: true,
+                error: data.error,
+            })
+        }
+
+        return res.status(200).json({
+            msg: "success",
+            data: {
+                thumbnails: data.data,
+            }
+        });
+    } catch (err) {
+        console.log('Err in File-ThumbnailController > Method-CreateImageThumbnail > : ', err);
+        return res.status(400).json({
+            err: true,
+            error: err,
+        });
+    }
+}
+
 module.exports = {
     getServerHomePage,
     postContentMetaData,
@@ -1090,4 +1136,5 @@ module.exports = {
     getAlbumsByArtist,
     getAlbumById,
     deleteAlbum,
+    postCreateImageThumbnail,
 };
