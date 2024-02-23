@@ -20,7 +20,7 @@ module.exports = {
                 projectId: process.env.PROJECT_ID,
             });
         const bucketName = process.env.BUCKET_NAME;
-        const folder = process.env.BUCKET_FOLDER;
+        const folder = process.env.BUCKET_THUMBNAIL_FOLDER;
 
         
         for (let i = 0; i < url.length; i++) {

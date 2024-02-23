@@ -46,7 +46,7 @@
 //         if (!fs.existsSync(dir)){
 //             fs.mkdirSync(dir);
 //         }
-//         let destination = process.env.BUCKET_FOLDER;
+//         let destination = process.env.BUCKET_THUMBNAIL_FOLDER;
 
 
 //         request.get(video_url)
