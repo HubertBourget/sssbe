@@ -24,5 +24,6 @@ const initializeStorage = () => {
 };
 
 const storage = initializeStorage();
+const bucket = storage.bucket(process.env.BUCKET_NAME);
 
-module.exports = storage;
+module.exports = { storage, bucket };
