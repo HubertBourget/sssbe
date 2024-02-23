@@ -42,7 +42,7 @@ const StoreAndUpload = async function (video_url, time_marks) {
                     if (err) {
                         console.log("Error in creating thumbnails with ffmpeg:", err);
                     } else {
-                        console.log("Thumbnails created successfully. Files:", files);
+                        // console.log("Thumbnails created successfully. Files:", files);
                         resolve(files);
                     }
                 })
