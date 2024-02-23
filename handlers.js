@@ -1060,9 +1060,6 @@ const getItemToItemRecommendations = async (req, res) => {
 
 const postCreateImageThumbnail = async (req, res) => {
     try {
-        
-        console.log("Environment Variables:", process.env.BUCKET_THUMBNAIL_FOLDER, process.env.BUCKET_NAME);
-
         // get video link and capture time from body
         const { 
             video_url, 
@@ -1083,12 +1080,11 @@ const postCreateImageThumbnail = async (req, res) => {
 
         // store video locally then create thumbnails and then store new thumbnails to the GCS
         let data = await StoreAndUpload(video_url, time_marks);
-
         if (data.err) {
-            return res.status(400).json({
+            return res.status(500).json({
                 err: true,
                 error: data.error,
-            })
+            });
         }
 
         return res.status(200).json({

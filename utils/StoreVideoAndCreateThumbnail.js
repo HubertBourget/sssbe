@@ -59,7 +59,10 @@ const StoreAndUpload = async function (video_url, time_marks) {
         const data = await getFilePaths(directoryPath);
 
         // upload images to the google cloud storage
-        let uploadedThumbnailsUrls = await upload(data);
+        let uploadResult = await upload(data);
+        if (uploadResult.err) {
+            throw new Error(uploadResult.error); // Throw to be caught by the outer try-catch
+        }
 
         // delete all the thumbnails which are generated and stored in directoryPath
         await fse.emptyDir(directoryPath);
