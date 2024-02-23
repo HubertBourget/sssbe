@@ -14,20 +14,19 @@ module.exports = {
 
             let imgUrls = [];
             for (let i = 0; i < urls.length; i++) {
-                const url = urls[i];
-                // Generating a unique file name
+                console.log(`Uploading image ${i+1}/${urls.length}: ${urls[i]}`);
+                // Generate a unique fileName for each image to avoid overwriting
                 const fileName = `${Math.random().toString().substr(2, 6)}--${new Date().toISOString()}--image.jpg`;
-                console.log(`Uploading image ${i+1}/${urls.length}:`, url);
-                console.log("Generated fileName:", fileName);
-
-                // Attempting to upload images to the bucket
-                let data = await bucket.upload(url, {
+                console.log(`Generated fileName: ${fileName}`);
+                
+                let data = await bucket.upload(urls[i], {
                     destination: path.join(folder, fileName),
                 });
-                console.log(`Image ${i+1} uploaded. Media link:`, data[0].metadata.mediaLink);
 
+                console.log(`Image ${i+1} uploaded. Media link:`, data[0].metadata.mediaLink);
                 imgUrls.push(data[0].metadata.mediaLink);
             }
+
 
             console.log("All images uploaded successfully");
             return imgUrls;
