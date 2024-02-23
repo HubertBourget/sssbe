@@ -1,7 +1,7 @@
 const path = require("path");
 
 const storage = require('../utils/googleCloudStorage');
-const { bucket } = storage.bucket(process.env.BUCKET_NAME);
+const bucket = storage.bucket(process.env.BUCKET_NAME);
 
 
 module.exports = {
