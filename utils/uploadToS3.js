@@ -8,7 +8,7 @@ module.exports = {
      * @returns This will return the media url of images which are uploaded to the google cloud storage.
      */
     upload: async function (urls) {
-        try { 
+        try {
             const folder = process.env.BUCKET_THUMBNAIL_FOLDER;
             console.log("Uploading images to folder:", folder);
 
