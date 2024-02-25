@@ -59,9 +59,9 @@ const StoreAndUpload = async function (video_url, time_marks) {
         const data = await getFilePaths(directoryPath);
 
         // upload images to the google cloud storage
-        let uploadResult = await upload(data);
-        if (uploadResult.err) {
-            throw new Error(uploadResult.error); // Throw to be caught by the outer try-catch
+        let uploadedThumbnailsUrls = await upload(data);
+        if (uploadedThumbnailsUrls.err) {
+            throw new Error(uploadedThumbnailsUrls.error); // Throw to be caught by the outer try-catch
         }
 
         // delete all the thumbnails which are generated and stored in directoryPath
@@ -72,7 +72,7 @@ const StoreAndUpload = async function (video_url, time_marks) {
 
         return {
             err: false,
-            data: uploadResult,
+            data: uploadedThumbnailsUrls,
         }
     } catch (err) {
         console.log('Err in File-StoreVideoAndCreateThumbnail > Method-StoreAndUpload > : ', err);
