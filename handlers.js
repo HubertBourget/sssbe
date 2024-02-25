@@ -1085,7 +1085,7 @@ const postCreateImageThumbnail = async (req, res) => {
                 err: true,
                 error: data.error,
             });
-        }
+        } 
 
         return res.status(200).json({
             msg: "success",
