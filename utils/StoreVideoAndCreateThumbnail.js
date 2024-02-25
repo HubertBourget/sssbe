@@ -72,7 +72,7 @@ const StoreAndUpload = async function (video_url, time_marks) {
 
         return {
             err: false,
-            data: uploadedThumbnailsUrls,
+            data: uploadResult,
         }
     } catch (err) {
         console.log('Err in File-StoreVideoAndCreateThumbnail > Method-StoreAndUpload > : ', err);
