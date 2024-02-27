@@ -5,7 +5,7 @@ const { MONGO_URI } = process.env;
 const { SyncRecombee } = require("./utils/SyncRecombee");
 const storage = require('./utils/googleCloudStorage');
 
-const {
+const { 
     AddUser,
     AddUserProperty,
     SetUserValues,
