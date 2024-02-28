@@ -76,7 +76,6 @@ const postNewUserWithAccountName = async (req, res) => {
                 accountName: accountName,
                 isArtist: isArtist,
                 timestamp: timestamp,
-                contentType: 'userAccounts',
             };
 
             // Create a SetUserValues request with both the user ID and properties
