@@ -36,7 +36,8 @@ const {
   getVideoMetadata,
   getAlbumsByArtist,
   getAlbumById,
-  deleteAlbum
+  deleteAlbum,
+  postNewContentTypePropertyWithAttributes,
 } = require("./handlers");
 
 const {
@@ -92,6 +93,9 @@ express()
   // .post("/api/addUserOnRecombee/:userId", addUserOnRecombee) //For Manual Insertion Only!
   // .post("/api/setUserOnRecombee/:userId", setUserOnRecombee) //For Manual Insertion Only!
   .get("/api/getItemToItemRecommendations/:userId/:itemId", getItemToItemRecommendations)
+
+  //MongoDB data management:
+  .post("/api/postNewPropertyWithAttributes", postNewContentTypePropertyWithAttributes)
 
   .listen(PORT, () => {
     console.log(`Server launched on port ${PORT}`);

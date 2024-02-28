@@ -1056,6 +1056,30 @@ const getItemToItemRecommendations = async (req, res) => {
     }
 };
 
+const postNewContentTypePropertyWithAttributes = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+    try {
+        await client.connect();
+        const db = client.db('db-name');
+        const collections = ['ContentMetaData', 'userAccounts'];
+        for (const collectionName of collections) {
+            const collection = db.collection(collectionName);
+            const updateResult = await collection.updateMany(
+                {}, 
+                { $set: { contentType: collectionName } }
+            );
+            console.log(`${collectionName} updated count:`, updateResult.modifiedCount);
+        }
+
+        res.status(200).json({ status: 200, message: "Content types updated successfully across collections." });
+    } catch (e) {
+        console.error("Error updating content types:", e.message);
+        res.status(400).json({ status: 400, message: e.message });
+    } finally {
+        await client.close();
+    }
+};
+
 module.exports = {
     getServerHomePage,
     postContentMetaData,
@@ -1090,4 +1114,5 @@ module.exports = {
     getAlbumsByArtist,
     getAlbumById,
     deleteAlbum,
+    postNewContentTypePropertyWithAttributes,
 };
