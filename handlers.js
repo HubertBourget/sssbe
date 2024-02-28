@@ -25,11 +25,13 @@ const getServerHomePage = async (req, res) => {
 
 const postNewUserWithAccountName = async (req, res) => {
     const { email, accountName, isArtist, timestamp } = req.body;
+    const contentType = "userAccounts";
     const user = {
         email,
         accountName,
         isArtist,
         timestamp,
+        contentType: contentType,
     };
 
     const client = await new MongoClient(MONGO_URI, options);
