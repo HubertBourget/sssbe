@@ -1061,7 +1061,7 @@ const postNewContentTypePropertyWithAttributes = async (req, res) => {
     try {
         await client.connect();
         const db = client.db('db-name');
-        const collections = ['ContentMetaData', 'userAccounts'];
+        const collections = ['ContentMetaData', 'AlbumMetaData', 'userAccounts'];
         for (const collectionName of collections) {
             const collection = db.collection(collectionName);
             const updateResult = await collection.updateMany(
