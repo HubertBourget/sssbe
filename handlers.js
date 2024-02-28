@@ -74,6 +74,7 @@ const postNewUserWithAccountName = async (req, res) => {
                 accountName: accountName,
                 isArtist: isArtist,
                 timestamp: timestamp,
+                contentType: 'userAccounts',
             };
 
             // Create a SetUserValues request with both the user ID and properties
@@ -110,6 +111,7 @@ const postContentMetaData = async (req, res) => {
         b_isApproved: b_isApproved,
         visibility: visibility,
         category: category,
+        contentType: 'ContentMetaData',
     };
 
     const client = await new MongoClient(MONGO_URI, options);
@@ -462,6 +464,7 @@ const { albumId, owner, timestamp } = req.body;
         timestamp,
         albumId,
         albumName: '',
+        contentType: 'AlbumMetaData',
     };
 
     const client = await new MongoClient(MONGO_URI, options);
