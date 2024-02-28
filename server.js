@@ -95,7 +95,7 @@ express()
   .get("/api/getItemToItemRecommendations/:userId/:itemId", getItemToItemRecommendations)
 
   //MongoDB data management:
-  .post("/api/postNewPropertyWithAttributes", postNewContentTypePropertyWithAttributes)
+  .post("/api/postNewContentTypePropertyWithAttributes", postNewContentTypePropertyWithAttributes)
 
   .listen(PORT, () => {
     console.log(`Server launched on port ${PORT}`);
