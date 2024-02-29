@@ -958,7 +958,7 @@ const getItemToUserRecommendations = async (req, res) => {
         });
 
         const response = await recombeeClient.send(getRecommendationsRequest);
-        // console.log(response);
+        console.log(response);
 
         return res.json(response);
 
