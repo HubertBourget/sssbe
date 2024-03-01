@@ -1106,7 +1106,7 @@ const postNewContentTypePropertyWithAttributes = async (req, res) => {
 };
 
 const getSearchResult = async (req, res) => {
-    const { user, searchQuery } = req.query;
+    const { user, searchQuery } = req.params;
     const { recombeeClient } = require("./utils/constants");
     console.log("user: ", user);
     console.log("searchQuery: ", searchQuery);
