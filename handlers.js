@@ -1121,6 +1121,8 @@ const getSearchResult = async (req, res) => {
             recombeeClient.send(new SearchItems(userId, searchQuery, count, {'scenario': 'artists_search_scenario'})),
         ]);
 
+        console.log({ tracks, albums, artists });
+
         // Compile the results into a structured object
         const searchResults = {
             tracks: tracks.recomms,
