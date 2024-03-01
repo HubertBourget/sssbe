@@ -239,15 +239,36 @@ const updateUserProfile = async (req, res) => {
 };
 
 const getUserProfile = async (req, res) => {
+    // Check if userId is undefined or not provided, and return a default object
+    if (!req.params.userId || req.params.userId === 'undefined') {
+        console.log("getUserProfile called with undefined userId");
+
+        // Return a default response with empty strings for user properties
+        return res.status(200).json({
+            accountName: '',
+            bio: '',
+            artistLink: '',
+            profileImageUrl: '',
+            artistTitle: ''
+        });
+    }
+
     const client = await new MongoClient(MONGO_URI, options);
     try {
         const db = client.db("db-name");
         const collection = db.collection('userAccounts');
-        console.log("getUserProfile :", req.params.userId );
+        console.log("getUserProfile:", req.params.userId);
         const user = await collection.findOne({ email: req.params.userId });
         
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            // If no user is found, return the default object as well
+            return res.status(200).json({
+                accountName: '',
+                bio: '',
+                artistLink: '',
+                profileImageUrl: '',
+                artistTitle: ''
+            });
         }
 
         const { accountName, bio, artistLink, profileImageUrl, artistTitle } = user;
