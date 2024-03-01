@@ -722,7 +722,7 @@ const updateTrackThumbnail = async (req, res) => {
 };
 
 const getVideoMetadata = async (req, res) => {
-    const { videoId } = req.params;
+    const { id } = req.params;
     const client = await new MongoClient(MONGO_URI, options);
     
     try {
@@ -730,8 +730,8 @@ const getVideoMetadata = async (req, res) => {
         const db = client.db("db-name");
         const videosCollection = db.collection('ContentMetaData'); 
         
-        // Query for the video by videoId
-        const video = await videosCollection.findOne({ _id: ObjectId(videoId) }//Recombee now working with multiple collection so now using _id
+        // Query for the video by id
+        const video = await videosCollection.findOne({ _id: ObjectId(id) }//Recombee now working with multiple collection so now using _id
             /*
             , {
             projection: { owner: 1, title: 1, selectedImageThumbnail: 1, fileUrl:1 }
