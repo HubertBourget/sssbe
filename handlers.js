@@ -1105,6 +1105,33 @@ const postNewContentTypePropertyWithAttributes = async (req, res) => {
     }
 };
 
+const getSearchResult = async (req, res) => {
+    const { userId, searchQuery } = req.query;
+    const count = 5; // Number of items to return
+
+    try {
+        // Perform separate searches for tracks, albums, and artists
+        const [tracks, albums, artists] = await Promise.all([
+            client.send(new rqs.SearchItems(userId, searchQuery, count, {'scenario': 'tracks_search_scenario'})),
+            client.send(new rqs.SearchItems(userId, searchQuery, count, {'scenario': 'albums_search_scenario'})),
+            client.send(new rqs.SearchItems(userId, searchQuery, count, {'scenario': 'artists_search_scenario'})),
+        ]);
+
+        // Compile the results into a structured object
+        const searchResults = {
+            tracks: tracks.recomms,
+            albums: albums.recomms,
+            artists: artists.recomms,
+        };
+
+        // Return the compiled search results
+        res.status(200).json(searchResults);
+    } catch (error) {
+        console.error('Search request failed:', error);
+        res.status(500).json({ message: 'Internal server error during search' });
+    }
+}
+
 module.exports = {
     getServerHomePage,
     postContentMetaData,
@@ -1124,6 +1151,7 @@ module.exports = {
     decodeCreds,
     syncCatalog,
     getItemToUserRecommendations,
+    getSearchResult,
     addUserOnRecombee,
     setUserOnRecombee,
     getItemToItemRecommendations,

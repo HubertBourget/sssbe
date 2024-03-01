@@ -22,6 +22,7 @@ const {
   decodeCreds,
   syncCatalog,
   getItemToUserRecommendations,
+  getSearchResult,
   addUserOnRecombee,
   setUserOnRecombee,
   getItemToItemRecommendations,
@@ -90,9 +91,10 @@ express()
   //Recombee:
   .get("/api/syncCatalog", syncCatalog)
   .get("/api/getItemToUserRecommendations/:userId", getItemToUserRecommendations)
+  .get("/api/getItemToItemRecommendations/:userId/:itemId", getItemToItemRecommendations)
+  .get("/api/getSearchResult/:searchQuery", getSearchResult)
   // .post("/api/addUserOnRecombee/:userId", addUserOnRecombee) //For Manual Insertion Only!
   // .post("/api/setUserOnRecombee/:userId", setUserOnRecombee) //For Manual Insertion Only!
-  .get("/api/getItemToItemRecommendations/:userId/:itemId", getItemToItemRecommendations)
 
   //MongoDB data management:
   .post("/api/postNewContentTypePropertyWithAttributes", postNewContentTypePropertyWithAttributes)
