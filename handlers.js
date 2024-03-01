@@ -1107,6 +1107,8 @@ const postNewContentTypePropertyWithAttributes = async (req, res) => {
 
 const getSearchResult = async (req, res) => {
     const { user, searchQuery } = req.query;
+    console.log("user: ", user);
+    console.lolg("searchQuery: ", searchQuery);
     const count = 5; // Number of items to return
 
     try {
