@@ -92,7 +92,7 @@ express()
   .get("/api/syncCatalog", syncCatalog)
   .get("/api/getItemToUserRecommendations/:userId", getItemToUserRecommendations)
   .get("/api/getItemToItemRecommendations/:userId/:itemId", getItemToItemRecommendations)
-  .get("/api/getSearchResult/:searchQuery", getSearchResult)
+  .get("/api/getSearchResult/:userId/:searchQuery", getSearchResult)
   // .post("/api/addUserOnRecombee/:userId", addUserOnRecombee) //For Manual Insertion Only!
   // .post("/api/setUserOnRecombee/:userId", setUserOnRecombee) //For Manual Insertion Only!
 
