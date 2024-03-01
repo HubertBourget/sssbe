@@ -1174,7 +1174,7 @@ const saveOrder = async (req, res) => {
         const db = client.db('db-name');
         const orderCollection = db.collection('orderHistories');
         const {description, amount, status, userId}= req.body
-        const savedOrder = await orderCollection.insertOne({description, amount, status, userId})
+        const savedOrder = await orderCollection.insertOne({description, amount, status, userId, time: new Date()})
 
         res.status(200).json({ status: 200, message: "order saved successfully", savedOrder });
     } catch (e) {
