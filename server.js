@@ -38,6 +38,12 @@ const {
   getAlbumById,
   deleteAlbum,
   postNewContentTypePropertyWithAttributes,
+  postNewCardForPayment,
+  getCard,
+  getAllCards,
+  getPaymentToken,
+  saveOrder,
+  getOrders,
 } = require("./handlers");
 
 const {
@@ -96,6 +102,12 @@ express()
 
   //MongoDB data management:
   .post("/api/postNewContentTypePropertyWithAttributes", postNewContentTypePropertyWithAttributes)
+  .post("/api/postNewCardForPayment", postNewCardForPayment)
+  .post("/api/getCard", getCard)
+  .get("/api/getAllCards/:userId", getAllCards)
+  .get("/api/getTilopayToken", getPaymentToken)
+  .post("/api/saveOrder", saveOrder)
+  .get("/api/orders/:userId", getOrders)
 
   .listen(PORT, () => {
     console.log(`Server launched on port ${PORT}`);

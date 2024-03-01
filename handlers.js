@@ -4,6 +4,9 @@ require("dotenv").config();
 const { MONGO_URI } = process.env;
 const { SyncRecombee } = require("./utils/SyncRecombee");
 const storage = require('./utils/googleCloudStorage');
+const { encryptJSON, decryptJSON } = require("./utils/cardDetailsEncryption");
+const mongoose = require("mongoose");
+const axios = require("axios");
 
 const { 
     AddUser,
@@ -1084,6 +1087,121 @@ const postNewContentTypePropertyWithAttributes = async (req, res) => {
     }
 };
 
+const postNewCardForPayment = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+    try {
+        await client.connect();
+        const {card, expire, cvv, userId, nameOnCard, cardCompany} = req.body
+        const db = client.db('db-name')
+        const userCollection = db.collection('userAccounts')
+        const paymentMethodCollection = db.collection('paymentMethods')
+        const user = await userCollection.findOne({_id: new mongoose.Types.ObjectId(userId)})
+        if(!user){
+            throw new Error('user not found')
+        }
+        const encryptedCardDetails = encryptJSON({card, expire, cvv, nameOnCard, cardCompany})
+        const savedCard = await paymentMethodCollection.insertOne({encryptedCardDetails, userId})
+
+        res.status(200).json({ status: 200, message: "Card saved successfully", savedCard });
+    } catch (e) {
+        res.status(500).json({ status: 500, message: e.message });
+    } finally {
+        await client.close();
+    }
+};
+
+const getCard = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+    try {
+        await client.connect();
+        const {_id, userId} = req.body
+        const db = client.db('db-name')
+        const paymentMethodCollection = db.collection('paymentMethods')
+        const card = await paymentMethodCollection.findOne({_id: new mongoose.Types.ObjectId(_id), userId: userId})
+        if(!card){
+            throw new Error('card not found')
+        }
+        const decryptedCardDetails = decryptJSON(card.encryptedCardDetails)
+        delete card.encryptedCardDetails
+        res.status(200).json({ status: 200, message: "Card fetched successfully", card: {...card, ...decryptedCardDetails} });
+    } catch (e) {
+        res.status(500).json({ status: 500, message: e.message });
+    } finally {
+        await client.close();
+    }
+};
+
+const getAllCards = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+    try {
+        await client.connect();
+        const {userId} = req.params
+        const db = client.db('db-name')
+        const paymentMethodCollection = db.collection('paymentMethods')
+        let cards = await paymentMethodCollection.find({userId: userId}).toArray()
+        cards = cards.map((card) => {
+            let decrypted = decryptJSON(card.encryptedCardDetails)
+            delete card.encryptedCardDetails
+            return {...card, ...decrypted}
+        })        
+        res.status(200).json({ status: 200, message: "Cards fetched successfully", cards });
+    } catch (e) {
+        res.status(500).json({ status: 500, message: e.message });
+    } finally {
+        await client.close();
+    }
+};
+
+const getPaymentToken = async (req, res) => {
+    try {
+      const token = await axios.post("https://app.tilopay.com/api/v1/loginSdk", {
+        apiuser: process.env.TILOPAY_API_USER,
+        password: process.env.TILOPAY_PASSWORD,
+        key: process.env.TILOPAY_KEY,
+      });
+      res
+        .status(200)
+        .json({ status: 200, message: "token fetched successfully", token: token.data.access_token});
+    } catch (e) {
+      res.status(500).json({ status: 500, message: e.message });
+    }
+};
+
+const saveOrder = async (req, res) => {
+   const client = new MongoClient(MONGO_URI, options);
+    try {
+        await client.connect();
+        const db = client.db('db-name');
+        const orderCollection = db.collection('orderHistories');
+        const {description, amount, status, userId}= req.body
+        const savedOrder = await orderCollection.insertOne({description, amount, status, userId})
+
+        res.status(200).json({ status: 200, message: "order saved successfully", savedOrder });
+    } catch (e) {
+        console.error("Error updating content types:", e.message);
+        res.status(400).json({ status: 400, message: e.message });
+    } finally {
+        await client.close();
+    }
+};
+
+const getOrders = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+     try {
+         await client.connect();
+         const db = client.db('db-name');
+         const orderCollection = db.collection('orderHistories');
+         const {userId}= req.params
+         const orders = await orderCollection.find({userId}).toArray()
+ 
+         res.status(200).json({ status: 200, message: "orders fetched successfully", orders });
+     } catch (e) {
+         res.status(500).json({ status: 500, message: e.message });
+     } finally {
+         await client.close();
+     }
+ };
+
 module.exports = {
     getServerHomePage,
     postContentMetaData,
@@ -1119,4 +1237,10 @@ module.exports = {
     getAlbumById,
     deleteAlbum,
     postNewContentTypePropertyWithAttributes,
+    postNewCardForPayment,
+    getCard,
+    getAllCards,
+    getPaymentToken,
+    saveOrder,
+    getOrders
 };
