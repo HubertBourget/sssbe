@@ -12,6 +12,7 @@ const {
     RecommendItemsToUser,
     RecommendItemsToItem,
     SetItemValues,
+    SearchItems,
 } = require("recombee-api-client").requests;
 
 const options = {
@@ -1115,9 +1116,9 @@ const getSearchResult = async (req, res) => {
     try {
         // Perform separate searches for tracks, albums, and artists
         const [tracks, albums, artists] = await Promise.all([
-            recombeeClient.send(new rqs.SearchItems(userId, searchQuery, count, {'scenario': 'tracks_search_scenario'})),
-            recombeeClient.send(new rqs.SearchItems(userId, searchQuery, count, {'scenario': 'albums_search_scenario'})),
-            recombeeClient.send(new rqs.SearchItems(userId, searchQuery, count, {'scenario': 'artists_search_scenario'})),
+            recombeeClient.send(new SearchItems(userId, searchQuery, count, {'scenario': 'tracks_search_scenario'})),
+            recombeeClient.send(new SearchItems(userId, searchQuery, count, {'scenario': 'albums_search_scenario'})),
+            recombeeClient.send(new SearchItems(userId, searchQuery, count, {'scenario': 'artists_search_scenario'})),
         ]);
 
         // Compile the results into a structured object
