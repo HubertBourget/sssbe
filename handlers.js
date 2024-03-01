@@ -1107,6 +1107,7 @@ const postNewContentTypePropertyWithAttributes = async (req, res) => {
 
 const getSearchResult = async (req, res) => {
     const { user, searchQuery } = req.query;
+    const { recombeeClient } = require("./utils/constants");
     console.log("user: ", user);
     console.log("searchQuery: ", searchQuery);
     const count = 5; // Number of items to return
@@ -1114,9 +1115,9 @@ const getSearchResult = async (req, res) => {
     try {
         // Perform separate searches for tracks, albums, and artists
         const [tracks, albums, artists] = await Promise.all([
-            client.send(new rqs.SearchItems(user, searchQuery, count, {'scenario': 'tracks_search_scenario'})),
-            client.send(new rqs.SearchItems(user, searchQuery, count, {'scenario': 'albums_search_scenario'})),
-            client.send(new rqs.SearchItems(user, searchQuery, count, {'scenario': 'artists_search_scenario'})),
+            recombeeClient.send(new rqs.SearchItems(user, searchQuery, count, {'scenario': 'tracks_search_scenario'})),
+            recombeeClient.send(new rqs.SearchItems(user, searchQuery, count, {'scenario': 'albums_search_scenario'})),
+            recombeeClient.send(new rqs.SearchItems(user, searchQuery, count, {'scenario': 'artists_search_scenario'})),
         ]);
 
         // Compile the results into a structured object
