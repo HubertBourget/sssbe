@@ -1205,6 +1205,54 @@ const getOrders = async (req, res) => {
      }
  };
 
+ const savePlan = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+     try {
+         await client.connect();
+         const db = client.db('db-name');
+         const planCollection = db.collection('plans');
+         const userCollection = db.collection('userAccounts')
+         const {amount, type, userId}= req.body
+         const user = await userCollection.findOne({_id: new mongoose.Types.ObjectId(userId)})
+         if(!user){
+             throw new Error('user not found')
+         }
+         let plan = await planCollection.findOne({userId})
+         if(plan){
+             const order = await planCollection.updateOne({userId}, {$set: {amount, type, userId}})
+             res.status(200).json({ status: 200, message: "plan updated successfully", order });
+         }else{
+            const order = await planCollection.insertOne({amount, type, userId, time: new Date()})
+             res.status(200).json({ status: 200, message: "plan saved successfully", order });
+         } 
+     } catch (e) {
+         console.error("Error updating content types:", e.message);
+         res.status(400).json({ status: 400, message: e.message });
+     } finally {
+         await client.close();
+     }
+ };
+
+
+ const getPlanOfUser = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+     try {
+         await client.connect();
+         const db = client.db('db-name');
+         const planCollection = db.collection('plans');
+        
+         const {userId}= req.params
+        
+         let plan = await planCollection.findOne({userId})
+         res.status(200).json({ status: 200, message: "plan fetch successfully", plan });
+     } catch (e) {
+         console.error("Error updating content types:", e.message);
+         res.status(400).json({ status: 400, message: e.message });
+     } finally {
+         await client.close();
+     }
+ };
+
 module.exports = {
     getServerHomePage,
     postContentMetaData,
@@ -1245,5 +1293,7 @@ module.exports = {
     getAllCards,
     getPaymentToken,
     saveOrder,
-    getOrders
+    getOrders,
+    savePlan,
+    getPlanOfUser
 };

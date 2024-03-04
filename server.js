@@ -44,6 +44,8 @@ const {
   getPaymentToken,
   saveOrder,
   getOrders,
+  savePlan,
+  getPlanOfUser,
 } = require("./handlers");
 
 const {
@@ -108,6 +110,8 @@ express()
   .get("/api/getTilopayToken", getPaymentToken)
   .post("/api/saveOrder", saveOrder)
   .get("/api/orders/:userId", getOrders)
+  .post("/api/save-plan", savePlan)
+  .get("/api/get-plan/:userId", getPlanOfUser)
 
   .listen(PORT, () => {
     console.log(`Server launched on port ${PORT}`);
