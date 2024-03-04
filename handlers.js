@@ -4,7 +4,7 @@ require("dotenv").config();
 const { MONGO_URI } = process.env;
 const { SyncRecombee } = require("./utils/SyncRecombee");
 const storage = require('./utils/googleCloudStorage');
-const { encryptJSON, decryptJSON } = require("./utils/cardDetailsEncryption");
+const { decryptData } = require("./utils/cardDetailsEncryption");
 const mongoose = require("mongoose");
 const axios = require("axios");
 
@@ -1099,8 +1099,7 @@ const postNewCardForPayment = async (req, res) => {
         if(!user){
             throw new Error('user not found')
         }
-        const encryptedCardDetails = encryptJSON({card, expire, cvv, nameOnCard, cardCompany})
-        const savedCard = await paymentMethodCollection.insertOne({encryptedCardDetails, userId})
+        const savedCard = await paymentMethodCollection.insertOne({card, expire, cvv, nameOnCard, cardCompany, userId})
 
         res.status(200).json({ status: 200, message: "Card saved successfully", savedCard });
     } catch (e) {
@@ -1121,9 +1120,12 @@ const getCard = async (req, res) => {
         if(!card){
             throw new Error('card not found')
         }
-        const decryptedCardDetails = decryptJSON(card.encryptedCardDetails)
-        delete card.encryptedCardDetails
-        res.status(200).json({ status: 200, message: "Card fetched successfully", card: {...card, ...decryptedCardDetails} });
+        card.card = decryptData(card.card)
+        card.nameOnCard = decryptData(card.nameOnCard)
+        card.expire = decryptData(card.expire)
+        card.cardCompany = decryptData(card.cardCompany)
+        delete card.cvv
+        res.status(200).json({ status: 200, message: "Card fetched successfully", card });
     } catch (e) {
         res.status(500).json({ status: 500, message: e.message });
     } finally {
@@ -1138,11 +1140,12 @@ const getAllCards = async (req, res) => {
         const {userId} = req.params
         const db = client.db('db-name')
         const paymentMethodCollection = db.collection('paymentMethods')
-        let cards = await paymentMethodCollection.find({userId: userId}).toArray()
+        let cards = await paymentMethodCollection.find({userId: userId}).project({card: 1, expire: 1, cardCompany: 1, userId: 1}).toArray()
         cards = cards.map((card) => {
-            let decrypted = decryptJSON(card.encryptedCardDetails)
-            delete card.encryptedCardDetails
-            return {...card, ...decrypted}
+            card.card = decryptData(card.card).slice(-4)
+            card.expire = decryptData(card.expire)
+            card.cardCompany = decryptData(card.cardCompany)
+            return card
         })        
         res.status(200).json({ status: 200, message: "Cards fetched successfully", cards });
     } catch (e) {

@@ -1,23 +1,12 @@
-const crypto = require('crypto');
+const CryptoJS = require('crypto-js')
 
-function encryptJSON(jsonObj) {
-    const jsonString = JSON.stringify(jsonObj);
-
-    const cipher = crypto.createCipher('aes-256-cbc', process.env.CARD_ENCRYPTION_KEY);
-
-    let encryptedData = cipher.update(jsonString, 'utf-8', 'hex');
-    encryptedData += cipher.final('hex');
-
-    return encryptedData;
+function encryptData(data){
+    return CryptoJS.AES.encrypt(data, process.env.CARD_ENCRYPTION_KEY).toString();
 }
 
-function decryptJSON(encryptedData) {
-    const decipher = crypto.createDecipher('aes-256-cbc', process.env.CARD_ENCRYPTION_KEY);
-
-    let decryptedData = decipher.update(encryptedData, 'hex', 'utf-8');
-    decryptedData += decipher.final('utf-8');
-
-    return JSON.parse(decryptedData);
+function decryptData(encryptedText){
+    const bytes = CryptoJS.AES.decrypt(encryptedText, process.env.CARD_ENCRYPTION_KEY);
+    return bytes.toString(CryptoJS.enc.Utf8);
 }
 
-module.exports = {encryptJSON, decryptJSON}
+module.exports = {encryptData, decryptData}
