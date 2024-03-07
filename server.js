@@ -39,6 +39,7 @@ const {
   getAlbumById,
   deleteAlbum,
   postNewContentTypePropertyWithAttributes,
+  postCreateLiveStream,
 } = require("./handlers");
 
 const {
@@ -98,6 +99,9 @@ express()
 
   //MongoDB data management:
   .post("/api/postNewContentTypePropertyWithAttributes", postNewContentTypePropertyWithAttributes)
+
+  //Mux endpoint:
+  /post("/api/postCreateLiveStream", postCreateLiveStream)
 
   .listen(PORT, () => {
     console.log(`Server launched on port ${PORT}`);

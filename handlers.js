@@ -4,6 +4,8 @@ require("dotenv").config();
 const { MONGO_URI } = process.env;
 const { SyncRecombee } = require("./utils/SyncRecombee");
 const storage = require('./utils/googleCloudStorage');
+const { Video } = require('@mux/mux-node');
+const mux = new Video(process.env.MUX_ACCESS_TOKEN, process.env.MUX_SECRET_KEY);
 
 const { 
     AddUser,
@@ -1136,7 +1138,20 @@ const getSearchResult = async (req, res) => {
         console.error('Search request failed:', error);
         res.status(500).json({ message: 'Internal server error during search' });
     }
-}
+};
+
+const postCreateLiveStream = async (req, res) => {
+try {
+    const liveStream = await mux.LiveStreams.create({
+        playback_policy: ['public'],
+        new_asset_settings: { playback_policy: ['public'] },
+        });
+        res.json(liveStream);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error creating live stream');
+    }
+};
 
 module.exports = {
     getServerHomePage,
@@ -1174,4 +1189,5 @@ module.exports = {
     getAlbumById,
     deleteAlbum,
     postNewContentTypePropertyWithAttributes,
+    postCreateLiveStream,
 };
