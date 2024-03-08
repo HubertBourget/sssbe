@@ -541,12 +541,13 @@ const deleteContent = async (req, res) => {
 };
 
 const postNewAlbum = async (req, res) => {
-const { owner, albumName, selectedImageThumbnail } = req.body;
+const { owner, albumName, selectedImageThumbnail, description } = req.body;
     const AlbumMetaData = {
         owner,
         timestamp: new Date(),
         albumName,
         selectedImageThumbnail,
+        description,
         contentType: 'AlbumMetaData',
     };
     const client = await new MongoClient(MONGO_URI, options);
@@ -1303,6 +1304,110 @@ const addEvent = async (req, res) => {
      }
  };
 
+ const addTrackToAlbum = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+     try {
+         await client.connect();
+         const db = client.db('db-name');
+         let {owner, trackId, albumId} = req.body
+         const albumCollection = db.collection('AlbumMetaData');
+         const userCollection = db.collection('userAccounts');
+         const contentCollection = db.collection('ContentMetaData');
+         const user = await userCollection.findOne({ email: owner });
+         const content = await contentCollection.findOne({ _id: new ObjectId(trackId) });
+         const album = await albumCollection.findOne({ _id: new ObjectId(albumId) });
+        
+        if (!user || !content || !album) {
+            return res.status(404).json({ exist: false, message: 'User or Track not found' });
+        }
+
+        if(album.owner !== owner){
+            return res.status(404).json({ exist: false, message: 'User have not authority to change album' });
+        }
+        let tracks = []
+
+        if (Array.isArray(album.tracks)) {
+            tracks = [...album.tracks]; 
+            if(tracks.includes(trackId)){
+                return res.status(409).json({success : false, message:'This song is already in the playlist'})
+            }else{
+               tracks.push(trackId)  
+            }
+        } else {
+            tracks.push(trackId);
+        }
+           
+        await albumCollection.updateOne({_id: new ObjectId(albumId)},  { $set: { tracks } })
+         res.status(200).json({ status: 200, message: "Track added successfully" });
+     } catch (e) {
+         res.status(500).json({ status: 500, message: e.message });
+     } finally {
+         await client.close();
+     }
+ };
+
+ const getAlbum = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+     try {
+         await client.connect();
+         const db = client.db('db-name');
+         const {albumId}= req.params
+       
+         const albumCollection = db.collection('AlbumMetaData');
+         const album = await albumCollection.aggregate([
+            {$match: {_id: new ObjectId(albumId)}},
+            {
+                $lookup: {
+                    from: 'ContentMetaData',
+                    let: { trackIds: { $ifNull: ["$tracks", []] } },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: { $in: ["$_id", { $map: { input: "$$trackIds", as: "id", in: { $toObjectId: "$$id" } } }] }
+                            }
+                        }
+                    ],
+                    as: 'tracksArray'
+                }
+            }
+    ,
+        ]).toArray()
+ 
+         res.status(200).json({ status: 200, message: "Album fetched successfully", album: album[0] });
+     } catch (e) {
+         res.status(500).json({ status: 500, message: e.message });
+     } finally {
+         await client.close();
+     }
+ };
+
+ const getTrack = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+     try {
+         await client.connect();
+         const db = client.db('db-name');
+         const {trackId}= req.params
+       
+         const trackCollection = db.collection('ContentMetaData');
+         const track = await trackCollection.aggregate([
+            {$match: {_id: new ObjectId(trackId)}},
+            {$lookup: {
+                from: 'userAccounts',
+                localField: 'owner',
+                foreignField: 'email',
+                as: 'user'
+            }},
+            {$unwind: '$user'}
+        ]).toArray()
+ 
+         res.status(200).json({ status: 200, message: "Track fetched successfully", track: track[0] });
+     } catch (e) {
+         res.status(500).json({ status: 500, message: e.message });
+     } finally {
+         await client.close();
+     }
+ };
+
  const addOffering = async (req, res) => {
     const client = new MongoClient(MONGO_URI, options);
      try {
@@ -1361,6 +1466,8 @@ const addEvent = async (req, res) => {
      }
  };
 
+
+
 module.exports = {
     getServerHomePage,
     postContentMetaData,
@@ -1403,5 +1510,8 @@ module.exports = {
     getEvents,
     addOffering,
     getOfferings,
-    getUserProfileById
+    getUserProfileById,
+    addTrackToAlbum,
+    getAlbum,
+    getTrack
 };

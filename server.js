@@ -46,6 +46,9 @@ const {
   getOfferings,
   getUserProfileById,
   getFeaturedByArtist,
+  addTrackToAlbum,
+  getAlbum,
+  getTrack,
 } = require("./handlers");
 
 const {
@@ -109,6 +112,9 @@ express()
   //MongoDB data management:
   .post("/api/postNewContentTypePropertyWithAttributes", postNewContentTypePropertyWithAttributes)
   .post("/api/addEvent", addEvent)
+  .post("/api/addTrackToAlbum", addTrackToAlbum)
+  .get("/api/getAlbum/:albumId", getAlbum)
+  .get("/api/getTrack/:trackId", getTrack)
   .get("/api/getEvents/:userId", getEvents)
   .post("/api/addOffering", addOffering)
   .get("/api/getOfferings/:userId", getOfferings)
