@@ -39,6 +39,13 @@ const {
   getAlbumById,
   deleteAlbum,
   postNewContentTypePropertyWithAttributes,
+  getAllContent,
+  addEvent,
+  getEvents,
+  addOffering,
+  getOfferings,
+  getUserProfileById,
+  getFeaturedByArtist,
 } = require("./handlers");
 
 const {
@@ -61,6 +68,7 @@ express()
   .post("/api/updateContentMetaData", updateContentMetaData)
   .post("/api/updateUserProfile", updateUserProfile)
   .get("/api/getUserProfile/:userId", getUserProfile)
+  .get("/api/getUserProfileById/:userId", getUserProfileById)
   .post("/api/postProfileImage", postProfileImage)
   .get("/api/getCheckAccountName", getCheckAccountName)
   .post("/api/postCreateImageThumbnail", CreateImageThumbnail)
@@ -68,6 +76,8 @@ express()
   .get("/api/b_getUserExist/:userId", b_getUserExist)
   .post("/api/postNewUserWithAccountName", postNewUserWithAccountName)
   .get("/api/getContentByArtist", getContentByArtist)
+  .get("/api/getFeaturedByArtist", getFeaturedByArtist)
+  .get("/api/getAllContent", getAllContent)
   .get("/api/getApprovedVideoContent", getApprovedVideoContent)
   .delete("/api/deleteContent", deleteContent)
   .post("/api/postNewAlbum", postNewAlbum)
@@ -98,6 +108,10 @@ express()
 
   //MongoDB data management:
   .post("/api/postNewContentTypePropertyWithAttributes", postNewContentTypePropertyWithAttributes)
+  .post("/api/addEvent", addEvent)
+  .get("/api/getEvents/:userId", getEvents)
+  .post("/api/addOffering", addOffering)
+  .get("/api/getOfferings/:userId", getOfferings)
 
   .listen(PORT, () => {
     console.log(`Server launched on port ${PORT}`);

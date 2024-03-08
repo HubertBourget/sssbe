@@ -187,24 +187,26 @@ const updateContentMetaData = async (req, res) => {
 };
 
 const updateUserProfile = async (req, res) => {
-    const { accountName, bio, artistLink, email, artistTitle } = req.body;
+    const { accountName, bio, artistLink, userId, artistTitle, bannerImageUrl, profileImageUrl } = req.body;
 
     const client = await MongoClient.connect(MONGO_URI, options);
     try {
         const db = client.db("db-name");
         const collection = db.collection("userAccounts");
 
-        const query = { email: email };
+        const query = { _id: new ObjectId(userId) };
         const update = {
             $set: {
                 accountName,
                 bio,
                 artistLink,
                 artistTitle,
+                bannerImageUrl,
+                profileImageUrl
             },
         };
         const options = { returnOriginal: false };
-
+        const user = await collection.findOne(query)
         const result = await collection.findOneAndUpdate(query, update, options);
 
         if (!result.value) {
@@ -275,6 +277,44 @@ const getUserProfile = async (req, res) => {
         const { accountName, bio, artistLink, profileImageUrl, artistTitle } = user;
 
         return res.status(200).json({ accountName, bio, artistLink, profileImageUrl, artistTitle });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    } finally {
+        await client.close();
+    }
+};
+
+const getUserProfileById = async (req, res) => {
+    if (!req.params.userId || req.params.userId === 'undefined') {
+
+        return res.status(200).json({
+            accountName: '',
+            bio: '',
+            artistLink: '',
+            profileImageUrl: '',
+            artistTitle: ''
+        });
+    }
+
+    const client = await new MongoClient(MONGO_URI, options);
+    try {
+        const db = client.db("db-name");
+        const collection = db.collection('userAccounts');
+        const user = await collection.findOne({ _id: new ObjectId(req.params.userId) });
+        console.log(user)
+        if (!user) {
+            return res.status(200).json({
+                accountName: '',
+                bio: '',
+                artistLink: '',
+                profileImageUrl: '',
+                artistTitle: ''
+            });
+        }
+
+
+        return res.status(200).json(user);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Server error' });
@@ -406,6 +446,26 @@ const getContentByArtist = async (req, res) => {
     }
 };
 
+const getFeaturedByArtist = async (req, res) => {
+    const client = await new MongoClient(MONGO_URI, options);
+
+    try {
+        const { artistId } = req.query;
+        if (!artistId) {
+        return res.status(400).json({ message: 'Missing artistId parameter' });
+        }
+        await client.connect();
+        const collection = client.db('db-name').collection('ContentMetaData');
+        const contentDocuments = await collection.find({ owner: artistId, isFeatured: true }).toArray();
+        res.json(contentDocuments);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    } finally {
+        client.close();
+    }
+};
+
 const getApprovedVideoContent = async (req, res) => {
     const client = await new MongoClient(MONGO_URI, options);
 
@@ -481,15 +541,14 @@ const deleteContent = async (req, res) => {
 };
 
 const postNewAlbum = async (req, res) => {
-const { albumId, owner, timestamp } = req.body;
+const { owner, albumName, selectedImageThumbnail } = req.body;
     const AlbumMetaData = {
         owner,
-        timestamp,
-        albumId,
-        albumName: '',
+        timestamp: new Date(),
+        albumName,
+        selectedImageThumbnail,
         contentType: 'AlbumMetaData',
     };
-
     const client = await new MongoClient(MONGO_URI, options);
     try{
         client.connect();
@@ -752,16 +811,16 @@ const getVideoMetadata = async (req, res) => {
         const db = client.db("db-name");
         const videosCollection = db.collection('ContentMetaData'); 
         
-        // Query for the video by id
-        const video = await videosCollection.findOne({ _id: new ObjectId(id) }//Recombee now working with multiple collection so now using _id
-            /*
-            , {
-            projection: { owner: 1, title: 1, selectedImageThumbnail: 1, fileUrl:1 }
-        }
-            
-            */
-            );
-        
+            const video = await videosCollection.aggregate([
+                {$match: {_id: new ObjectId(id)}},
+                {$lookup: {
+                    from: 'userAccounts',
+                    localField: 'owner',
+                    foreignField: 'email',
+                    as: 'user'
+                }},
+                {$unwind: '$user'}
+            ]).toArray()
         if (!video) {
             // If no video is found, return a 404 response
             return res.status(404).json({ message: 'Video not found' });
@@ -769,11 +828,14 @@ const getVideoMetadata = async (req, res) => {
         
         // If a video is found, return the video metadata
         return res.status(200).json({
-            videoId: video.videoId,
-            owner: video.owner,
-            title: video.title,
-            selectedImageThumbnail: video.selectedImageThumbnail || null,
-            fileUrl: video.fileUrl,
+            videoId: video[0].videoId,
+            owner: video[0].owner,
+            isOnlyAudio: video[0].isOnlyAudio,
+            title: video[0].title,
+            selectedImageThumbnail: video[0].selectedImageThumbnail || null,
+            fileUrl: video[0].fileUrl,
+            _id:video[0]._id,
+            user: video[0].user
         });
 
         
@@ -800,7 +862,18 @@ const getAlbumsByArtist = async (req, res) => {
         const albumsCollection = db.collection('AlbumMetaData');
 
         // Find albums where the 'owner' field matches the artistId (user's email)
-        const albums = await albumsCollection.find({ owner: artistId }).toArray();
+        // const albums = await albumsCollection.find({ owner: artistId }).toArray();
+        const albums = await albumsCollection.aggregate([
+            {$match: { owner: artistId }},
+            {$lookup: {
+                from: 'userAccounts',
+                localField: 'owner',
+                foreignField: 'email',
+                as: 'user'
+            }},
+            {$unwind: '$user'}
+        ]).toArray()
+
 
         if(albums.length === 0) {
             // If no albums are found, send a message indicating such
@@ -1138,6 +1211,156 @@ const getSearchResult = async (req, res) => {
     }
 }
 
+
+const getAllContent = async (req, res) => {
+    const client = await new MongoClient(MONGO_URI, options);
+    let {type} = req.query
+    try {
+        await client.connect();
+        let match = {};
+        if(type === 'audio'){
+            match.isOnlyAudio = true
+        }else if(type === 'video'){
+            match.isOnlyAudio = false
+        } 
+        const collection = client.db('db-name').collection('ContentMetaData');
+        // const contentDocuments = await collection.find({ isOnlyAudio: type === 'audio'? true : false }).toArray();
+        const contentDocuments = await collection.aggregate([
+            {$match: match},
+            {$lookup: {
+                from: 'userAccounts',
+                localField: 'owner',
+                foreignField: 'email',
+                as: 'user'
+            }},
+            {$unwind: '$user'}
+        ]).toArray()
+
+        res.json(contentDocuments);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    } finally {
+        client.close();
+    }
+};
+
+const addEvent = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+     try {
+         await client.connect();
+         const db = client.db('db-name');
+         const eventCollection = db.collection('eventMetaData');
+         const {eventName, host, eventTime, eventLocation, userId}= req.body
+         const savedEvent = await eventCollection.insertOne({eventName, host, eventTime: new Date(eventTime), eventLocation, userId})
+ 
+         res.status(200).json({ status: 200, message: "Event saved successfully", savedEvent });
+     } catch (e) {
+         console.error("Error updating content types:", e.message);
+         res.status(400).json({ status: 400, message: e.message });
+     } finally {
+         await client.close();
+     }
+ };
+
+ const getEvents = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+     try {
+         await client.connect();
+         const db = client.db('db-name');
+         const {userId}= req.params
+         let match = {}
+         if(userId !== 'all'){
+            match['userId']=userId;
+         }
+         const eventCollection = db.collection('eventMetaData');
+         const events = await eventCollection.aggregate([
+            {$match: match},
+            {
+                $lookup: {
+                  from: 'userAccounts',
+                  let: { userId: '$userId' },
+                  pipeline: [
+                    {
+                      $match: {
+                        $expr: {
+                          $eq: [ '$_id', { $toObjectId: '$$userId' } ] // Convert userId to ObjectId for comparison
+                        }
+                      }
+                    }
+                  ],
+                  as: 'user'
+                }
+              },
+            {$unwind: '$user'}
+        ]).toArray()
+ 
+         res.status(200).json({ status: 200, message: "Events fetched successfully", events });
+     } catch (e) {
+         res.status(500).json({ status: 500, message: e.message });
+     } finally {
+         await client.close();
+     }
+ };
+
+ const addOffering = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+     try {
+         await client.connect();
+         const db = client.db('db-name');
+         const offeringCollection = db.collection('offeringtMetaData');
+         const {offeringName, userId, offeringImageThumbnailUrl}= req.body
+         const savedOffering = await offeringCollection.insertOne({offeringName, offeringImageThumbnailUrl, userId})
+ 
+         res.status(200).json({ status: 200, message: "Offer saved successfully", savedOffering });
+     } catch (e) {
+         console.error("Error updating content types:", e.message);
+         res.status(400).json({ status: 400, message: e.message });
+     } finally {
+         await client.close();
+     }
+ };
+
+ const getOfferings = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+     try {
+         await client.connect();
+         const db = client.db('db-name');
+         const {userId}= req.params
+         let match = {}
+         if(userId !== 'all'){
+            match['userId']=userId;
+         }
+         const offeringCollection = db.collection('offeringtMetaData');
+         const events = await offeringCollection.aggregate([
+            {$match: match},
+            {
+                $lookup: {
+                  from: 'userAccounts',
+                  let: { userId: '$userId' },
+                  pipeline: [
+                    {
+                      $match: {
+                        $expr: {
+                          $eq: [ '$_id', { $toObjectId: '$$userId' } ] // Convert userId to ObjectId for comparison
+                        }
+                      }
+                    }
+                  ],
+                  as: 'user'
+                }
+              },
+            {$unwind: '$user'}
+        ]).toArray()
+ 
+         res.status(200).json({ status: 200, message: "Offers fetched successfully", events });
+     } catch (e) {
+         res.status(500).json({ status: 500, message: e.message });
+     } finally {
+         await client.close();
+     }
+ };
+
 module.exports = {
     getServerHomePage,
     postContentMetaData,
@@ -1174,4 +1397,11 @@ module.exports = {
     getAlbumById,
     deleteAlbum,
     postNewContentTypePropertyWithAttributes,
+    getFeaturedByArtist,
+    getAllContent,
+    addEvent,
+    getEvents,
+    addOffering,
+    getOfferings,
+    getUserProfileById
 };
