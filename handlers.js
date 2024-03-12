@@ -751,6 +751,7 @@ const getVideoMetadata = async (req, res) => {
 
     console.log("getVideoMetadata for: ", id);
     
+    
     try {
         await client.connect();
         const db = client.db("db-name");
