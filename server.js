@@ -98,7 +98,7 @@ express()
   // .post("/api/setUserOnRecombee/:userId", setUserOnRecombee) //For Manual Insertion Only!
 
   //MongoDB data management:
-  .post("/api/postNewContentTypePropertyWithAttributes", postNewContentTypePropertyWithAttributes)
+  // .post("/api/postNewContentTypePropertyWithAttributes", postNewContentTypePropertyWithAttributes)
 
   //Mux endpoint:
   .post("/api/postCreateLiveStream", postCreateLiveStream)
