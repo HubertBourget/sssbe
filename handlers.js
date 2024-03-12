@@ -748,6 +748,8 @@ const updateTrackThumbnail = async (req, res) => {
 const getVideoMetadata = async (req, res) => {
     const { id } = req.params;
     const client = await new MongoClient(MONGO_URI, options);
+
+    console.log("getVideoMetadata for: ", id);
     
     try {
         await client.connect();
