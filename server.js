@@ -101,7 +101,7 @@ express()
   .post("/api/postNewContentTypePropertyWithAttributes", postNewContentTypePropertyWithAttributes)
 
   //Mux endpoint:
-  /post("/api/postCreateLiveStream", postCreateLiveStream)
+  .post("/api/postCreateLiveStream", postCreateLiveStream)
 
   .listen(PORT, () => {
     console.log(`Server launched on port ${PORT}`);
