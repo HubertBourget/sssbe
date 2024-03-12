@@ -456,7 +456,17 @@ const getFeaturedByArtist = async (req, res) => {
         }
         await client.connect();
         const collection = client.db('db-name').collection('ContentMetaData');
-        const contentDocuments = await collection.find({ owner: artistId, isFeatured: true }).toArray();
+        // const contentDocuments = await collection.find({ owner: artistId, isFeatured: true }).toArray();
+        const contentDocuments = await collection.aggregate([
+            {$match: {owner: artistId, isFeatured: true}},
+            {$lookup: {
+                from: 'userAccounts',
+                localField: 'owner',
+                foreignField: 'email',
+                as: 'user'
+            }},
+            {$unwind: '$user'}
+        ]).toArray()
         res.json(contentDocuments);
     } catch (error) {
         console.error(error);
