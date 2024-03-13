@@ -758,14 +758,7 @@ const getVideoMetadata = async (req, res) => {
         const videosCollection = db.collection('ContentMetaData'); 
         
         // Query for the video by id
-        const video = await videosCollection.findOne({ _id: new ObjectId(id) }//Recombee now working with multiple collection so now using _id
-            /*
-            , {
-            projection: { owner: 1, title: 1, selectedImageThumbnail: 1, fileUrl:1 }
-        }
-            
-            */
-            );
+        const video = await videosCollection.findOne({ videoId: id } );
         
         if (!video) {
             // If no video is found, return a 404 response
