@@ -1102,7 +1102,7 @@ const getItemPropertiesFromRecombee = async (req, res) => {
     const { recombeeClient } = require("./utils/constants");
     const rqs = require('recombee-api-client/lib/requests');
     try {
-        const response = await recombeeClient.send(new rqs.GetItemValues(itemId));
+        const response = await recombeeClient.send(new GetItemValues(itemId));
         res.status(200).json({ 
             message: 'Item properties fetched successfully', 
             data: response 
