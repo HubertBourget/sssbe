@@ -5,6 +5,7 @@ const { MONGO_URI } = process.env;
 const { SyncRecombee } = require("./utils/SyncRecombee");
 const storage = require('./utils/googleCloudStorage');
 const { Video } = require('@mux/mux-node');
+const { timeStamp } = require("console");
 const mux = new Video(process.env.MUX_ACCESS_TOKEN, process.env.MUX_SECRET_KEY);
 
 const { 
