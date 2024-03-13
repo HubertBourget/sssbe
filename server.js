@@ -25,6 +25,7 @@ const {
   getSearchResult,
   addUserOnRecombee,
   setUserOnRecombee,
+  getItemPropertiesFromRecombee,
   getItemToItemRecommendations,
   postNewAlbum,
   postAlbumImage,
@@ -96,6 +97,7 @@ express()
   .get("/api/getItemToUserRecommendations/:userId", getItemToUserRecommendations)
   .get("/api/getItemToItemRecommendations/:userId/:itemId", getItemToItemRecommendations)
   .get("/api/getSearchResult/:userId/:searchQuery", getSearchResult)
+  .get("/api/getItemPropertiesFromRecombee/:itemId", getItemPropertiesFromRecombee)
   // .post("/api/addUserOnRecombee/:userId", addUserOnRecombee) //For Manual Insertion Only!
   // .post("/api/setUserOnRecombee/:userId", setUserOnRecombee) //For Manual Insertion Only!
 

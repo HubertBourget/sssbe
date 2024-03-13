@@ -1095,6 +1095,25 @@ const setUserOnRecombee = async (req, res) => {
     }
 }
 
+const getItemPropertiesFromRecombee = async (req, res) => {
+    const itemId = req.params.itemId;
+
+    const { recombeeClient } = require("./utils/constants");
+    try {
+        const response = await recombeeClient.send(new rqs.GetItemValues(itemId));
+        res.status(200).json({ 
+            message: 'Item properties fetched successfully', 
+            data: response 
+        });
+    } catch (error) {
+        console.error('Error fetching item properties:', error);
+        res.status(500).json({ 
+            message: 'Failed to fetch item properties', 
+            error: error.message 
+        });
+    }
+}
+
 const getItemToItemRecommendations = async (req, res) => {
     const { itemId, userId } = req.params;
     const { recombeeClient } = require("./utils/constants");
@@ -1213,6 +1232,7 @@ module.exports = {
     getSearchResult,
     addUserOnRecombee,
     setUserOnRecombee,
+    getItemPropertiesFromRecombee,
     getItemToItemRecommendations,
     postNewAlbum,
     postAlbumImage,
