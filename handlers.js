@@ -16,6 +16,7 @@ const {
     RecommendItemsToItem,
     SetItemValues,
     SearchItems,
+    GetItemValues,
 } = require("recombee-api-client").requests;
 
 const options = {
