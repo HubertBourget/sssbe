@@ -1,17 +1,20 @@
 
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 require("dotenv").config();
 const { MONGO_URI } = process.env;
 const { SyncRecombee } = require("./utils/SyncRecombee");
 const storage = require('./utils/googleCloudStorage');
+const { Video } = require('@mux/mux-node');
+const mux = new Video(process.env.MUX_ACCESS_TOKEN, process.env.MUX_SECRET_KEY);
 
-const {
+const { 
     AddUser,
     AddUserProperty,
     SetUserValues,
     RecommendItemsToUser,
     RecommendItemsToItem,
     SetItemValues,
+    SearchItems,
 } = require("recombee-api-client").requests;
 
 const options = {
@@ -25,11 +28,13 @@ const getServerHomePage = async (req, res) => {
 
 const postNewUserWithAccountName = async (req, res) => {
     const { email, accountName, isArtist, timestamp } = req.body;
+    const contentType = "userAccounts";
     const user = {
         email,
         accountName,
         isArtist,
         timestamp,
+        contentType: contentType,
     };
 
     const client = await new MongoClient(MONGO_URI, options);
@@ -110,6 +115,7 @@ const postContentMetaData = async (req, res) => {
         b_isApproved: b_isApproved,
         visibility: visibility,
         category: category,
+        contentType: 'ContentMetaData',
     };
 
     const client = await new MongoClient(MONGO_URI, options);
@@ -236,15 +242,36 @@ const updateUserProfile = async (req, res) => {
 };
 
 const getUserProfile = async (req, res) => {
+    // Check if userId is undefined or not provided, and return a default object
+    if (!req.params.userId || req.params.userId === 'undefined') {
+        console.log("getUserProfile called with undefined userId");
+
+        // Return a default response with empty strings for user properties
+        return res.status(200).json({
+            accountName: '',
+            bio: '',
+            artistLink: '',
+            profileImageUrl: '',
+            artistTitle: ''
+        });
+    }
+
     const client = await new MongoClient(MONGO_URI, options);
     try {
         const db = client.db("db-name");
         const collection = db.collection('userAccounts');
-        console.log("getUserProfile :", req.params.userId );
+        console.log("getUserProfile:", req.params.userId);
         const user = await collection.findOne({ email: req.params.userId });
         
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            // If no user is found, return the default object as well
+            return res.status(200).json({
+                accountName: '',
+                bio: '',
+                artistLink: '',
+                profileImageUrl: '',
+                artistTitle: ''
+            });
         }
 
         const { accountName, bio, artistLink, profileImageUrl, artistTitle } = user;
@@ -371,7 +398,7 @@ const getContentByArtist = async (req, res) => {
         await client.connect();
         const collection = client.db('db-name').collection('ContentMetaData');
         const contentDocuments = await collection.find({ owner: artistId }).toArray();
-        console.log('contentDocuments :', contentDocuments)
+        // console.log('contentDocuments :', contentDocuments)
         res.json(contentDocuments);
     } catch (error) {
         console.error(error);
@@ -462,6 +489,7 @@ const { albumId, owner, timestamp } = req.body;
         timestamp,
         albumId,
         albumName: '',
+        contentType: 'AlbumMetaData',
     };
 
     const client = await new MongoClient(MONGO_URI, options);
@@ -717,24 +745,20 @@ const updateTrackThumbnail = async (req, res) => {
     }
 };
 
-const getVideoMetadata = async (req, res) => {
-    const { videoId } = req.params;
+const getVideoMetadataFromVideoId = async (req, res) => {
+    const { id } = req.params;
     const client = await new MongoClient(MONGO_URI, options);
+
+    console.log("getVideoMetadata for: ", id);
+    
     
     try {
         await client.connect();
         const db = client.db("db-name");
         const videosCollection = db.collection('ContentMetaData'); 
         
-        // Query for the video by videoId
-        const video = await videosCollection.findOne({ videoId: videoId }
-            /*
-            , {
-            projection: { owner: 1, title: 1, selectedImageThumbnail: 1, fileUrl:1 }
-        }
-            
-            */
-            );
+        // Query for the video by id
+        const video = await videosCollection.findOne({ videoId: id } );
         
         if (!video) {
             // If no video is found, return a 404 response
@@ -743,7 +767,45 @@ const getVideoMetadata = async (req, res) => {
         
         // If a video is found, return the video metadata
         return res.status(200).json({
-            videoId: videoId,
+            videoId: video.videoId,
+            owner: video.owner,
+            title: video.title,
+            selectedImageThumbnail: video.selectedImageThumbnail || null,
+            fileUrl: video.fileUrl,
+        });
+
+        
+    } catch (error) {
+        console.error("Failed to retrieve video metadata:", error);
+        res.status(500).json({ message: 'Internal server error' });
+    } finally {
+        await client.close();
+    }
+};
+
+const getVideoMetadataFromObjectId = async (req, res) => {
+    const { id } = req.params;
+    const client = await new MongoClient(MONGO_URI, options);
+
+    console.log("getVideoMetadata for: ", id);
+    
+    
+    try {
+        await client.connect();
+        const db = client.db("db-name");
+        const videosCollection = db.collection('ContentMetaData'); 
+        
+        // Query for the video by id
+        const video = await videosCollection.findOne({ _id: new ObjectId(id) } );
+        
+        if (!video) {
+            // If no video is found, return a 404 response
+            return res.status(404).json({ message: 'Video not found' });
+        }
+        
+        // If a video is found, return the video metadata
+        return res.status(200).json({
+            videoId: video.videoId,
             owner: video.owner,
             title: video.title,
             selectedImageThumbnail: video.selectedImageThumbnail || null,
@@ -1056,6 +1118,75 @@ const getItemToItemRecommendations = async (req, res) => {
     }
 };
 
+const postNewContentTypePropertyWithAttributes = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+    try {
+        await client.connect();
+        const db = client.db('db-name');
+        const collections = ['ContentMetaData', 'AlbumMetaData', 'userAccounts'];
+        for (const collectionName of collections) {
+            const collection = db.collection(collectionName);
+            const updateResult = await collection.updateMany(
+                {}, 
+                { $set: { contentType: collectionName } }
+            );
+            console.log(`${collectionName} updated count:`, updateResult.modifiedCount);
+        }
+
+        res.status(200).json({ status: 200, message: "Content types updated successfully across collections." });
+    } catch (e) {
+        console.error("Error updating content types:", e.message);
+        res.status(400).json({ status: 400, message: e.message });
+    } finally {
+        await client.close();
+    }
+};
+
+const getSearchResult = async (req, res) => {
+    const { userId, searchQuery } = req.params;
+    const { recombeeClient } = require("./utils/constants");
+    console.log("user: ", userId);
+    console.log("searchQuery: ", searchQuery);
+    const count = 5; // Number of items to return
+
+    try {
+        // Perform separate searches for tracks, albums, and artists
+        const [tracks, albums, artists] = await Promise.all([
+            recombeeClient.send(new SearchItems(userId, searchQuery, count, {'scenario': 'tracks_search_scenario'})),
+            recombeeClient.send(new SearchItems(userId, searchQuery, count, {'scenario': 'albums_search_scenario'})),
+            recombeeClient.send(new SearchItems(userId, searchQuery, count, {'scenario': 'artists_search_scenario'})),
+        ]);
+
+        console.log({ tracks, albums, artists });
+
+        // Compile the results into a structured object
+        const searchResults = {
+            tracks: tracks.recomms,
+            albums: albums.recomms,
+            artists: artists.recomms,
+        };
+
+        // Return the compiled search results
+        res.status(200).json(searchResults);
+    } catch (error) {
+        console.error('Search request failed:', error);
+        res.status(500).json({ message: 'Internal server error during search' });
+    }
+};
+
+const postCreateLiveStream = async (req, res) => {
+try {
+    const liveStream = await mux.LiveStreams.create({
+        playback_policy: ['public'],
+        new_asset_settings: { playback_policy: ['public'] },
+        });
+        res.json(liveStream);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error creating live stream');
+    }
+};
+
 module.exports = {
     getServerHomePage,
     postContentMetaData,
@@ -1075,6 +1206,7 @@ module.exports = {
     decodeCreds,
     syncCatalog,
     getItemToUserRecommendations,
+    getSearchResult,
     addUserOnRecombee,
     setUserOnRecombee,
     getItemToItemRecommendations,
@@ -1086,8 +1218,11 @@ module.exports = {
     postCoverImage,
     postBannerImage,
     updateTrackThumbnail,
-    getVideoMetadata,
+    getVideoMetadataFromVideoId,
+    getVideoMetadataFromObjectId,
     getAlbumsByArtist,
     getAlbumById,
     deleteAlbum,
+    postNewContentTypePropertyWithAttributes,
+    postCreateLiveStream,
 };
