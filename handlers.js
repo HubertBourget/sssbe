@@ -444,7 +444,10 @@ const deleteContent = async (req, res) => {
         }
         try {
             const itemProperties = { deleted: true };
-            const setItemValuesRequest = new SetItemValues(videoId, itemProperties);
+            const recombeeItemId = contentDocument._id.toString();
+            console.log('recombeeItemId :', recombeeItemId);
+            const setItemValuesRequest = new SetItemValues(recombeeItemId, itemProperties);
+            console.log('setItemValuesRequest', setItemValuesRequest);
             await recombeeClient.send(setItemValuesRequest);
         } catch (recombeeError) {
             console.error('Recombee error, proceeding with MongoDB deletion:', recombeeError);
