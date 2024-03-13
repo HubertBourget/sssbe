@@ -34,7 +34,8 @@ const {
   postCoverImage,
   postBannerImage,
   updateTrackThumbnail,
-  getVideoMetadata,
+  getVideoMetadataFromVideoId,
+  getVideoMetadataFromObjectId,
   getAlbumsByArtist,
   getAlbumById,
   deleteAlbum,
@@ -79,7 +80,8 @@ express()
   .post('/api/postCoverImage', postCoverImage)
   .post('/api/postBannerImage', postBannerImage)
   .post('/api/updateTrackThumbnail', updateTrackThumbnail)
-  .get("/api/getVideoMetadata/:id", getVideoMetadata)
+  .get("/api/getVideoMetadataFromVideoId/:id", getVideoMetadataFromVideoId)
+  .get("/api/getVideoMetadataFromObjectId/:id", getVideoMetadataFromObjectId)
   .get("/api/getAlbumsByArtist", getAlbumsByArtist)
   .get("/api/getAlbumById", getAlbumById)
   .delete("/api/deleteAlbum/:albumId", deleteAlbum)

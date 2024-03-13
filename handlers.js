@@ -745,7 +745,7 @@ const updateTrackThumbnail = async (req, res) => {
     }
 };
 
-const getVideoMetadata = async (req, res) => {
+const getVideoMetadataFromVideoId = async (req, res) => {
     const { id } = req.params;
     const client = await new MongoClient(MONGO_URI, options);
 
@@ -759,6 +759,44 @@ const getVideoMetadata = async (req, res) => {
         
         // Query for the video by id
         const video = await videosCollection.findOne({ videoId: id } );
+        
+        if (!video) {
+            // If no video is found, return a 404 response
+            return res.status(404).json({ message: 'Video not found' });
+        }
+        
+        // If a video is found, return the video metadata
+        return res.status(200).json({
+            videoId: video.videoId,
+            owner: video.owner,
+            title: video.title,
+            selectedImageThumbnail: video.selectedImageThumbnail || null,
+            fileUrl: video.fileUrl,
+        });
+
+        
+    } catch (error) {
+        console.error("Failed to retrieve video metadata:", error);
+        res.status(500).json({ message: 'Internal server error' });
+    } finally {
+        await client.close();
+    }
+};
+
+const getVideoMetadataFromObjectId = async (req, res) => {
+    const { id } = req.params;
+    const client = await new MongoClient(MONGO_URI, options);
+
+    console.log("getVideoMetadata for: ", id);
+    
+    
+    try {
+        await client.connect();
+        const db = client.db("db-name");
+        const videosCollection = db.collection('ContentMetaData'); 
+        
+        // Query for the video by id
+        const video = await videosCollection.findOne({ _id: new ObjectId(id) } );
         
         if (!video) {
             // If no video is found, return a 404 response
@@ -1180,7 +1218,8 @@ module.exports = {
     postCoverImage,
     postBannerImage,
     updateTrackThumbnail,
-    getVideoMetadata,
+    getVideoMetadataFromVideoId,
+    getVideoMetadataFromObjectId,
     getAlbumsByArtist,
     getAlbumById,
     deleteAlbum,
