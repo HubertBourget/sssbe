@@ -5,6 +5,7 @@ const { MONGO_URI } = process.env;
 const { SyncRecombee } = require("./utils/SyncRecombee");
 const storage = require('./utils/googleCloudStorage');
 const { Video } = require('@mux/mux-node');
+const { timeStamp } = require("console");
 const mux = new Video(process.env.MUX_ACCESS_TOKEN, process.env.MUX_SECRET_KEY);
 
 const { 
@@ -15,6 +16,7 @@ const {
     RecommendItemsToItem,
     SetItemValues,
     SearchItems,
+    GetItemValues,
 } = require("recombee-api-client").requests;
 
 const options = {
@@ -444,7 +446,10 @@ const deleteContent = async (req, res) => {
         }
         try {
             const itemProperties = { deleted: true };
-            const setItemValuesRequest = new SetItemValues(videoId, itemProperties);
+            const recombeeItemId = contentDocument._id.toString();
+            console.log('recombeeItemId :', recombeeItemId);
+            const setItemValuesRequest = new SetItemValues(recombeeItemId, itemProperties);
+            console.log('setItemValuesRequest', setItemValuesRequest);
             await recombeeClient.send(setItemValuesRequest);
         } catch (recombeeError) {
             console.error('Recombee error, proceeding with MongoDB deletion:', recombeeError);
@@ -878,9 +883,10 @@ const getAlbumById = async (req, res) => {
 
 const deleteAlbum = async (req, res) => {
     const albumId = req.params.albumId;
-    const artistId = req.query.artistId; // Assuming artistId is passed as a query parameter
+    const artistId = req.query.artistId; 
 
     const client = new MongoClient(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+    const { recombeeClient } = require("./utils/constants");
 
     try {
         await client.connect();
@@ -888,13 +894,23 @@ const deleteAlbum = async (req, res) => {
         const collection = db.collection('AlbumMetaData');
 
         // First, verify that the album belongs to the artist
-        const album = await collection.findOne({ albumId: albumId });
-        if (!album) {
+        const albumDocument = await collection.findOne({ albumId: albumId });
+        if (!albumDocument) {
             return res.status(404).json({ message: "Album not found." });
         }
 
-        if (album.owner !== artistId) {
+        if (albumDocument.owner !== artistId) {
             return res.status(403).json({ message: "You do not have permission to delete this album." });
+        }
+        try {
+            const itemProperties = { deleted: true };
+            const recombeeItemId = albumDocument._id.toString();
+            console.log('recombeeItemId :', recombeeItemId);
+            const setItemValuesRequest = new SetItemValues(recombeeItemId, itemProperties);
+            console.log('setItemValuesRequest', setItemValuesRequest);
+            await recombeeClient.send(setItemValuesRequest);
+        } catch (recombeeError) {
+            console.error('Recombee error, proceeding with MongoDB deletion:', recombeeError);
         }
 
         // If the artistId matches the album's owner, proceed with the deletion
@@ -1091,6 +1107,26 @@ const setUserOnRecombee = async (req, res) => {
     }
 }
 
+const getItemPropertiesFromRecombee = async (req, res) => {
+    const itemId = req.params.itemId;
+
+    const { recombeeClient } = require("./utils/constants");
+    const rqs = require('recombee-api-client/lib/requests');
+    try {
+        const response = await recombeeClient.send(new GetItemValues(itemId));
+        res.status(200).json({ 
+            message: 'Item properties fetched successfully', 
+            data: response 
+        });
+    } catch (error) {
+        console.error('Error fetching item properties:', error);
+        res.status(500).json({ 
+            message: 'Failed to fetch item properties', 
+            error: error.message 
+        });
+    }
+}
+
 const getItemToItemRecommendations = async (req, res) => {
     const { itemId, userId } = req.params;
     const { recombeeClient } = require("./utils/constants");
@@ -1209,6 +1245,7 @@ module.exports = {
     getSearchResult,
     addUserOnRecombee,
     setUserOnRecombee,
+    getItemPropertiesFromRecombee,
     getItemToItemRecommendations,
     postNewAlbum,
     postAlbumImage,
