@@ -883,9 +883,10 @@ const getAlbumById = async (req, res) => {
 
 const deleteAlbum = async (req, res) => {
     const albumId = req.params.albumId;
-    const artistId = req.query.artistId; // Assuming artistId is passed as a query parameter
+    const artistId = req.query.artistId; 
 
     const client = new MongoClient(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+    const { recombeeClient } = require("./utils/constants");
 
     try {
         await client.connect();
@@ -893,13 +894,23 @@ const deleteAlbum = async (req, res) => {
         const collection = db.collection('AlbumMetaData');
 
         // First, verify that the album belongs to the artist
-        const album = await collection.findOne({ albumId: albumId });
-        if (!album) {
+        const albumDocument = await collection.findOne({ albumId: albumId });
+        if (!albumDocument) {
             return res.status(404).json({ message: "Album not found." });
         }
 
-        if (album.owner !== artistId) {
+        if (albumDocument.owner !== artistId) {
             return res.status(403).json({ message: "You do not have permission to delete this album." });
+        }
+        try {
+            const itemProperties = { deleted: true };
+            const recombeeItemId = albumDocument._id.toString();
+            console.log('recombeeItemId :', recombeeItemId);
+            const setItemValuesRequest = new SetItemValues(recombeeItemId, itemProperties);
+            console.log('setItemValuesRequest', setItemValuesRequest);
+            await recombeeClient.send(setItemValuesRequest);
+        } catch (recombeeError) {
+            console.error('Recombee error, proceeding with MongoDB deletion:', recombeeError);
         }
 
         // If the artistId matches the album's owner, proceed with the deletion
