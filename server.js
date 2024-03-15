@@ -42,7 +42,7 @@ const {
   deleteAlbum,
   postNewContentTypePropertyWithAttributes,
   postCreateLiveStream,
-  getContentDocumentsByCategory,
+  // getContentDocumentsByCategory,
 } = require("./handlers");
 
 const {
@@ -104,7 +104,7 @@ express()
 
   //MongoDB data management:
   .post("/api/postNewContentTypePropertyWithAttributes", postNewContentTypePropertyWithAttributes) //used to create the contentType property in ContentMetaData, ConcertMetaData and AlbumMetaData
-  .get("/getContentDocumentsByCategory/:category", getContentDocumentsByCategory) //Database Inspection tool for Content by Category type
+  // .get("/getContentDocumentsByCategory/:category", getContentDocumentsByCategory) //Database Inspection tool for Content by Category type
   //Mux endpoint:
   .post("/api/postCreateLiveStream", postCreateLiveStream)
 

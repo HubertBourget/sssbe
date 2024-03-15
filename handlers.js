@@ -1220,32 +1220,32 @@ try {
     }
 };
 
-const getContentDocumentsByCategory = async (req, res) => {
-    const client = new MongoClient(MONGO_URI, options);
-    const { category } = req.params;  
+// const getContentDocumentsByCategory = async (req, res) => {
+//     const client = new MongoClient(MONGO_URI, options);
+//     const { category } = req.params;  
     
-    try {
-        await client.connect();
-        const db = client.db("db-name");
-        const collection = db.collection('ContentMetaData'); 
+//     try {
+//         await client.connect();
+//         const db = client.db("db-name");
+//         const collection = db.collection('ContentMetaData'); 
         
-        // Query for the content by category
-        const documents = await collection.find({ category: category }).toArray();
+//         // Query for the content by category
+//         const documents = await collection.find({ category: category }).toArray();
         
-        if (!documents) {
-            // If no content is found, return a 404 response
-            return res.status(404).json({ message: 'Content not found' });
-        }
-        // Send the found documents in the response
-        res.json(documents);
+//         if (!documents) {
+//             // If no content is found, return a 404 response
+//             return res.status(404).json({ message: 'Content not found' });
+//         }
+//         // Send the found documents in the response
+//         res.json(documents);
         
-    } catch (error) {
-        console.error("Failed to retrieve content metadata:", error);
-        res.status(500).json({ message: 'Internal server error' });
-    } finally {
-        await client.close();
-    }
-}
+//     } catch (error) {
+//         console.error("Failed to retrieve content metadata:", error);
+//         res.status(500).json({ message: 'Internal server error' });
+//     } finally {
+//         await client.close();
+//     }
+// }
 
 module.exports = {
     getServerHomePage,
@@ -1286,5 +1286,5 @@ module.exports = {
     deleteAlbum,
     postNewContentTypePropertyWithAttributes,
     postCreateLiveStream,
-    getContentDocumentsByCategory,
+    // getContentDocumentsByCategory,
 };
