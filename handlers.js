@@ -1247,6 +1247,51 @@ const getContentDocumentsByCategory = async (req, res) => {
     }
 }
 
+const updateContentCategory = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+    const { oldCategory, newCategory } = req.body;
+
+    console.log(`Request received to update category from '${oldCategory}' to '${newCategory}'`);
+
+    try {
+        await client.connect();
+        const db = client.db("db-name");
+        const collection = db.collection('ContentMetaData');
+
+        // Log pre-update document count
+        const preUpdateCount = await collection.countDocuments({ category: oldCategory });
+        console.log(`${preUpdateCount} documents found with category '${oldCategory}'`);
+
+        // Update the category for documents that match the old category
+        const updateResult = await collection.updateMany(
+            { category: oldCategory },
+            { $set: { category: newCategory } }
+        );
+
+        console.log(`Update operation details:`, updateResult);
+
+        if (updateResult.matchedCount === 0) {
+            console.log('No documents matched the criteria for update.');
+            return res.status(404).json({ message: 'No content found to update' });
+        }
+
+        console.log(`${updateResult.modifiedCount} documents were updated from '${oldCategory}' to '${newCategory}'`);
+
+        // Send the success response with details of the update operation
+        res.json({
+            message: 'Content category updated successfully',
+            details: updateResult
+        });
+
+    } catch (error) {
+        console.error("Failed to update content category:", error);
+        res.status(500).json({ message: 'Internal server error' });
+    } finally {
+        await client.close();
+    }
+}
+
+
 module.exports = {
     getServerHomePage,
     postContentMetaData,
@@ -1287,4 +1332,5 @@ module.exports = {
     postNewContentTypePropertyWithAttributes,
     postCreateLiveStream,
     getContentDocumentsByCategory,
+    updateContentCategory,
 };
