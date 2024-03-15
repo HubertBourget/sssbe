@@ -42,6 +42,7 @@ const {
   deleteAlbum,
   postNewContentTypePropertyWithAttributes,
   postCreateLiveStream,
+  getContentDocumentsByCategory,
 } = require("./handlers");
 
 const {
@@ -102,8 +103,8 @@ express()
   // .post("/api/setUserOnRecombee/:userId", setUserOnRecombee) //For Manual Insertion Only!
 
   //MongoDB data management:
-  .post("/api/postNewContentTypePropertyWithAttributes", postNewContentTypePropertyWithAttributes)
-
+  .post("/api/postNewContentTypePropertyWithAttributes", postNewContentTypePropertyWithAttributes) //used to create the contentType property in ContentMetaData, ConcertMetaData and AlbumMetaData
+  .get("/getContentDocumentsByCategory/:category", getContentDocumentsByCategory) //Database Inspection tool for Content by Category type
   //Mux endpoint:
   .post("/api/postCreateLiveStream", postCreateLiveStream)
 
