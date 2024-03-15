@@ -43,6 +43,7 @@ const {
   postNewContentTypePropertyWithAttributes,
   postCreateLiveStream,
   getContentDocumentsByCategory,
+  updateContentCategory,
 } = require("./handlers");
 
 const {
@@ -106,6 +107,7 @@ express()
   //MongoDB data management:
   .post("/api/postNewContentTypePropertyWithAttributes", postNewContentTypePropertyWithAttributes) //used to create the contentType property in ContentMetaData, ConcertMetaData and AlbumMetaData collection
   .get("/api/getContentDocumentsByCategory/:category", getContentDocumentsByCategory) //Database Inspection tool for Content by Category type
+  .patch("/api/updateContentCategory", updateContentCategory)
 
   //Mux endpoint:
   .post("/api/postCreateLiveStream", postCreateLiveStream)
