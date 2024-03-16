@@ -1019,7 +1019,7 @@ const getItemToUserRecommendations = async (req, res) => {
     const { recombeeClient } = require("./utils/constants");
     
     try {
-        const count = 3;
+        const count = 10;
 
         console.log("getRecommendations's UserId is: " + userId);
 
