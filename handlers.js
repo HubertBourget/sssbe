@@ -1,5 +1,5 @@
 
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 require("dotenv").config();
 const { MONGO_URI } = process.env;
 const { SyncRecombee } = require("./utils/SyncRecombee");
@@ -7,6 +7,8 @@ const storage = require('./utils/googleCloudStorage');
 const { decryptData } = require("./utils/cardDetailsEncryption");
 const mongoose = require("mongoose");
 const axios = require("axios");
+const { Video } = require('@mux/mux-node');
+const mux = new Video(process.env.MUX_ACCESS_TOKEN, process.env.MUX_SECRET_KEY);
 
 const { 
     AddUser,
@@ -15,6 +17,7 @@ const {
     RecommendItemsToUser,
     RecommendItemsToItem,
     SetItemValues,
+    SearchItems,
 } = require("recombee-api-client").requests;
 
 const options = {
@@ -242,15 +245,36 @@ const updateUserProfile = async (req, res) => {
 };
 
 const getUserProfile = async (req, res) => {
+    // Check if userId is undefined or not provided, and return a default object
+    if (!req.params.userId || req.params.userId === 'undefined') {
+        console.log("getUserProfile called with undefined userId");
+
+        // Return a default response with empty strings for user properties
+        return res.status(200).json({
+            accountName: '',
+            bio: '',
+            artistLink: '',
+            profileImageUrl: '',
+            artistTitle: ''
+        });
+    }
+
     const client = await new MongoClient(MONGO_URI, options);
     try {
         const db = client.db("db-name");
         const collection = db.collection('userAccounts');
-        console.log("getUserProfile :", req.params.userId );
+        console.log("getUserProfile:", req.params.userId);
         const user = await collection.findOne({ email: req.params.userId });
         
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            // If no user is found, return the default object as well
+            return res.status(200).json({
+                accountName: '',
+                bio: '',
+                artistLink: '',
+                profileImageUrl: '',
+                artistTitle: ''
+            });
         }
 
         const { accountName, bio, artistLink, profileImageUrl, artistTitle } = user;
@@ -423,7 +447,10 @@ const deleteContent = async (req, res) => {
         }
         try {
             const itemProperties = { deleted: true };
-            const setItemValuesRequest = new SetItemValues(videoId, itemProperties);
+            const recombeeItemId = contentDocument._id.toString();
+            console.log('recombeeItemId :', recombeeItemId);
+            const setItemValuesRequest = new SetItemValues(recombeeItemId, itemProperties);
+            console.log('setItemValuesRequest', setItemValuesRequest);
             await recombeeClient.send(setItemValuesRequest);
         } catch (recombeeError) {
             console.error('Recombee error, proceeding with MongoDB deletion:', recombeeError);
@@ -725,16 +752,19 @@ const updateTrackThumbnail = async (req, res) => {
 };
 
 const getVideoMetadata = async (req, res) => {
-    const { videoId } = req.params;
+    const { id } = req.params;
     const client = await new MongoClient(MONGO_URI, options);
+
+    console.log("getVideoMetadata for: ", id);
+    
     
     try {
         await client.connect();
         const db = client.db("db-name");
         const videosCollection = db.collection('ContentMetaData'); 
         
-        // Query for the video by videoId
-        const video = await videosCollection.findOne({ videoId: videoId }
+        // Query for the video by id
+        const video = await videosCollection.findOne({ _id: new ObjectId(id) }//Recombee now working with multiple collection so now using _id
             /*
             , {
             projection: { owner: 1, title: 1, selectedImageThumbnail: 1, fileUrl:1 }
@@ -750,7 +780,7 @@ const getVideoMetadata = async (req, res) => {
         
         // If a video is found, return the video metadata
         return res.status(200).json({
-            videoId: videoId,
+            videoId: video.videoId,
             owner: video.owner,
             title: video.title,
             selectedImageThumbnail: video.selectedImageThumbnail || null,
@@ -1253,6 +1283,51 @@ const getOrders = async (req, res) => {
      }
  };
 
+const getSearchResult = async (req, res) => {
+    const { userId, searchQuery } = req.params;
+    const { recombeeClient } = require("./utils/constants");
+    console.log("user: ", userId);
+    console.log("searchQuery: ", searchQuery);
+    const count = 5; // Number of items to return
+
+    try {
+        // Perform separate searches for tracks, albums, and artists
+        const [tracks, albums, artists] = await Promise.all([
+            recombeeClient.send(new SearchItems(userId, searchQuery, count, {'scenario': 'tracks_search_scenario'})),
+            recombeeClient.send(new SearchItems(userId, searchQuery, count, {'scenario': 'albums_search_scenario'})),
+            recombeeClient.send(new SearchItems(userId, searchQuery, count, {'scenario': 'artists_search_scenario'})),
+        ]);
+
+        console.log({ tracks, albums, artists });
+
+        // Compile the results into a structured object
+        const searchResults = {
+            tracks: tracks.recomms,
+            albums: albums.recomms,
+            artists: artists.recomms,
+        };
+
+        // Return the compiled search results
+        res.status(200).json(searchResults);
+    } catch (error) {
+        console.error('Search request failed:', error);
+        res.status(500).json({ message: 'Internal server error during search' });
+    }
+};
+
+const postCreateLiveStream = async (req, res) => {
+try {
+    const liveStream = await mux.LiveStreams.create({
+        playback_policy: ['public'],
+        new_asset_settings: { playback_policy: ['public'] },
+        });
+        res.json(liveStream);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error creating live stream');
+    }
+};
+
 module.exports = {
     getServerHomePage,
     postContentMetaData,
@@ -1272,6 +1347,7 @@ module.exports = {
     decodeCreds,
     syncCatalog,
     getItemToUserRecommendations,
+    getSearchResult,
     addUserOnRecombee,
     setUserOnRecombee,
     getItemToItemRecommendations,
@@ -1295,5 +1371,6 @@ module.exports = {
     saveOrder,
     getOrders,
     savePlan,
-    getPlanOfUser
+    getPlanOfUser,
+    postCreateLiveStream,
 };
