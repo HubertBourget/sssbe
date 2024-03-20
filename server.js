@@ -49,6 +49,15 @@ const {
   addTrackToAlbum,
   getAlbum,
   getTrack,
+  postNewCardForPayment,
+  getCard,
+  getAllCards,
+  getPaymentToken,
+  saveOrder,
+  getOrders,
+  savePlan,
+  getPlanOfUser,
+  postCreateLiveStream,
 } = require("./handlers");
 
 const {
@@ -118,6 +127,18 @@ express()
   .get("/api/getEvents/:userId", getEvents)
   .post("/api/addOffering", addOffering)
   .get("/api/getOfferings/:userId", getOfferings)
+  .post("/api/postNewCardForPayment", postNewCardForPayment)
+  .post("/api/getCard", getCard)
+  .get("/api/getAllCards/:userId", getAllCards)
+  .get("/api/getTilopayToken", getPaymentToken)
+  .post("/api/saveOrder", saveOrder)
+  .get("/api/orders/:userId", getOrders)
+  .post("/api/save-plan", savePlan)
+  .get("/api/get-plan/:userId", getPlanOfUser)
+  // .post("/api/postNewContentTypePropertyWithAttributes", postNewContentTypePropertyWithAttributes)
+
+  //Mux endpoint:
+  .post("/api/postCreateLiveStream", postCreateLiveStream)
 
   .listen(PORT, () => {
     console.log(`Server launched on port ${PORT}`);
