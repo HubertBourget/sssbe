@@ -39,6 +39,14 @@ const {
   getAlbumById,
   deleteAlbum,
   postNewContentTypePropertyWithAttributes,
+  postNewCardForPayment,
+  getCard,
+  getAllCards,
+  getPaymentToken,
+  saveOrder,
+  getOrders,
+  savePlan,
+  getPlanOfUser,
   postCreateLiveStream,
 } = require("./handlers");
 
@@ -98,6 +106,15 @@ express()
   // .post("/api/setUserOnRecombee/:userId", setUserOnRecombee) //For Manual Insertion Only!
 
   //MongoDB data management:
+  .post("/api/postNewContentTypePropertyWithAttributes", postNewContentTypePropertyWithAttributes)
+  .post("/api/postNewCardForPayment", postNewCardForPayment)
+  .post("/api/getCard", getCard)
+  .get("/api/getAllCards/:userId", getAllCards)
+  .get("/api/getTilopayToken", getPaymentToken)
+  .post("/api/saveOrder", saveOrder)
+  .get("/api/orders/:userId", getOrders)
+  .post("/api/save-plan", savePlan)
+  .get("/api/get-plan/:userId", getPlanOfUser)
   // .post("/api/postNewContentTypePropertyWithAttributes", postNewContentTypePropertyWithAttributes)
 
   //Mux endpoint:
