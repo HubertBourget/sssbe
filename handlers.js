@@ -1291,6 +1291,264 @@ const updateContentCategory = async (req, res) => {
     }
 }
 
+const postCreateEvent = async (req, res) => {
+    const { title, createdBy, description, dateTime, paymentLink, priceType, priceInThanks } = req.body;
+
+    const event = {
+        title,
+        createdBy,
+        description,
+        dateTime,
+        priceType,
+        paymentLink: priceType === 'ExternalLink' ? paymentLink : '', // Conditionally include paymentLink
+        priceInThanks: priceType === 'PricedInThanks' ? priceInThanks : null, // Conditionally include priceInThanks
+    };
+
+    const client = new MongoClient(MONGO_URI, options);
+    try {
+        await client.connect();
+        const db = client.db('db-name');
+        const result = await db.collection("ArtistEvents").insertOne(event);
+        res.status(200).json({ status: 200, event: result.ops[0] });
+    } catch (e) {
+        console.error("Error creating event:", e.message);
+        res.status(400).json({ status: 400, message: e.message });
+    } finally {
+        await client.close();
+    }
+};
+
+const postEditEvent = async (req, res) => {
+    const { id } = req.params; // Event ID is passed as URL parameter
+    const { title, createdBy, description, dateTime, paymentLink, priceType, priceInThanks } = req.body;
+
+    const update = {
+        $set: {
+            title,
+            createdBy,
+            description,
+            dateTime,
+            priceType,
+            paymentLink: priceType === 'ExternalLink' ? paymentLink : '', // Conditionally include paymentLink
+            priceInThanks: priceType === 'PricedInThanks' ? priceInThanks : null, // Conditionally include priceInThanks
+        }
+    };
+
+    const client = new MongoClient(MONGO_URI, options);
+    try {
+        await client.connect();
+        const db = client.db('db-name');
+        const collection = db.collection("ArtistEvents");
+
+        const result = await collection.findOneAndUpdate(
+            { _id: new ObjectId(id) },
+            update,
+            { returnOriginal: false }
+        );
+
+        if (result.value) {
+            res.status(200).json({ status: 200, event: result.value });
+        } else {
+            res.status(404).json({ status: 404, message: "Event not found." });
+        }
+    } catch (e) {
+        console.error("Error editing event:", e.message);
+        res.status(400).json({ status: 400, message: e.message });
+    } finally {
+        await client.close();
+    }
+};
+
+const postCreateOffer = async (req, res) => {
+    const { title, description, file, paymentLink, priceInThanks, priceType } = req.body;
+    const offer = {
+        title,
+        description,
+        image: '',
+        file,
+        priceType,
+        paymentLink: priceType === 'ExternalLink' ? paymentLink : '', // Only set paymentLink for ExternalLink priceType
+        priceInThanks: priceType === 'PricedInThanks' ? priceInThanks : null, // Only set priceInThanks for PricedInThanks priceType
+    };
+
+    const client = await new MongoClient(MONGO_URI, options);
+    try {
+        await client.connect();
+        const db = client.db('db-name');
+        const result = await db.collection("ArtistOffers").insertOne(offer);
+        res.status(200).json({ status: 200, offer: result.ops[0] });
+    } catch (e) {
+        console.error("Error creating offer:", e.message);
+        res.status(400).json({ status: 400, message: e.message });
+    } finally {
+        await client.close();
+    }
+};
+
+const postEditOffer = async (req, res) => {
+    const { id } = req.params; // ID is passed as URL parameter
+    const { title, description, file, paymentLink, priceInThanks, priceType } = req.body;
+    const update = {
+        $set: {
+            title, 
+            description, 
+            file, 
+            priceType,
+            paymentLink: priceType === 'ExternalLink' ? paymentLink : '', // Conditionally include paymentLink
+            priceInThanks: priceType === 'PricedInThanks' ? priceInThanks : null, // Conditionally include priceInThanks
+        }
+    };
+
+    const client = await new MongoClient(MONGO_URI, options);
+    try {
+        await client.connect();
+        const db = client.db('db-name');
+        const result = await db.collection("ArtistOffers").findOneAndUpdate(
+            { _id: new ObjectId(id) },
+            update,
+            { returnOriginal: false }
+        );
+        if (result.value) {
+            res.status(200).json({ status: 200, offer: result.value });
+        } else {
+            res.status(404).json({ status: 404, message: "Offer not found" });
+        }
+    } catch (e) {
+        console.error("Error editing offer:", e.message);
+        res.status(400).json({ status: 400, message: e.message });
+    } finally {
+        await client.close();
+    }
+};
+
+const updateUserLikes = async (req, res) => {
+    const { user, videoId, b_isLiking } = req.body;
+    const client = await new MongoClient(MONGO_URI, options);
+
+    try {
+        await client.connect();
+        const db = client.db("db-name");
+        const collection = db.collection("userAccounts");
+
+        if (b_isLiking) {
+            // Add videoId to the likes array if b_isLiking is true, avoid duplicates using $addToSet
+            await collection.updateOne(
+                { email: user }, // Assuming userId is an ObjectId, adjust if your ID system differs
+                { $addToSet: { likes: videoId } }
+            );
+        } else {
+            // Remove videoId from the likes array if b_isLiking is false
+            await collection.updateOne(
+                { email: user },
+                { $pull: { likes: videoId } }
+            );
+        }
+        res.status(200).json({ message: "User likes updated successfully." });
+    } catch (error) {
+        console.error("Error updating user likes:", error);
+        res.status(500).json({ error: "Internal server error" });
+    } finally {
+        await client.close();
+    }
+};
+
+const updateUserFollows = async (req, res) => {
+    const { user, artistId, b_isFollowing } = req.body;
+    const client = await new MongoClient(MONGO_URI, options);
+
+    try {
+        await client.connect();
+        const db = client.db("db-name");
+        const collection = db.collection("userAccounts");
+
+        if (b_isFollowing) {
+            // Add artistId to the follows array if b_isFollowing is true, avoid duplicates using $addToSet
+            await collection.updateOne(
+                { email: user }, // Assuming userId is an ObjectId, adjust if your ID system differs
+                { $addToSet: { follows: artistId } }
+            );
+        } else {
+            // Remove artistId from the follows array if b_isFollowing is false
+            await collection.updateOne(
+                { email: user },
+                { $pull: { follows: artistId } }
+            );
+        }
+        res.status(200).json({ message: "User likes updated successfully." });
+    } catch (error) {
+        console.error("Error updating user likes:", error);
+        res.status(500).json({ error: "Internal server error" });
+    } finally {
+        await client.close();
+    }
+};
+
+const updateUserSubscription = async (req, res) => {
+    const { userEmail, artistId, b_isSubscribing, thanksCoinsPerMonth } = req.body;
+    const client = await new MongoClient(MONGO_URI, options);
+
+    try {
+        await client.connect();
+        const db = client.db("db-name");
+        const collection = db.collection("userAccounts");
+
+        if (b_isSubscribing) {
+            // Subscriptions are stored as an array of objects { artistId, thanksCoinsPerMonth }
+            await collection.updateOne(
+                { email: userEmail },
+                { 
+                    $addToSet: { 
+                        subscriptions: { artistId, thanksCoinsPerMonth } 
+                    } 
+                }
+            );
+        } else {
+            // When unsubscribing, remove the subscription object matching the artistId
+            await collection.updateOne(
+                { email: userEmail },
+                { 
+                    $pull: { 
+                        subscriptions: { artistId } 
+                    } 
+                }
+            );
+        }
+        res.status(200).json({ message: "User subscriptions updated successfully." });
+    } catch (error) {
+        console.error("Error updating user subscriptions:", error);
+        res.status(500).json({ error: "Internal server error" });
+    } finally {
+        await client.close();
+    }
+};
+
+const logContentUsage = async (req, res) => {
+    const { user, videoId, timestamp } = req.body;
+    const contentUsageRecord = {
+        user,
+        videoId,
+        timestamp,
+    };
+
+    const client = new MongoClient(MONGO_URI, options);
+
+    try {
+        await client.connect();
+        const db = client.db("db-name");
+        const collection = db.collection("contentUsage");
+
+        await collection.insertOne(contentUsageRecord);
+        
+        res.status(200).json({ message: "Content usage logged successfully." });
+    } catch (error) {
+        console.error("Error logging content usage:", error);
+        res.status(500).json({ error: "Internal server error" });
+    } finally {
+        await client.close();
+    }
+};
+
+
 
 module.exports = {
     getServerHomePage,
@@ -1333,4 +1591,12 @@ module.exports = {
     postCreateLiveStream,
     getContentDocumentsByCategory,
     updateContentCategory,
+    postCreateEvent,
+    postEditEvent,
+    postCreateOffer,
+    postEditOffer,
+    updateUserLikes,
+    updateUserFollows,
+    updateUserSubscription,
+    logContentUsage
 };

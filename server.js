@@ -44,6 +44,14 @@ const {
   postCreateLiveStream,
   getContentDocumentsByCategory,
   updateContentCategory,
+  postCreateEvent,
+  postEditEvent,
+  postCreateOffer,
+  postEditOffer,
+  updateUserLikes,
+  updateUserFollows,
+  updateUserSubscription,
+  logContentUsage,
 } = require("./handlers");
 
 const {
@@ -88,6 +96,14 @@ express()
   .get("/api/getAlbumsByArtist", getAlbumsByArtist)
   .get("/api/getAlbumById", getAlbumById)
   .delete("/api/deleteAlbum/:albumId", deleteAlbum)
+  .post("/api/postCreateEvent", postCreateEvent)
+  .post("/api/postEditEvent/:eventId", postEditEvent)
+  .post("/api/postCreateOffer", postCreateOffer)
+  .post("/api/postEditOffer/:id", postEditOffer)
+  .patch("/api/updateUserLikes", updateUserLikes)
+  .patch("/api/updateUserFollows", updateUserFollows)
+  .patch("/api/updateUserSubscription", updateUserSubscription)
+  .post("/api/logContentUsage", logContentUsage)
   
 
   //Key encryption:
