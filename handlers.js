@@ -1523,11 +1523,15 @@ const updateUserSubscription = async (req, res) => {
 };
 
 const logContentUsage = async (req, res) => {
-    const { user, videoId, timestamp } = req.body;
+    const { user, videoId } = req.body;
+
+    // Generate timestamp server-side using current date and time
+    const timestamp = new Date().toISOString();
+
     const contentUsageRecord = {
         user,
         videoId,
-        timestamp,
+        timestamp, //Server-generated timestamp
     };
 
     const client = new MongoClient(MONGO_URI, options);
@@ -1537,9 +1541,10 @@ const logContentUsage = async (req, res) => {
         const db = client.db("db-name");
         const collection = db.collection("contentUsage");
 
+        // Insert the content usage record into the collection
         await collection.insertOne(contentUsageRecord);
         
-        res.status(200).json({ message: "Content usage logged successfully." });
+        res.status(200).json({ message: "Content usage logged successfully.", data: contentUsageRecord });
     } catch (error) {
         console.error("Error logging content usage:", error);
         res.status(500).json({ error: "Internal server error" });
@@ -1547,6 +1552,7 @@ const logContentUsage = async (req, res) => {
         await client.close();
     }
 };
+
 
 
 
