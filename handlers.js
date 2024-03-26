@@ -1309,14 +1309,21 @@ const postCreateEvent = async (req, res) => {
         await client.connect();
         const db = client.db('db-name');
         const result = await db.collection("ArtistEvents").insertOne(event);
-        res.status(200).json({ status: 200, event: result.ops[0] });
+        if (result.insertedId) {
+            const insertedEvent = await db.collection("ArtistEvents").findOne({ _id: result.insertedId });
+            res.status(200).json({ status: 200, event: insertedEvent });
+        } else {
+            // Handle the case where the document wasn't inserted properly
+            res.status(400).json({ status: 400, message: "Event creation failed." });
+        }
     } catch (e) {
         console.error("Error creating event:", e.message);
-        res.status(400).json({ status: 400, message: e.message });
+        res.status(500).json({ status: 500, message: e.message });
     } finally {
         await client.close();
     }
 };
+
 
 const postEditEvent = async (req, res) => {
     const { id } = req.params; // Event ID is passed as URL parameter
