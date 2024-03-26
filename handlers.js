@@ -1332,48 +1332,66 @@ const postEditEvent = async (req, res) => {
     const { id } = req.params; // Event ID is passed as URL parameter
     const { title, createdBy, description, dateTime, paymentLink, priceType, priceInThanks } = req.body;
 
-    // Preliminary validation checks (example, expand based on your needs)
-    if (!title || !createdBy || !description || !dateTime || !priceType) {
-        return res.status(400).json({ status: 400, message: "Missing required fields." });
-    }
-
-    const update = {
-        $set: {
-            title,
-            createdBy,
-            description,
-            dateTime,
-            priceType,
-            // Conditional inclusion based on priceType
-            paymentLink: priceType === 'ExternalLink' ? paymentLink : '',
-            priceInThanks: priceType === 'PricedInThanks' ? priceInThanks : null,
-        }
-    };
-
+    // Connect to the MongoDB client
     const client = new MongoClient(MONGO_URI, options);
     try {
+        // Log the received ID for debugging
+        console.log('Received ID for update:', id);
+
+        // Attempt to convert the received ID to an ObjectId
+        const objectId = new ObjectId(id);
+        console.log('Converted ObjectId:', objectId);
+
         await client.connect();
         const db = client.db('db-name');
         const collection = db.collection("ArtistEvents");
 
+        // Log the query operation
+        console.log('Querying for document with _id:', objectId);
+
+        // Find the document before attempting update to verify it exists
+        const doc = await collection.findOne({ _id: objectId });
+        console.log('Document found:', doc);
+
+        if (!doc) {
+            return res.status(404).json({ status: 404, message: "Event not found." });
+        }
+
+        // Perform the update operation
         const result = await collection.findOneAndUpdate(
-            { _id: new ObjectId(id) },
-            update,
+            { _id: objectId },
+            {
+                $set: {
+                    title, 
+                    createdBy, 
+                    description, 
+                    dateTime, 
+                    priceType,
+                    paymentLink: priceType === 'ExternalLink' ? paymentLink : '', // Conditionally include paymentLink
+                    priceInThanks: priceType === 'PricedInThanks' ? priceInThanks : null, // Conditionally include priceInThanks
+                }
+            },
             { returnOriginal: false }
         );
 
+        // Check if the update operation was successful
         if (result.value) {
             res.status(200).json({ status: 200, event: result.value });
         } else {
-            res.status(404).json({ status: 404, message: "Event not found." });
+            res.status(404).json({ status: 404, message: "Event not found after update attempt." });
         }
     } catch (e) {
         console.error("Error editing event:", e);
-        res.status(500).json({ status: 500, message: "Internal server error" });
+        if (e instanceof TypeError) {
+            res.status(400).json({ status: 400, message: "Invalid event ID format." });
+        } else {
+            res.status(500).json({ status: 500, message: "Internal server error" });
+        }
     } finally {
         await client.close();
     }
 };
+
 
 
 const postCreateOffer = async (req, res) => {
