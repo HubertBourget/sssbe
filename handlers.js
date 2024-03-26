@@ -1392,26 +1392,33 @@ const postEditEvent = async (req, res) => {
     }
 };
 
-
-
 const postCreateOffer = async (req, res) => {
-    const { title, description, file, paymentLink, priceInThanks, priceType } = req.body;
+    const { title, description, file, image, paymentLink, priceInThanks, priceType } = req.body;
     const offer = {
         title,
         description,
-        image: '',
+        image,
         file,
         priceType,
         paymentLink: priceType === 'ExternalLink' ? paymentLink : '', // Only set paymentLink for ExternalLink priceType
         priceInThanks: priceType === 'PricedInThanks' ? priceInThanks : null, // Only set priceInThanks for PricedInThanks priceType
     };
 
-    const client = await new MongoClient(MONGO_URI, options);
+    const client = new MongoClient(MONGO_URI, options);
     try {
         await client.connect();
         const db = client.db('db-name');
         const result = await db.collection("ArtistOffers").insertOne(offer);
-        res.status(200).json({ status: 200, offer: result.ops[0] });
+        
+        if (result.insertedId) {
+            // You can either send back just the ID or the entire object
+            // If you need the full document:
+            const insertedOffer = await db.collection("ArtistOffers").findOne({ _id: result.insertedId });
+            res.status(200).json({ status: 200, offer: insertedOffer });
+        } else {
+            // Handle the case where the insert operation didn't return an id
+            res.status(500).json({ status: 500, message: "Failed to create the offer." });
+        }
     } catch (e) {
         console.error("Error creating offer:", e.message);
         res.status(400).json({ status: 400, message: e.message });
@@ -1419,6 +1426,7 @@ const postCreateOffer = async (req, res) => {
         await client.close();
     }
 };
+
 
 const postEditOffer = async (req, res) => {
     const { id } = req.params; // ID is passed as URL parameter
