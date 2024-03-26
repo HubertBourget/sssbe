@@ -1332,6 +1332,11 @@ const postEditEvent = async (req, res) => {
     const { id } = req.params; // Event ID is passed as URL parameter
     const { title, createdBy, description, dateTime, paymentLink, priceType, priceInThanks } = req.body;
 
+    // Preliminary validation checks (example, expand based on your needs)
+    if (!title || !createdBy || !description || !dateTime || !priceType) {
+        return res.status(400).json({ status: 400, message: "Missing required fields." });
+    }
+
     const update = {
         $set: {
             title,
@@ -1339,8 +1344,9 @@ const postEditEvent = async (req, res) => {
             description,
             dateTime,
             priceType,
-            paymentLink: priceType === 'ExternalLink' ? paymentLink : '', // Conditionally include paymentLink
-            priceInThanks: priceType === 'PricedInThanks' ? priceInThanks : null, // Conditionally include priceInThanks
+            // Conditional inclusion based on priceType
+            paymentLink: priceType === 'ExternalLink' ? paymentLink : '',
+            priceInThanks: priceType === 'PricedInThanks' ? priceInThanks : null,
         }
     };
 
@@ -1362,12 +1368,13 @@ const postEditEvent = async (req, res) => {
             res.status(404).json({ status: 404, message: "Event not found." });
         }
     } catch (e) {
-        console.error("Error editing event:", e.message);
-        res.status(400).json({ status: 400, message: e.message });
+        console.error("Error editing event:", e);
+        res.status(500).json({ status: 500, message: "Internal server error" });
     } finally {
         await client.close();
     }
 };
+
 
 const postCreateOffer = async (req, res) => {
     const { title, description, file, paymentLink, priceInThanks, priceType } = req.body;
