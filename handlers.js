@@ -1452,8 +1452,8 @@ const addEvent = async (req, res) => {
          await client.connect();
          const db = client.db('db-name');
          const eventCollection = db.collection('eventMetaData');
-         const {eventName, host, eventTime, eventLocation, userId}= req.body
-         const savedEvent = await eventCollection.insertOne({eventName, host, eventTime: new Date(eventTime), eventLocation, userId})
+         const {title, host, eventTime, eventLocation, userId}= req.body
+         const savedEvent = await eventCollection.insertOne({title, host, eventTime: new Date(eventTime), eventLocation, userId})
  
          res.status(200).json({ status: 200, message: "Event saved successfully", savedEvent });
      } catch (e) {
