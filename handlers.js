@@ -1369,6 +1369,7 @@ const postEditEvent = async (req, res) => {
                     priceType,
                     paymentLink: priceType === 'ExternalLink' ? paymentLink : '', // Conditionally include paymentLink
                     priceInThanks: priceType === 'PricedInThanks' ? priceInThanks : null, // Conditionally include priceInThanks
+                    lastEdited: new Date(), // Server-side timestamp for last edit
                 }
             },
             { returnOriginal: false }
@@ -1394,7 +1395,7 @@ const postEditEvent = async (req, res) => {
 
 const postCreateOffer = async (req, res) => {
     const { title, description, file, image, paymentLink, priceInThanks, priceType } = req.body;
-    const createdAt = new Date(); // Generate the current timestamp
+    const createdAt = new Date(); 
 
     const offer = {
         title,
@@ -1402,7 +1403,7 @@ const postCreateOffer = async (req, res) => {
         image,
         file,
         priceType,
-        createdAt, // Include the server-generated timestamp
+        createdAt,
         paymentLink: priceType === 'ExternalLink' ? paymentLink : '', // Only set paymentLink for ExternalLink priceType
         priceInThanks: priceType === 'PricedInThanks' ? priceInThanks : null, // Only set priceInThanks for PricedInThanks priceType
     };
@@ -1428,31 +1429,34 @@ const postCreateOffer = async (req, res) => {
     }
 };
 
-
-
 const postEditOffer = async (req, res) => {
-    const { id } = req.params; // ID is passed as URL parameter
+    const { id } = req.params;
     const { title, description, file, paymentLink, priceInThanks, priceType } = req.body;
+
     const update = {
         $set: {
-            title, 
-            description, 
-            file, 
+            title,
+            description,
+            file,
             priceType,
-            paymentLink: priceType === 'ExternalLink' ? paymentLink : '', // Conditionally include paymentLink
-            priceInThanks: priceType === 'PricedInThanks' ? priceInThanks : null, // Conditionally include priceInThanks
+            paymentLink: priceType === 'ExternalLink' ? paymentLink : '',
+            priceInThanks: priceType === 'PricedInThanks' ? priceInThanks : null,
+            lastEdited: new Date(), // Server-side timestamp for last edit
         }
     };
 
-    const client = await new MongoClient(MONGO_URI, options);
+    const client = new MongoClient(MONGO_URI, options);
     try {
         await client.connect();
         const db = client.db('db-name');
-        const result = await db.collection("ArtistOffers").findOneAndUpdate(
+        const collection = db.collection("ArtistOffers");
+
+        const result = await collection.findOneAndUpdate(
             { _id: new ObjectId(id) },
             update,
             { returnOriginal: false }
         );
+
         if (result.value) {
             res.status(200).json({ status: 200, offer: result.value });
         } else {
@@ -1460,11 +1464,12 @@ const postEditOffer = async (req, res) => {
         }
     } catch (e) {
         console.error("Error editing offer:", e.message);
-        res.status(400).json({ status: 400, message: e.message });
+        res.status(500).json({ status: 500, message: "Internal server error" });
     } finally {
         await client.close();
     }
 };
+
 
 const updateUserLikes = async (req, res) => {
     const { user, videoId, b_isLiking } = req.body;
