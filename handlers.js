@@ -8,6 +8,7 @@ const { decryptData } = require("./utils/cardDetailsEncryption");
 const mongoose = require("mongoose");
 const axios = require("axios");
 const { Video } = require('@mux/mux-node');
+const { findSubscriptionByEmail, createSubscription, updateSubscription } = require("./utils/beehiivAPI");
 const mux = new Video(process.env.MUX_ACCESS_TOKEN, process.env.MUX_SECRET_KEY);
 
 const { 
@@ -51,12 +52,36 @@ const postNewUserWithAccountName = async (req, res) => {
             // Add the user to Recombee
             const userId = email;
             
-
+            const oldUser = await db.collection("userAccounts").findOne({email: userId})
+            if(oldUser){
+                return res.status(409).json({
+                    status: 409,
+                    message: "User already created.",
+                });
+            }
             // Continue with MongoDB operations (inserting the user)
             const result = await db.collection("userAccounts").insertOne(user);
 
             if (result.insertedId) {
                 console.log("User added to MongoDB successfully!");
+                if(isArtist){
+                    const beehiivSubscriber = await findSubscriptionByEmail(userId)
+                    if(beehiivSubscriber.status === 404){
+                        await createSubscription(email)
+                    }else{
+                        let findAndUpdated
+                        for(let field of beehiivSubscriber.custom_fields){
+                            if(field.name === 'artistSignedUp' && field.value == 'false'){
+                                await updateSubscription(beehiivSubscriber.id)
+                                findAndUpdated = true
+                            }
+                        }
+                        if(!findAndUpdated){
+                            await updateSubscription(beehiivSubscriber.id)
+                        }
+                        
+                    }
+                }
                 await recombeeClient.send(new AddUser(userId));
                 res.status(200).json({ status: 200, result: result });
             } else {
