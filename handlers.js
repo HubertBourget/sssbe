@@ -1394,12 +1394,15 @@ const postEditEvent = async (req, res) => {
 
 const postCreateOffer = async (req, res) => {
     const { title, description, file, image, paymentLink, priceInThanks, priceType } = req.body;
+    const createdAt = new Date(); // Generate the current timestamp
+
     const offer = {
         title,
         description,
         image,
         file,
         priceType,
+        createdAt, // Include the server-generated timestamp
         paymentLink: priceType === 'ExternalLink' ? paymentLink : '', // Only set paymentLink for ExternalLink priceType
         priceInThanks: priceType === 'PricedInThanks' ? priceInThanks : null, // Only set priceInThanks for PricedInThanks priceType
     };
@@ -1411,12 +1414,10 @@ const postCreateOffer = async (req, res) => {
         const result = await db.collection("ArtistOffers").insertOne(offer);
         
         if (result.insertedId) {
-            // You can either send back just the ID or the entire object
-            // If you need the full document:
+            // Fetch and send back the full inserted document including the createdAt timestamp
             const insertedOffer = await db.collection("ArtistOffers").findOne({ _id: result.insertedId });
             res.status(200).json({ status: 200, offer: insertedOffer });
         } else {
-            // Handle the case where the insert operation didn't return an id
             res.status(500).json({ status: 500, message: "Failed to create the offer." });
         }
     } catch (e) {
@@ -1426,6 +1427,7 @@ const postCreateOffer = async (req, res) => {
         await client.close();
     }
 };
+
 
 
 const postEditOffer = async (req, res) => {
