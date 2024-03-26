@@ -1294,6 +1294,9 @@ const updateContentCategory = async (req, res) => {
 const postCreateEvent = async (req, res) => {
     const { title, createdBy, description, dateTime, paymentLink, priceType, priceInThanks } = req.body;
 
+    // Generate the current timestamp
+    const createdAt = new Date();
+
     const event = {
         title,
         createdBy,
@@ -1302,6 +1305,7 @@ const postCreateEvent = async (req, res) => {
         priceType,
         paymentLink: priceType === 'ExternalLink' ? paymentLink : '', // Conditionally include paymentLink
         priceInThanks: priceType === 'PricedInThanks' ? priceInThanks : null, // Conditionally include priceInThanks
+        createdAt
     };
 
     const client = new MongoClient(MONGO_URI, options);
@@ -1323,7 +1327,6 @@ const postCreateEvent = async (req, res) => {
         await client.close();
     }
 };
-
 
 const postEditEvent = async (req, res) => {
     const { id } = req.params; // Event ID is passed as URL parameter
