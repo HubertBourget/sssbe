@@ -1462,6 +1462,41 @@ const postEditOffer = async (req, res) => {
 };
 
 /**
+ * @api {get} /api/getUserLoves
+ * @apiDescription Fetches the list of videos a user has "loved". The user is identified by their email address.
+ * @apiParam {String} user Query parameter containing the user's email address.
+ */
+const getUserLoves = async (req, res) => {
+    const user = req.query.user; // User's email is expected as a query parameter
+
+    if (!user) {
+        return res.status(400).json({ message: "User email is required." });
+    }
+
+    const client = await new MongoClient(MONGO_URI, options);
+    try {
+        await client.connect();
+        const db = client.db("db-name");
+        const collection = db.collection("userAccounts");
+
+        const userData = await collection.findOne({ email: user }, { projection: { loves: 1 } });
+
+        if (!userData) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        // Assuming the 'loves' field contains an array of videoIds that the user has loved
+        const loves = userData.loves || [];
+        res.status(200).json({ loves });
+    } catch (error) {
+        console.error("Error fetching user loves:", error);
+        res.status(500).json({ error: "Internal server error" });
+    } finally {
+        await client.close();
+    }
+};
+
+/**
  * @api {patch} /api/updateUserLikes
  * @apiDescription This endpoint allows a user to like or unLike an artist. The operation is determined by the `b_isLiking` flag.
  * @apiParam {String} user User's email address used to identify the user account.
@@ -1469,7 +1504,7 @@ const postEditOffer = async (req, res) => {
  * @apiParam {Boolean} b_isLiking Flag indicating whether the video is being liked (true) or unliked (false).
 */
 const updateUserLoves = async (req, res) => {
-    const { user, videoId, b_isLiking } = req.body;
+    const { user, videoId, b_isLoving } = req.body;
     const client = await new MongoClient(MONGO_URI, options);
 
     try {
@@ -1477,22 +1512,22 @@ const updateUserLoves = async (req, res) => {
         const db = client.db("db-name");
         const collection = db.collection("userAccounts");
 
-        if (b_isLiking) {
-            // Add videoId to the likes array if b_isLiking is true, avoid duplicates using $addToSet
+        if (b_isLoving) {
+            // Add videoId to the loves array if b_isLoving is true, avoid duplicates using $addToSet
             await collection.updateOne(
                 { email: user }, // Assuming userId is an ObjectId, adjust if your ID system differs
-                { $addToSet: { likes: videoId } }
+                { $addToSet: { loves: videoId } }
             );
         } else {
-            // Remove videoId from the likes array if b_isLiking is false
+            // Remove videoId from the loves array if b_isLoving is false
             await collection.updateOne(
                 { email: user },
-                { $pull: { likes: videoId } }
+                { $pull: { loves: videoId } }
             );
         }
-        res.status(200).json({ message: "User likes updated successfully." });
+        res.status(200).json({ message: "User loves updated successfully." });
     } catch (error) {
-        console.error("Error updating user likes:", error);
+        console.error("Error updating user loves:", error);
         res.status(500).json({ error: "Internal server error" });
     } finally {
         await client.close();
@@ -1654,6 +1689,7 @@ module.exports = {
     postEditEvent,
     postCreateOffer,
     postEditOffer,
+    getUserLoves,
     updateUserLoves,
     updateUserFavorites,
     updateUserSubscription,
