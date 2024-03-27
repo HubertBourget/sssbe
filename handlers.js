@@ -1335,23 +1335,14 @@ const postEditEvent = async (req, res) => {
     // Connect to the MongoDB client
     const client = new MongoClient(MONGO_URI, options);
     try {
-        // Log the received ID for debugging
-        console.log('Received ID for update:', id);
-
-        // Attempt to convert the received ID to an ObjectId
         const objectId = new ObjectId(id);
-        console.log('Converted ObjectId:', objectId);
 
         await client.connect();
         const db = client.db('db-name');
         const collection = db.collection("ArtistEvents");
 
-        // Log the query operation
-        console.log('Querying for document with _id:', objectId);
-
         // Find the document before attempting update to verify it exists
         const doc = await collection.findOne({ _id: objectId });
-        console.log('Document found:', doc);
 
         if (!doc) {
             return res.status(404).json({ status: 404, message: "Event not found." });
@@ -1469,7 +1460,6 @@ const postEditOffer = async (req, res) => {
         await client.close();
     }
 };
-
 
 const updateUserLikes = async (req, res) => {
     const { user, videoId, b_isLiking } = req.body;
