@@ -1533,6 +1533,7 @@ const updateUserLoves = async (req, res) => {
         await client.close();
     }
 };
+
 /**
  * @api {patch} /api/updateUserFollows Toggle User's Follow Status on an Artist
  * @apiDescription This endpoint allows a user to follow or unfollow an artist. The operation is determined by the `b_isFollowing` flag.
@@ -1541,7 +1542,7 @@ const updateUserLoves = async (req, res) => {
  * @apiParam {Boolean} b_isFollowing Flag indicating the desired follow status: `true` to follow, `false` to unfollow.
  */
 const updateUserFavorites = async (req, res) => {
-    const { user, artistId, b_isFollowing } = req.body;
+    const { user, artistId, b_isFavored } = req.body;
     const client = await new MongoClient(MONGO_URI, options);
 
     try {
@@ -1549,17 +1550,17 @@ const updateUserFavorites = async (req, res) => {
         const db = client.db("db-name");
         const collection = db.collection("userAccounts");
 
-        if (b_isFollowing) {
-            // Add artistId to the follows array if b_isFollowing is true, avoid duplicates using $addToSet
+        if (b_isFavored) {
+            // Add artistId to the favorites array if b_isFavored is true, avoid duplicates using $addToSet
             await collection.updateOne(
                 { email: user }, // Assuming userId is an ObjectId, adjust if your ID system differs
-                { $addToSet: { follows: artistId } }
+                { $addToSet: { favorites: artistId } }
             );
         } else {
-            // Remove artistId from the follows array if b_isFollowing is false
+            // Remove artistId from the favorites array if b_isFavored is false
             await collection.updateOne(
                 { email: user },
-                { $pull: { follows: artistId } }
+                { $pull: { favorites: artistId } }
             );
         }
         res.status(200).json({ message: "User likes updated successfully." });
