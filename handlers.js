@@ -1461,7 +1461,14 @@ const postEditOffer = async (req, res) => {
     }
 };
 
-const updateUserLikes = async (req, res) => {
+/**
+ * @api {patch} /api/updateUserLikes
+ * @apiDescription This endpoint allows a user to like or unLike an artist. The operation is determined by the `b_isLiking` flag.
+ * @apiParam {String} user User's email address used to identify the user account.
+ * @apiParam {String} videoId The unique identifier of the video to like or unlike.
+ * @apiParam {Boolean} b_isLiking Flag indicating whether the video is being liked (true) or unliked (false).
+*/
+const updateUserLoves = async (req, res) => {
     const { user, videoId, b_isLiking } = req.body;
     const client = await new MongoClient(MONGO_URI, options);
 
@@ -1491,8 +1498,14 @@ const updateUserLikes = async (req, res) => {
         await client.close();
     }
 };
-
-const updateUserFollows = async (req, res) => {
+/**
+ * @api {patch} /api/updateUserFollows Toggle User's Follow Status on an Artist
+ * @apiDescription This endpoint allows a user to follow or unfollow an artist. The operation is determined by the `b_isFollowing` flag.
+ * @apiParam {String} user Email of the user performing the follow/unfollow operation.
+ * @apiParam {String} artistId Unique identifier of the artist to be followed/unfollowed.
+ * @apiParam {Boolean} b_isFollowing Flag indicating the desired follow status: `true` to follow, `false` to unfollow.
+ */
+const updateUserFavorites = async (req, res) => {
     const { user, artistId, b_isFollowing } = req.body;
     const client = await new MongoClient(MONGO_URI, options);
 
@@ -1641,8 +1654,8 @@ module.exports = {
     postEditEvent,
     postCreateOffer,
     postEditOffer,
-    updateUserLikes,
-    updateUserFollows,
+    updateUserLoves,
+    updateUserFavorites,
     updateUserSubscription,
     logContentUsage
 };

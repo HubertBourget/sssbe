@@ -48,8 +48,8 @@ const {
   postEditEvent,
   postCreateOffer,
   postEditOffer,
-  updateUserLikes,
-  updateUserFollows,
+  updateUserLoves,
+  updateUserFavorites,
   updateUserSubscription,
   logContentUsage,
 } = require("./handlers");
@@ -100,8 +100,8 @@ express()
   .post("/api/postEditEvent/:id", postEditEvent)
   .post("/api/postCreateOffer", postCreateOffer)
   .post("/api/postEditOffer/:id", postEditOffer)
-  .patch("/api/updateUserLikes", updateUserLikes)
-  .patch("/api/updateUserFollows", updateUserFollows)
+  .patch("/api/updateUserLoves", updateUserLoves)
+  .patch("/api/updateUserFavorites", updateUserFavorites)
   .patch("/api/updateUserSubscription", updateUserSubscription)
   .post("/api/logContentUsage", logContentUsage)
   
