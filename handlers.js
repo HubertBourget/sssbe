@@ -1485,7 +1485,6 @@ const getUserLoves = async (req, res) => {
             return res.status(404).json({ message: "User not found." });
         }
 
-        // Assuming the 'loves' field contains an array of videoIds that the user has loved
         const loves = userData.loves || [];
         res.status(200).json({ loves });
     } catch (error) {
@@ -1528,6 +1527,43 @@ const updateUserLoves = async (req, res) => {
         res.status(200).json({ message: "User loves updated successfully." });
     } catch (error) {
         console.error("Error updating user loves:", error);
+        res.status(500).json({ error: "Internal server error" });
+    } finally {
+        await client.close();
+    }
+};
+
+/**
+ * Fetches the list of favorite artists for a user.
+ * 
+ * @api {get} /api/getUserFavorites Fetch User's Favorite Artists
+ * @apiDescription Fetches the list of artistIds marked as favorites by the user. 
+ *                 The user is identified by their email address passed as a query parameter.
+ * @apiParam {String} user Query parameter containing the user's email address.
+ */
+const getUserFavorites = async (req, res) => {
+    const user = req.query.user; // User's email is expected as a query parameter
+
+    if (!user) {
+        return res.status(400).json({ message: "User email is required." });
+    }
+
+    const client = await new MongoClient(MONGO_URI, options);
+    try {
+        await client.connect();
+        const db = client.db("db-name");
+        const collection = db.collection("userAccounts");
+
+        const userData = await collection.findOne({ email: user }, { projection: { favorites: 1 } });
+
+        if (!userData) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        const favorites = userData.favorites || [];
+        res.status(200).json({ favorites });
+    } catch (error) {
+        console.error("Error fetching user favorites:", error);
         res.status(500).json({ error: "Internal server error" });
     } finally {
         await client.close();
@@ -1692,6 +1728,7 @@ module.exports = {
     postEditOffer,
     getUserLoves,
     updateUserLoves,
+    getUserFavorites,
     updateUserFavorites,
     updateUserSubscription,
     logContentUsage

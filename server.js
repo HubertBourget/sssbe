@@ -50,6 +50,7 @@ const {
   postEditOffer,
   getUserLoves,
   updateUserLoves,
+  getUserFavorites,
   updateUserFavorites,
   updateUserSubscription,
   logContentUsage,
@@ -103,6 +104,7 @@ express()
   .post("/api/postEditOffer/:id", postEditOffer)
   .get("/api/getUserLoves", getUserLoves)
   .patch("/api/updateUserLoves", updateUserLoves)
+  .get("/api/getUserFavorites", getUserFavorites)
   .patch("/api/updateUserFavorites", updateUserFavorites)
   .patch("/api/updateUserSubscription", updateUserSubscription)
   .post("/api/logContentUsage", logContentUsage)
