@@ -1747,7 +1747,7 @@ const updateUserPlaybackHistory = async (req, res) => {
                 $push: {
                     playbackHistory: {
                         $each: [playbackEvent],
-                        $slice: -3 // Keeps the last 300 items, removing the oldest if exceeding 300
+                        $slice: -300 // Keeps the last 300 items, removing the oldest if exceeding 300
                     }
                 }
             }
