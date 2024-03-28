@@ -1599,9 +1599,9 @@ const updateUserFavorites = async (req, res) => {
                 { $pull: { favorites: artistId } }
             );
         }
-        res.status(200).json({ message: "User likes updated successfully." });
+        res.status(200).json({ message: "User Favorites updated successfully." });
     } catch (error) {
-        console.error("Error updating user likes:", error);
+        console.error("Error updating user Favorites:", error);
         res.status(500).json({ error: "Internal server error" });
     } finally {
         await client.close();
@@ -1678,6 +1678,96 @@ const logContentUsage = async (req, res) => {
     }
 };
 
+/**
+ * Fetches the playback history for a specified user.
+ *
+ * @api {get} /api/getUserPlaybackHistory Fetch User Playback History
+ * @apiDescription Retrieves an array containing the playback history of a user. The history includes records of videos or tracks the user has played back. This endpoint requires the user's email address to identify the user account and fetch the corresponding playback history.
+ * @apiParam {String} user Query parameter for the user's email address used to identify the user account and fetch the playback history.
+ */
+const getUserPlaybackHistory = async (req, res) => {
+    const userEmail = req.query.user; // Expecting user's email as a query parameter
+
+    if (!userEmail) {
+        return res.status(400).json({ message: "User email is required as a query parameter." });
+    }
+
+    const client = new MongoClient(MONGO_URI, options);
+
+    try {
+        await client.connect();
+        const db = client.db("db-name"); // Use your actual database name
+        const collection = db.collection("userAccounts"); // Adjust according to your collection name
+
+        // Assuming 'playbackHistory' is an array in the user's document
+        const userDoc = await collection.findOne({ email: userEmail }, { projection: { playbackHistory: 1 } });
+
+        if (!userDoc) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        res.status(200).json({ playbackHistory: userDoc.playbackHistory || [] });
+    } catch (error) {
+        console.error("Error fetching user playback history:", error);
+        res.status(500).json({ error: "Internal server error." });
+    } finally {
+        await client.close();
+    }
+};
+
+/**
+ * @api {patch} /api/updateUserPlaybackHistory Update User Playback History
+ * @apiDescription Adds a new playback event to the user's playback history, including the videoId of the playback event and an automatically generated timestamp. Maintains a maximum of 300 items in the playback history.
+ * @apiParam {String} user The user's email address used to identify the user account.
+ * @apiParam {String} videoId The unique identifier of the video in the playback event.
+ */
+const updateUserPlaybackHistory = async (req, res) => {
+    const { user, videoId } = req.body;
+    const timestamp = new Date().toISOString(); // Generate the timestamp server-side
+
+    if (!user || !videoId) {
+        return res.status(400).json({ message: "Missing required fields: user, videoId." });
+    }
+
+    const client = await new MongoClient(MONGO_URI, options);
+
+    try {
+        await client.connect();
+        const db = client.db("db-name");
+        const collection = db.collection("userAccounts");
+
+        // The playback event to be added
+        const playbackEvent = { videoId, timestamp };
+
+        // Update user document by adding the playbackEvent. If playbackHistory has more than 300 items,
+        // remove the oldest one to maintain the size limit using $slice.
+        const updateResult = await collection.updateOne(
+            { email: user },
+            {
+                $push: {
+                    playbackHistory: {
+                        $each: [playbackEvent],
+                        $slice: -300 // Keeps the last 300 items, removing the oldest if exceeding 300
+                    }
+                }
+            }
+        );
+
+        if (updateResult.matchedCount === 0) {
+            return res.status(404).json({ message: "User not found." });
+        } else if (updateResult.modifiedCount === 0) {
+            return res.status(500).json({ message: "Failed to update playback history." });
+        } else {
+            res.status(200).json({ message: "Playback history updated successfully." });
+        }
+    } catch (error) {
+        console.error("Error updating user playback history:", error);
+        res.status(500).json({ error: "Internal server error." });
+    } finally {
+        await client.close();
+    }
+};
+
 
 
 
@@ -1731,5 +1821,7 @@ module.exports = {
     getUserFavorites,
     updateUserFavorites,
     updateUserSubscription,
-    logContentUsage
+    logContentUsage,
+    getUserPlaybackHistory,
+    updateUserPlaybackHistory,
 };

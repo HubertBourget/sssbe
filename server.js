@@ -54,6 +54,8 @@ const {
   updateUserFavorites,
   updateUserSubscription,
   logContentUsage,
+  getUserPlaybackHistory,
+  updateUserPlaybackHistory,
 } = require("./handlers");
 
 const {
@@ -108,6 +110,8 @@ express()
   .patch("/api/updateUserFavorites", updateUserFavorites)
   .patch("/api/updateUserSubscription", updateUserSubscription)
   .post("/api/logContentUsage", logContentUsage)
+  .get("/api/getUserPlaybackHistory", getUserPlaybackHistory)
+  .patch("/api/updateUserPlaybackHistory", updateUserPlaybackHistory)
   
 
   //Key encryption:
