@@ -8,6 +8,7 @@ const { decryptData } = require("./utils/cardDetailsEncryption");
 const axios = require("axios");
 const { Video } = require('@mux/mux-node');
 const { findSubscriptionByEmail, createSubscription, updateSubscription } = require("./utils/beehiivAPI");
+const { timeStamp } = require("console");
 const mux = new Video(process.env.MUX_ACCESS_TOKEN, process.env.MUX_SECRET_KEY);
 
 const { 
@@ -18,6 +19,7 @@ const {
     RecommendItemsToItem,
     SetItemValues,
     SearchItems,
+    GetItemValues,
 } = require("recombee-api-client").requests;
 
 const options = {
@@ -845,7 +847,42 @@ const updateTrackThumbnail = async (req, res) => {
     }
 };
 
-const getVideoMetadata = async (req, res) => {
+const getVideoMetadataFromVideoId = async (req, res) => {
+    const { id } = req.params;
+    const client = await new MongoClient(MONGO_URI, options);    
+    
+    try {
+        await client.connect();
+        const db = client.db("db-name");
+        const videosCollection = db.collection('ContentMetaData'); 
+        
+        // Query for the video by id
+        const video = await videosCollection.findOne({ videoId: id } );
+        
+        if (!video) {
+            // If no video is found, return a 404 response
+            return res.status(404).json({ message: 'Video not found' });
+        }
+        
+        // If a video is found, return the video metadata
+        return res.status(200).json({
+            videoId: video.videoId,
+            owner: video.owner,
+            title: video.title,
+            selectedImageThumbnail: video.selectedImageThumbnail || null,
+            fileUrl: video.fileUrl,
+        });
+
+        
+    } catch (error) {
+        console.error("Failed to retrieve video metadata:", error);
+        res.status(500).json({ message: 'Internal server error' });
+    } finally {
+        await client.close();
+    }
+};
+
+const getVideoMetadataFromObjectId = async (req, res) => {
     const { id } = req.params;
     const client = await new MongoClient(MONGO_URI, options);
 
@@ -961,9 +998,10 @@ const getAlbumById = async (req, res) => {
 
 const deleteAlbum = async (req, res) => {
     const albumId = req.params.albumId;
-    const artistId = req.query.artistId; // Assuming artistId is passed as a query parameter
+    const artistId = req.query.artistId; 
 
     const client = new MongoClient(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+    const { recombeeClient } = require("./utils/constants");
 
     try {
         await client.connect();
@@ -971,13 +1009,23 @@ const deleteAlbum = async (req, res) => {
         const collection = db.collection('AlbumMetaData');
 
         // First, verify that the album belongs to the artist
-        const album = await collection.findOne({ albumId: albumId });
-        if (!album) {
+        const albumDocument = await collection.findOne({ albumId: albumId });
+        if (!albumDocument) {
             return res.status(404).json({ message: "Album not found." });
         }
 
-        if (album.owner !== artistId) {
+        if (albumDocument.owner !== artistId) {
             return res.status(403).json({ message: "You do not have permission to delete this album." });
+        }
+        try {
+            const itemProperties = { deleted: true };
+            const recombeeItemId = albumDocument._id.toString();
+            console.log('recombeeItemId :', recombeeItemId);
+            const setItemValuesRequest = new SetItemValues(recombeeItemId, itemProperties);
+            console.log('setItemValuesRequest', setItemValuesRequest);
+            await recombeeClient.send(setItemValuesRequest);
+        } catch (recombeeError) {
+            console.error('Recombee error, proceeding with MongoDB deletion:', recombeeError);
         }
 
         // If the artistId matches the album's owner, proceed with the deletion
@@ -1089,9 +1137,9 @@ const getItemToUserRecommendations = async (req, res) => {
     const { recombeeClient } = require("./utils/constants");
     
     try {
-        const count = 3;
+        const count = 10;
 
-        // console.log("getRecommendations's UserId is: " + userId);
+        console.log("getRecommendations's UserId is: " + userId);
 
         const getRecommendationsRequest = new RecommendItemsToUser(userId, count, {
             'scenario': 'scenario_1',
@@ -1171,6 +1219,26 @@ const setUserOnRecombee = async (req, res) => {
         console.error("Error in setUserOnRecombee operations:", e.message);
         console.error("Error details:", e);
         res.status(500).json({ status: 500, message: "Internal server error" });
+    }
+}
+
+const getItemPropertiesFromRecombee = async (req, res) => {
+    const itemId = req.params.itemId;
+
+    const { recombeeClient } = require("./utils/constants");
+    const rqs = require('recombee-api-client/lib/requests');
+    try {
+        const response = await recombeeClient.send(new GetItemValues(itemId));
+        res.status(200).json({ 
+            message: 'Item properties fetched successfully', 
+            data: response 
+        });
+    } catch (error) {
+        console.error('Error fetching item properties:', error);
+        res.status(500).json({ 
+            message: 'Failed to fetch item properties', 
+            error: error.message 
+        });
     }
 }
 
@@ -1689,6 +1757,554 @@ const addEvent = async (req, res) => {
          await client.close();
      }
  };
+const getContentDocumentsByCategory = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+    const { category } = req.params;  
+    
+    try {
+        await client.connect();
+        const db = client.db("db-name");
+        const collection = db.collection('ContentMetaData'); 
+        
+        // Query for the content by category
+        const documents = await collection.find({ category: category }).toArray();
+        
+        if (!documents) {
+            // If no content is found, return a 404 response
+            return res.status(404).json({ message: 'Content not found' });
+        }
+        // Send the found documents in the response
+        res.json(documents);
+        
+    } catch (error) {
+        console.error("Failed to retrieve content metadata:", error);
+        res.status(500).json({ message: 'Internal server error' });
+    } finally {
+        await client.close();
+    }
+}
+
+const updateContentCategory = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+    const { oldCategory, newCategory } = req.body;
+
+    console.log(`Request received to update category from '${oldCategory}' to '${newCategory}'`);
+
+    try {
+        await client.connect();
+        const db = client.db("db-name");
+        const collection = db.collection('ContentMetaData');
+
+        // Log pre-update document count
+        const preUpdateCount = await collection.countDocuments({ category: oldCategory });
+        console.log(`${preUpdateCount} documents found with category '${oldCategory}'`);
+
+        // Update the category for documents that match the old category
+        const updateResult = await collection.updateMany(
+            { category: oldCategory },
+            { $set: { category: newCategory } }
+        );
+
+        console.log(`Update operation details:`, updateResult);
+
+        if (updateResult.matchedCount === 0) {
+            console.log('No documents matched the criteria for update.');
+            return res.status(404).json({ message: 'No content found to update' });
+        }
+
+        console.log(`${updateResult.modifiedCount} documents were updated from '${oldCategory}' to '${newCategory}'`);
+
+        // Send the success response with details of the update operation
+        res.json({
+            message: 'Content category updated successfully',
+            details: updateResult
+        });
+
+    } catch (error) {
+        console.error("Failed to update content category:", error);
+        res.status(500).json({ message: 'Internal server error' });
+    } finally {
+        await client.close();
+    }
+}
+
+const postCreateEvent = async (req, res) => {
+    const { title, createdBy, description, dateTime, paymentLink, priceType, priceInThanks } = req.body;
+
+    // Generate the current timestamp
+    const createdAt = new Date();
+
+    const event = {
+        title,
+        createdBy,
+        description,
+        dateTime,
+        priceType,
+        paymentLink: priceType === 'ExternalLink' ? paymentLink : '', // Conditionally include paymentLink
+        priceInThanks: priceType === 'PricedInThanks' ? priceInThanks : null, // Conditionally include priceInThanks
+        createdAt
+    };
+
+    const client = new MongoClient(MONGO_URI, options);
+    try {
+        await client.connect();
+        const db = client.db('db-name');
+        const result = await db.collection("ArtistEvents").insertOne(event);
+        if (result.insertedId) {
+            const insertedEvent = await db.collection("ArtistEvents").findOne({ _id: result.insertedId });
+            res.status(200).json({ status: 200, event: insertedEvent });
+        } else {
+            // Handle the case where the document wasn't inserted properly
+            res.status(400).json({ status: 400, message: "Event creation failed." });
+        }
+    } catch (e) {
+        console.error("Error creating event:", e.message);
+        res.status(500).json({ status: 500, message: e.message });
+    } finally {
+        await client.close();
+    }
+};
+
+const postEditEvent = async (req, res) => {
+    const { id } = req.params; // Event ID is passed as URL parameter
+    const { title, createdBy, description, dateTime, paymentLink, priceType, priceInThanks } = req.body;
+
+    // Connect to the MongoDB client
+    const client = new MongoClient(MONGO_URI, options);
+    try {
+        const objectId = new ObjectId(id);
+
+        await client.connect();
+        const db = client.db('db-name');
+        const collection = db.collection("ArtistEvents");
+
+        // Find the document before attempting update to verify it exists
+        const doc = await collection.findOne({ _id: objectId });
+
+        if (!doc) {
+            return res.status(404).json({ status: 404, message: "Event not found." });
+        }
+
+        // Perform the update operation
+        const result = await collection.findOneAndUpdate(
+            { _id: objectId },
+            {
+                $set: {
+                    title, 
+                    createdBy, 
+                    description, 
+                    dateTime, 
+                    priceType,
+                    paymentLink: priceType === 'ExternalLink' ? paymentLink : '', // Conditionally include paymentLink
+                    priceInThanks: priceType === 'PricedInThanks' ? priceInThanks : null, // Conditionally include priceInThanks
+                    lastEdited: new Date(), // Server-side timestamp for last edit
+                }
+            },
+            { returnOriginal: false }
+        );
+
+        // Check if the update operation was successful
+        if (result.value) {
+            res.status(200).json({ status: 200, event: result.value });
+        } else {
+            res.status(404).json({ status: 404, message: "Event not found after update attempt." });
+        }
+    } catch (e) {
+        console.error("Error editing event:", e);
+        if (e instanceof TypeError) {
+            res.status(400).json({ status: 400, message: "Invalid event ID format." });
+        } else {
+            res.status(500).json({ status: 500, message: "Internal server error" });
+        }
+    } finally {
+        await client.close();
+    }
+};
+
+const postCreateOffer = async (req, res) => {
+    const { title, description, file, image, paymentLink, priceInThanks, priceType } = req.body;
+    const createdAt = new Date(); 
+
+    const offer = {
+        title,
+        description,
+        image,
+        file,
+        priceType,
+        createdAt,
+        paymentLink: priceType === 'ExternalLink' ? paymentLink : '', // Only set paymentLink for ExternalLink priceType
+        priceInThanks: priceType === 'PricedInThanks' ? priceInThanks : null, // Only set priceInThanks for PricedInThanks priceType
+    };
+
+    const client = new MongoClient(MONGO_URI, options);
+    try {
+        await client.connect();
+        const db = client.db('db-name');
+        const result = await db.collection("ArtistOffers").insertOne(offer);
+        
+        if (result.insertedId) {
+            // Fetch and send back the full inserted document including the createdAt timestamp
+            const insertedOffer = await db.collection("ArtistOffers").findOne({ _id: result.insertedId });
+            res.status(200).json({ status: 200, offer: insertedOffer });
+        } else {
+            res.status(500).json({ status: 500, message: "Failed to create the offer." });
+        }
+    } catch (e) {
+        console.error("Error creating offer:", e.message);
+        res.status(400).json({ status: 400, message: e.message });
+    } finally {
+        await client.close();
+    }
+};
+
+const postEditOffer = async (req, res) => {
+    const { id } = req.params;
+    const { title, description, file, paymentLink, priceInThanks, priceType } = req.body;
+
+    const update = {
+        $set: {
+            title,
+            description,
+            file,
+            priceType,
+            paymentLink: priceType === 'ExternalLink' ? paymentLink : '',
+            priceInThanks: priceType === 'PricedInThanks' ? priceInThanks : null,
+            lastEdited: new Date(), // Server-side timestamp for last edit
+        }
+    };
+
+    const client = new MongoClient(MONGO_URI, options);
+    try {
+        await client.connect();
+        const db = client.db('db-name');
+        const collection = db.collection("ArtistOffers");
+
+        const result = await collection.findOneAndUpdate(
+            { _id: new ObjectId(id) },
+            update,
+            { returnOriginal: false }
+        );
+
+        if (result.value) {
+            res.status(200).json({ status: 200, offer: result.value });
+        } else {
+            res.status(404).json({ status: 404, message: "Offer not found" });
+        }
+    } catch (e) {
+        console.error("Error editing offer:", e.message);
+        res.status(500).json({ status: 500, message: "Internal server error" });
+    } finally {
+        await client.close();
+    }
+};
+
+/**
+ * @api {get} /api/getUserLoves
+ * @apiDescription Fetches the list of videos a user has "loved". The user is identified by their email address.
+ * @apiParam {String} user Query parameter containing the user's email address.
+ */
+const getUserLoves = async (req, res) => {
+    const user = req.query.user; // User's email is expected as a query parameter
+
+    if (!user) {
+        return res.status(400).json({ message: "User email is required." });
+    }
+
+    const client = await new MongoClient(MONGO_URI, options);
+    try {
+        await client.connect();
+        const db = client.db("db-name");
+        const collection = db.collection("userAccounts");
+
+        const userData = await collection.findOne({ email: user }, { projection: { loves: 1 } });
+
+        if (!userData) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        const loves = userData.loves || [];
+        res.status(200).json({ loves });
+    } catch (error) {
+        console.error("Error fetching user loves:", error);
+        res.status(500).json({ error: "Internal server error" });
+    } finally {
+        await client.close();
+    }
+};
+
+/**
+ * @api {patch} /api/updateUserLikes
+ * @apiDescription This endpoint allows a user to like or unLike an artist. The operation is determined by the `b_isLiking` flag.
+ * @apiParam {String} user User's email address used to identify the user account.
+ * @apiParam {String} videoId The unique identifier of the video to like or unlike.
+ * @apiParam {Boolean} b_isLiking Flag indicating whether the video is being liked (true) or unliked (false).
+*/
+const updateUserLoves = async (req, res) => {
+    const { user, videoId, b_isLoving } = req.body;
+    const client = await new MongoClient(MONGO_URI, options);
+
+    try {
+        await client.connect();
+        const db = client.db("db-name");
+        const collection = db.collection("userAccounts");
+
+        if (b_isLoving) {
+            // Add videoId to the loves array if b_isLoving is true, avoid duplicates using $addToSet
+            await collection.updateOne(
+                { email: user }, // Assuming userId is an ObjectId, adjust if your ID system differs
+                { $addToSet: { loves: videoId } }
+            );
+        } else {
+            // Remove videoId from the loves array if b_isLoving is false
+            await collection.updateOne(
+                { email: user },
+                { $pull: { loves: videoId } }
+            );
+        }
+        res.status(200).json({ message: "User loves updated successfully." });
+    } catch (error) {
+        console.error("Error updating user loves:", error);
+        res.status(500).json({ error: "Internal server error" });
+    } finally {
+        await client.close();
+    }
+};
+
+/**
+ * Fetches the list of favorite artists for a user.
+ * 
+ * @api {get} /api/getUserFavorites Fetch User's Favorite Artists
+ * @apiDescription Fetches the list of artistIds marked as favorites by the user. 
+ *                 The user is identified by their email address passed as a query parameter.
+ * @apiParam {String} user Query parameter containing the user's email address.
+ */
+const getUserFavorites = async (req, res) => {
+    const user = req.query.user; // User's email is expected as a query parameter
+
+    if (!user) {
+        return res.status(400).json({ message: "User email is required." });
+    }
+
+    const client = await new MongoClient(MONGO_URI, options);
+    try {
+        await client.connect();
+        const db = client.db("db-name");
+        const collection = db.collection("userAccounts");
+
+        const userData = await collection.findOne({ email: user }, { projection: { favorites: 1 } });
+
+        if (!userData) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        const favorites = userData.favorites || [];
+        res.status(200).json({ favorites });
+    } catch (error) {
+        console.error("Error fetching user favorites:", error);
+        res.status(500).json({ error: "Internal server error" });
+    } finally {
+        await client.close();
+    }
+};
+
+/**
+ * @api {patch} /api/updateUserFollows Toggle User's Follow Status on an Artist
+ * @apiDescription This endpoint allows a user to follow or unfollow an artist. The operation is determined by the `b_isFollowing` flag.
+ * @apiParam {String} user Email of the user performing the follow/unfollow operation.
+ * @apiParam {String} artistId Unique identifier of the artist to be followed/unfollowed.
+ * @apiParam {Boolean} b_isFollowing Flag indicating the desired follow status: `true` to follow, `false` to unfollow.
+ */
+const updateUserFavorites = async (req, res) => {
+    const { user, artistId, b_isFavored } = req.body;
+    const client = await new MongoClient(MONGO_URI, options);
+
+    try {
+        await client.connect();
+        const db = client.db("db-name");
+        const collection = db.collection("userAccounts");
+
+        if (b_isFavored) {
+            // Add artistId to the favorites array if b_isFavored is true, avoid duplicates using $addToSet
+            await collection.updateOne(
+                { email: user }, // Assuming userId is an ObjectId, adjust if your ID system differs
+                { $addToSet: { favorites: artistId } }
+            );
+        } else {
+            // Remove artistId from the favorites array if b_isFavored is false
+            await collection.updateOne(
+                { email: user },
+                { $pull: { favorites: artistId } }
+            );
+        }
+        res.status(200).json({ message: "User Favorites updated successfully." });
+    } catch (error) {
+        console.error("Error updating user Favorites:", error);
+        res.status(500).json({ error: "Internal server error" });
+    } finally {
+        await client.close();
+    }
+};
+
+const updateUserSubscription = async (req, res) => {
+    const { userEmail, artistId, b_isSubscribing, thanksCoinsPerMonth } = req.body;
+    const client = await new MongoClient(MONGO_URI, options);
+
+    try {
+        await client.connect();
+        const db = client.db("db-name");
+        const collection = db.collection("userAccounts");
+
+        if (b_isSubscribing) {
+            // Subscriptions are stored as an array of objects { artistId, thanksCoinsPerMonth }
+            await collection.updateOne(
+                { email: userEmail },
+                { 
+                    $addToSet: { 
+                        subscriptions: { artistId, thanksCoinsPerMonth } 
+                    } 
+                }
+            );
+        } else {
+            // When unsubscribing, remove the subscription object matching the artistId
+            await collection.updateOne(
+                { email: userEmail },
+                { 
+                    $pull: { 
+                        subscriptions: { artistId } 
+                    } 
+                }
+            );
+        }
+        res.status(200).json({ message: "User subscriptions updated successfully." });
+    } catch (error) {
+        console.error("Error updating user subscriptions:", error);
+        res.status(500).json({ error: "Internal server error" });
+    } finally {
+        await client.close();
+    }
+};
+
+const logContentUsage = async (req, res) => {
+    const { user, videoId } = req.body;
+
+    // Generate timestamp server-side using current date and time
+    const timestamp = new Date().toISOString();
+
+    const contentUsageRecord = {
+        user,
+        videoId,
+        timestamp, //Server-generated timestamp
+    };
+
+    const client = new MongoClient(MONGO_URI, options);
+
+    try {
+        await client.connect();
+        const db = client.db("db-name");
+        const collection = db.collection("contentUsage");
+
+        // Insert the content usage record into the collection
+        await collection.insertOne(contentUsageRecord);
+        
+        res.status(200).json({ message: "Content usage logged successfully.", data: contentUsageRecord });
+    } catch (error) {
+        console.error("Error logging content usage:", error);
+        res.status(500).json({ error: "Internal server error" });
+    } finally {
+        await client.close();
+    }
+};
+
+/**
+ * Fetches the playback history for a specified user.
+ *
+ * @api {get} /api/getUserPlaybackHistory Fetch User Playback History
+ * @apiDescription Retrieves an array containing the playback history of a user. The history includes records of videos or tracks the user has played back. This endpoint requires the user's email address to identify the user account and fetch the corresponding playback history.
+ * @apiParam {String} user Query parameter for the user's email address used to identify the user account and fetch the playback history.
+ */
+const getUserPlaybackHistory = async (req, res) => {
+    const userEmail = req.query.user; // Expecting user's email as a query parameter
+
+    if (!userEmail) {
+        return res.status(400).json({ message: "User email is required as a query parameter." });
+    }
+
+    const client = new MongoClient(MONGO_URI, options);
+
+    try {
+        await client.connect();
+        const db = client.db("db-name"); // Use your actual database name
+        const collection = db.collection("userAccounts"); // Adjust according to your collection name
+
+        // Assuming 'playbackHistory' is an array in the user's document
+        const userDoc = await collection.findOne({ email: userEmail }, { projection: { playbackHistory: 1 } });
+
+        if (!userDoc) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        res.status(200).json({ playbackHistory: userDoc.playbackHistory || [] });
+    } catch (error) {
+        console.error("Error fetching user playback history:", error);
+        res.status(500).json({ error: "Internal server error." });
+    } finally {
+        await client.close();
+    }
+};
+
+/**
+ * @api {patch} /api/updateUserPlaybackHistory Update User Playback History
+ * @apiDescription Adds a new playback event to the user's playback history, including the videoId of the playback event and an automatically generated timestamp. Maintains a maximum of 300 items in the playback history.
+ * @apiParam {String} user The user's email address used to identify the user account.
+ * @apiParam {String} videoId The unique identifier of the video in the playback event.
+ */
+const updateUserPlaybackHistory = async (req, res) => {
+    const { user, videoId } = req.body;
+    const timestamp = new Date().toISOString(); // Generate the timestamp server-side
+
+    if (!user || !videoId) {
+        return res.status(400).json({ message: "Missing required fields: user, videoId." });
+    }
+
+    const client = await new MongoClient(MONGO_URI, options);
+
+    try {
+        await client.connect();
+        const db = client.db("db-name");
+        const collection = db.collection("userAccounts");
+
+        // The playback event to be added
+        const playbackEvent = { videoId, timestamp };
+
+        // Update user document by adding the playbackEvent. If playbackHistory has more than 300 items,
+        // remove the oldest one to maintain the size limit using $slice.
+        const updateResult = await collection.updateOne(
+            { email: user },
+            {
+                $push: {
+                    playbackHistory: {
+                        $each: [playbackEvent],
+                        $slice: -300 // Keeps the last 300 items, removing the oldest if exceeding 300
+                    }
+                }
+            }
+        );
+
+        if (updateResult.matchedCount === 0) {
+            return res.status(404).json({ message: "User not found." });
+        } else if (updateResult.modifiedCount === 0) {
+            return res.status(500).json({ message: "Failed to update playback history." });
+        } else {
+            res.status(200).json({ message: "Playback history updated successfully." });
+        }
+    } catch (error) {
+        console.error("Error updating user playback history:", error);
+        res.status(500).json({ error: "Internal server error." });
+    } finally {
+        await client.close();
+    }
+};
+
 
 
 
@@ -1714,6 +2330,7 @@ module.exports = {
     getSearchResult,
     addUserOnRecombee,
     setUserOnRecombee,
+    getItemPropertiesFromRecombee,
     getItemToItemRecommendations,
     postNewAlbum,
     postAlbumImage,
@@ -1723,7 +2340,8 @@ module.exports = {
     postCoverImage,
     postBannerImage,
     updateTrackThumbnail,
-    getVideoMetadata,
+    getVideoMetadataFromVideoId,
+    getVideoMetadataFromObjectId,
     getAlbumsByArtist,
     getAlbumById,
     deleteAlbum,
@@ -1747,4 +2365,18 @@ module.exports = {
     savePlan,
     getPlanOfUser,
     postCreateLiveStream,
+    getContentDocumentsByCategory,
+    updateContentCategory,
+    postCreateEvent,
+    postEditEvent,
+    postCreateOffer,
+    postEditOffer,
+    getUserLoves,
+    updateUserLoves,
+    getUserFavorites,
+    updateUserFavorites,
+    updateUserSubscription,
+    logContentUsage,
+    getUserPlaybackHistory,
+    updateUserPlaybackHistory,
 };

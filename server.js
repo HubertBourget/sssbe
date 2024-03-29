@@ -25,6 +25,7 @@ const {
   getSearchResult,
   addUserOnRecombee,
   setUserOnRecombee,
+  getItemPropertiesFromRecombee,
   getItemToItemRecommendations,
   postNewAlbum,
   postAlbumImage,
@@ -34,7 +35,8 @@ const {
   postCoverImage,
   postBannerImage,
   updateTrackThumbnail,
-  getVideoMetadata,
+  getVideoMetadataFromVideoId,
+  getVideoMetadataFromObjectId,
   getAlbumsByArtist,
   getAlbumById,
   deleteAlbum,
@@ -58,6 +60,20 @@ const {
   savePlan,
   getPlanOfUser,
   postCreateLiveStream,
+  getContentDocumentsByCategory,
+  updateContentCategory,
+  postCreateEvent,
+  postEditEvent,
+  postCreateOffer,
+  postEditOffer,
+  getUserLoves,
+  updateUserLoves,
+  getUserFavorites,
+  updateUserFavorites,
+  updateUserSubscription,
+  logContentUsage,
+  getUserPlaybackHistory,
+  updateUserPlaybackHistory,
 } = require("./handlers");
 
 const {
@@ -100,10 +116,23 @@ express()
   .post('/api/postCoverImage', postCoverImage)
   .post('/api/postBannerImage', postBannerImage)
   .post('/api/updateTrackThumbnail', updateTrackThumbnail)
-  .get("/api/getVideoMetadata/:id", getVideoMetadata)
+  .get("/api/getVideoMetaDataFromVideoId/:id", getVideoMetadataFromVideoId)
+  .get("/api/getVideoMetaDataFromObjectId/:id", getVideoMetadataFromObjectId)
   .get("/api/getAlbumsByArtist", getAlbumsByArtist)
   .get("/api/getAlbumById", getAlbumById)
   .delete("/api/deleteAlbum/:albumId", deleteAlbum)
+  .post("/api/postCreateEvent", postCreateEvent)
+  .post("/api/postEditEvent/:id", postEditEvent)
+  .post("/api/postCreateOffer", postCreateOffer)
+  .post("/api/postEditOffer/:id", postEditOffer)
+  .get("/api/getUserLoves", getUserLoves)
+  .patch("/api/updateUserLoves", updateUserLoves)
+  .get("/api/getUserFavorites", getUserFavorites)
+  .patch("/api/updateUserFavorites", updateUserFavorites)
+  .patch("/api/updateUserSubscription", updateUserSubscription)
+  .post("/api/logContentUsage", logContentUsage)
+  .get("/api/getUserPlaybackHistory", getUserPlaybackHistory)
+  .patch("/api/updateUserPlaybackHistory", updateUserPlaybackHistory)
   
 
   //Key encryption:
@@ -115,8 +144,10 @@ express()
   .get("/api/getItemToUserRecommendations/:userId", getItemToUserRecommendations)
   .get("/api/getItemToItemRecommendations/:userId/:itemId", getItemToItemRecommendations)
   .get("/api/getSearchResult/:userId/:searchQuery", getSearchResult)
+  .get("/api/getItemPropertiesFromRecombee/:itemId", getItemPropertiesFromRecombee)
   // .post("/api/addUserOnRecombee/:userId", addUserOnRecombee) //For Manual Insertion Only!
   // .post("/api/setUserOnRecombee/:userId", setUserOnRecombee) //For Manual Insertion Only!
+  
 
   //MongoDB data management:
   .post("/api/postNewContentTypePropertyWithAttributes", postNewContentTypePropertyWithAttributes)
@@ -136,6 +167,9 @@ express()
   .post("/api/save-plan", savePlan)
   .get("/api/get-plan/:userId", getPlanOfUser)
   // .post("/api/postNewContentTypePropertyWithAttributes", postNewContentTypePropertyWithAttributes)
+  .post("/api/postNewContentTypePropertyWithAttributes", postNewContentTypePropertyWithAttributes) //used to create the contentType property in ContentMetaData, ConcertMetaData and AlbumMetaData collection
+  .get("/api/getContentDocumentsByCategory/:category", getContentDocumentsByCategory) //Database Inspection tool for Content by Category type
+  .patch("/api/updateContentCategory", updateContentCategory)
 
   //Mux endpoint:
   .post("/api/postCreateLiveStream", postCreateLiveStream)
