@@ -5,7 +5,6 @@ const { MONGO_URI } = process.env;
 const { SyncRecombee } = require("./utils/SyncRecombee");
 const storage = require('./utils/googleCloudStorage');
 const { decryptData } = require("./utils/cardDetailsEncryption");
-const mongoose = require("mongoose");
 const axios = require("axios");
 const { Video } = require('@mux/mux-node');
 const mux = new Video(process.env.MUX_ACCESS_TOKEN, process.env.MUX_SECRET_KEY);
@@ -1125,7 +1124,7 @@ const postNewCardForPayment = async (req, res) => {
         const db = client.db('db-name')
         const userCollection = db.collection('userAccounts')
         const paymentMethodCollection = db.collection('paymentMethods')
-        const user = await userCollection.findOne({_id: new mongoose.Types.ObjectId(userId)})
+        const user = await userCollection.findOne({_id: new ObjectId(userId)})
         if(!user){
             throw new Error('user not found')
         }
@@ -1146,7 +1145,7 @@ const getCard = async (req, res) => {
         const {_id, userId} = req.body
         const db = client.db('db-name')
         const paymentMethodCollection = db.collection('paymentMethods')
-        const card = await paymentMethodCollection.findOne({_id: new mongoose.Types.ObjectId(_id), userId: userId})
+        const card = await paymentMethodCollection.findOne({_id: new ObjectId(_id), userId: userId})
         if(!card){
             throw new Error('card not found')
         }
@@ -1243,7 +1242,7 @@ const getOrders = async (req, res) => {
          const planCollection = db.collection('plans');
          const userCollection = db.collection('userAccounts')
          const {amount, type, userId}= req.body
-         const user = await userCollection.findOne({_id: new mongoose.Types.ObjectId(userId)})
+         const user = await userCollection.findOne({_id: new ObjectId(userId)})
          if(!user){
              throw new Error('user not found')
          }
