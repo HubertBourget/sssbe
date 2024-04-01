@@ -2030,4 +2030,5 @@ module.exports = {
     updateUserPlaybackHistory,
     sendThanksCoinsViaArtistPage,
     sendThanksCoinsViaAlbumPage,
+    sendThanksCoinsViaContent,
 };

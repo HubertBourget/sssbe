@@ -58,6 +58,7 @@ const {
   updateUserPlaybackHistory,
   sendThanksCoinsViaArtistPage,
   sendThanksCoinsViaAlbumPage,
+  sendThanksCoinsViaContent,
 } = require("./handlers");
 
 const {
@@ -116,7 +117,7 @@ express()
   .patch("/api/updateUserPlaybackHistory", updateUserPlaybackHistory)
   .patch("/api/sendThanksCoinsViaArtistPage", sendThanksCoinsViaArtistPage)
   .patch("/api/sendThanksCoinsViaAlbumPage", sendThanksCoinsViaAlbumPage)
-
+  .patch("/api/sendThanksCoinsViaContent", sendThanksCoinsViaContent)
   
 
   //Key encryption:
