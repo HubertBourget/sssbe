@@ -1781,6 +1781,11 @@ const updateUserPlaybackHistory = async (req, res) => {
 const sendThanksCoinsViaArtistPage = async (req, res) => {
     const { userId, amountSend, artistId } = req.body;
 
+    // Ensure amountSend is a positive integer
+    if (!Number.isInteger(amountSend) || amountSend <= 0) {
+        return res.status(400).json({ message: "Invalid amount. Please send a positive number of ThanksCoins." });
+    }
+
     const client = new MongoClient(MONGO_URI, options);
 
     try {
@@ -1835,7 +1840,6 @@ const sendThanksCoinsViaArtistPage = async (req, res) => {
     }
 };
 
-
 /**
  * @api {patch} /api/sendThanksCoinsViaAlbumPage Send ThanksCoins to Artist via Album
  * @apiDescription This endpoint allows a user to send ThanksCoins to an artist by selecting an album. 
@@ -1847,6 +1851,11 @@ const sendThanksCoinsViaArtistPage = async (req, res) => {
  */
 const sendThanksCoinsViaAlbumPage = async (req, res) => {
     const { userId, amountSend, albumId } = req.body;
+
+    // Ensure amountSend is a positive integer
+    if (!Number.isInteger(amountSend) || amountSend <= 0) {
+        return res.status(400).json({ message: "Invalid amount. Please send a positive number of ThanksCoins." });
+    }
 
     const client = new MongoClient(MONGO_URI, options);
 
@@ -1913,6 +1922,11 @@ const sendThanksCoinsViaAlbumPage = async (req, res) => {
  */
 const sendThanksCoinsViaContent = async (req, res) => {
     const { userId, amountSend, videoId } = req.body;
+
+    // Ensure amountSend is a positive integer
+    if (!Number.isInteger(amountSend) || amountSend <= 0) {
+        return res.status(400).json({ message: "Invalid amount. Please send a positive number of ThanksCoins." });
+    }
 
     const client = new MongoClient(MONGO_URI, options);
 
