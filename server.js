@@ -56,7 +56,8 @@ const {
   logContentUsage,
   getUserPlaybackHistory,
   updateUserPlaybackHistory,
-  sendThanksCoins,
+  sendThanksCoinsViaArtistPage,
+  sendThanksCoinsViaAlbumPage,
 } = require("./handlers");
 
 const {
@@ -113,7 +114,9 @@ express()
   .post("/api/logContentUsage", logContentUsage)
   .get("/api/getUserPlaybackHistory", getUserPlaybackHistory)
   .patch("/api/updateUserPlaybackHistory", updateUserPlaybackHistory)
-  .patch("/api/sendThanksCoins", sendThanksCoins)
+  .patch("/api/sendThanksCoinsViaArtistPage", sendThanksCoinsViaArtistPage)
+  .patch("/api/sendThanksCoinsViaAlbumPage", sendThanksCoinsViaAlbumPage)
+
   
 
   //Key encryption:

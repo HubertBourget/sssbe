@@ -1768,22 +1768,18 @@ const updateUserPlaybackHistory = async (req, res) => {
     }
 };
 
-const sendThanksCoins = async (req, res) => {
-    const { userId, amountSend, artistId, albumId, videoId } = req.body;
-
-    // Determine the transaction type and its id
-    let transactionType;
-    let transactionId;
-    if (artistId) {
-        transactionType = 'artistId';
-        transactionId = artistId;
-    } else if (albumId) {
-        transactionType = 'albumId';
-        transactionId = albumId;
-    } else if (videoId) {
-        transactionType = 'videoId';
-        transactionId = videoId;
-    }
+/**
+ * @api {patch} /api/sendThanksCoinsViaArtistPage Send ThanksCoins to an Artist
+ * @apiDescription This endpoint allows a user to send ThanksCoins to an artist as a form of support. 
+ * It ensures the sender has a sufficient balance before proceeding with the transfer and updates both the sender's and the artist's ThanksCoins balance accordingly. 
+ * The transaction is recorded with a server-generated timestamp for auditing purposes.
+ * 
+ * @apiParam {String} userId The email of the user sending ThanksCoins. This is used to identify the sender's account.
+ * @apiParam {Number} amountSend The amount of ThanksCoins to be sent to the artist.
+ * @apiParam {String} artistId The email of the artist receiving ThanksCoins. This is used to identify the artist's account.
+ */
+const sendThanksCoinsViaArtistPage = async (req, res) => {
+    const { userId, amountSend, artistId } = req.body;
 
     const client = new MongoClient(MONGO_URI, options);
 
@@ -1793,42 +1789,187 @@ const sendThanksCoins = async (req, res) => {
         const usersCollection = db.collection("userAccounts");
         const thanksSentCollection = db.collection("ThanksSent");
 
-        // Fetch user to check balance by email
-        const user = await usersCollection.findOne({ email: userId });
-
-        if (!user) {
-            return res.status(404).json({ message: "User not found." });
+        // Fetch sender to check balance by email
+        const sender = await usersCollection.findOne({ email: userId });
+        if (!sender) {
+            return res.status(404).json({ message: "Sender not found." });
         }
 
-        if (user.thanksCoins < amountSend) {
+        if (sender.thanksCoins < amountSend) {
             return res.status(400).json({ message: "Insufficient thanksCoins." });
         }
 
-        // Deduct the amount from user's balance
+        // Check if artist exists before proceeding
+        const artist = await usersCollection.findOne({ email: artistId });
+        if (!artist) {
+            return res.status(404).json({ message: "Artist not found." });
+        }
+
+        // Deduct the amount from sender's balance
         await usersCollection.updateOne(
             { email: userId },
             { $inc: { thanksCoins: -amountSend } }
         );
 
+        // Update the artist's balance
+        await usersCollection.updateOne(
+            { email: artistId },
+            { $inc: { thanksCoins: amountSend } }
+        );
+
         // Record the send event with the server-side generated timestamp
         const sendEvent = {
             timestamp: new Date(),
-            contentType,
-            userId: user.email, // Storing the email of the user who is sending thanksCoins
-            transactionType, // "artistId", "albumId", or "videoId"
-            transactionId, // The actual ID
+            senderUserId: userId,
+            recipientArtistId: artistId,
             amountSend
         };
         await thanksSentCollection.insertOne(sendEvent);
 
-        res.status(200).json({ message: "ThanksCoins sent successfully." });
+        res.status(200).json({ message: "ThanksCoins sent successfully to artist." });
     } catch (error) {
-        console.error("Error sending thanksCoins:", error);
+        console.error("Error sending ThanksCoins to artist:", error);
         res.status(500).json({ error: "Internal server error." });
     } finally {
         await client.close();
     }
 };
+
+/**
+ * @api {patch} /api/sendThanksCoinsViaAlbumPage Send ThanksCoins to Artist via Album
+ * @apiDescription This endpoint allows a user to send ThanksCoins to an artist by selecting an album. 
+ * The function identifies the artist using the album's owner property, ensuring the ThanksCoins are credited to the correct artist.
+ * 
+ * @apiParam {String} userId Email of the user sending ThanksCoins, used to identify the sender's account.
+ * @apiParam {Number} amountSend Amount of ThanksCoins to be sent.
+ * @apiParam {String} albumId Unique identifier of the album being used to send ThanksCoins.
+ */
+const sendThanksCoinsViaAlbumPage = async (req, res) => {
+    const { userId, amountSend, albumId } = req.body;
+
+    const client = new MongoClient(MONGO_URI, options);
+
+    try {
+        await client.connect();
+        const db = client.db("db-name");
+        const usersCollection = db.collection("userAccounts");
+        const albumCollection = db.collection("AlbumMetaData");
+        const thanksSentCollection = db.collection("ThanksSent");
+
+        // Verify sender's balance
+        const sender = await usersCollection.findOne({ email: userId });
+        if (!sender) {
+            return res.status(404).json({ message: "Sender not found." });
+        }
+
+        if (sender.thanksCoins < amountSend) {
+            return res.status(400).json({ message: "Insufficient thanksCoins." });
+        }
+
+        // Find the album to get the owner (artistId)
+        const album = await albumCollection.findOne({ albumId: albumId });
+        if (!album) {
+            return res.status(404).json({ message: "Album not found." });
+        }
+
+        // Check if the artist exists before proceeding
+        const artist = await usersCollection.findOne({ email: album.owner });
+        if (!artist) {
+            return res.status(404).json({ message: "Artist not found." });
+        }
+
+        // Deduct ThanksCoins from the sender and credit to the artist
+        await usersCollection.updateOne({ email: userId }, { $inc: { thanksCoins: -amountSend } });
+        await usersCollection.updateOne({ email: album.owner }, { $inc: { thanksCoins: amountSend } });
+
+        // Record the transaction
+        const sendEvent = {
+            timestamp: new Date(),
+            senderUserId: userId,
+            recipientArtistId: album.owner,
+            albumId: albumId,
+            amountSend
+        };
+        await thanksSentCollection.insertOne(sendEvent);
+
+        res.status(200).json({ message: "ThanksCoins sent successfully to artist via album." });
+    } catch (error) {
+        console.error("Error sending ThanksCoins via album:", error);
+        res.status(500).json({ error: "Internal server error." });
+    } finally {
+        await client.close();
+    }
+};
+
+/**
+ * @api {patch} /api/sendThanksCoinsViaTrackPage Send ThanksCoins to Artist via Track
+ * @apiDescription This endpoint allows a user to send ThanksCoins to an artist by selecting a track. 
+ * The function identifies the artist using the track's metadata, ensuring the ThanksCoins are credited to the correct artist.
+ * 
+ * @apiParam {String} userId Email of the user sending ThanksCoins, used to identify the sender's account.
+ * @apiParam {Number} amountSend Amount of ThanksCoins to be sent.
+ * @apiParam {String} trackId Unique identifier of the track being used to send ThanksCoins.
+ */
+const sendThanksCoinsViaContent = async (req, res) => {
+    const { userId, amountSend, videoId } = req.body;
+
+    const client = new MongoClient(MONGO_URI, options);
+
+    try {
+        await client.connect();
+        const db = client.db("db-name");
+        const usersCollection = db.collection("userAccounts");
+        const contentCollection = db.collection("ContentMetaData");
+        const thanksSentCollection = db.collection("ThanksSent");
+
+        // Verify sender's balance
+        const sender = await usersCollection.findOne({ email: userId });
+        if (!sender) {
+            return res.status(404).json({ message: "Sender not found." });
+        }
+
+        if (sender.thanksCoins < amountSend) {
+            return res.status(400).json({ message: "Insufficient thanksCoins." });
+        }
+
+        // Find the track to get the associated artistId
+        const track = await contentCollection.findOne({ videoId: videoId });
+        if (!track) {
+            return res.status(404).json({ message: "Track not found." });
+        }
+
+        // Assuming the track document contains an 'artistId' field
+        const artistId = track.owner;
+
+        // Check if the artist exists before proceeding
+        const artist = await usersCollection.findOne({ email: artistId });
+        if (!artist) {
+            return res.status(404).json({ message: "Artist not found." });
+        }
+
+        // Deduct ThanksCoins from the sender and credit to the artist
+        await usersCollection.updateOne({ email: userId }, { $inc: { thanksCoins: -amountSend } });
+        await usersCollection.updateOne({ email: artistId }, { $inc: { thanksCoins: amountSend } });
+
+        // Record the transaction
+        const sendEvent = {
+            timestamp: new Date(),
+            senderUserId: userId,
+            recipientArtistId: artistId,
+            trackId: trackId,
+            amountSend
+        };
+        await thanksSentCollection.insertOne(sendEvent);
+
+        res.status(200).json({ message: "ThanksCoins sent successfully to artist via track." });
+    } catch (error) {
+        console.error("Error sending ThanksCoins via track:", error);
+        res.status(500).json({ error: "Internal server error." });
+    } finally {
+        await client.close();
+    }
+};
+
 
 
 
@@ -1886,5 +2027,6 @@ module.exports = {
     logContentUsage,
     getUserPlaybackHistory,
     updateUserPlaybackHistory,
-    sendThanksCoins,
+    sendThanksCoinsViaArtistPage,
+    sendThanksCoinsViaAlbumPage,
 };
