@@ -1538,64 +1538,6 @@ const getAllContent = async (req, res) => {
     }
 };
 
-const addEvent = async (req, res) => {
-    const client = new MongoClient(MONGO_URI, options);
-     try {
-         await client.connect();
-         const db = client.db('db-name');
-         const eventCollection = db.collection('eventMetaData');
-         const {title, host, eventTime, eventLocation, userId}= req.body
-         const savedEvent = await eventCollection.insertOne({title, host, eventTime: new Date(eventTime), eventLocation, userId})
- 
-         res.status(200).json({ status: 200, message: "Event saved successfully", savedEvent });
-     } catch (e) {
-         console.error("Error updating content types:", e.message);
-         res.status(400).json({ status: 400, message: e.message });
-     } finally {
-         await client.close();
-     }
- };
-
- const getEvents = async (req, res) => {
-    const client = new MongoClient(MONGO_URI, options);
-     try {
-         await client.connect();
-         const db = client.db('db-name');
-         const {userId}= req.params
-         let match = {}
-         if(userId !== 'all'){
-            match['userId']=userId;
-         }
-         const eventCollection = db.collection('eventMetaData');
-         const events = await eventCollection.aggregate([
-            {$match: match},
-            {
-                $lookup: {
-                  from: 'userAccounts',
-                  let: { userId: '$userId' },
-                  pipeline: [
-                    {
-                      $match: {
-                        $expr: {
-                          $eq: [ '$_id', { $toObjectId: '$$userId' } ] // Convert userId to ObjectId for comparison
-                        }
-                      }
-                    }
-                  ],
-                  as: 'user'
-                }
-              },
-            {$unwind: '$user'}
-        ]).toArray()
- 
-         res.status(200).json({ status: 200, message: "Events fetched successfully", events });
-     } catch (e) {
-         res.status(500).json({ status: 500, message: e.message });
-     } finally {
-         await client.close();
-     }
- };
-
  const addTrackToAlbum = async (req, res) => {
     const client = new MongoClient(MONGO_URI, options);
      try {
@@ -1700,63 +1642,7 @@ const addEvent = async (req, res) => {
      }
  };
 
- const addOffering = async (req, res) => {
-    const client = new MongoClient(MONGO_URI, options);
-     try {
-         await client.connect();
-         const db = client.db('db-name');
-         const offeringCollection = db.collection('offeringtMetaData');
-         const {offeringName, userId, offeringImageThumbnailUrl}= req.body
-         const savedOffering = await offeringCollection.insertOne({offeringName, offeringImageThumbnailUrl, userId})
- 
-         res.status(200).json({ status: 200, message: "Offer saved successfully", savedOffering });
-     } catch (e) {
-         console.error("Error updating content types:", e.message);
-         res.status(400).json({ status: 400, message: e.message });
-     } finally {
-         await client.close();
-     }
- };
 
- const getOfferings = async (req, res) => {
-    const client = new MongoClient(MONGO_URI, options);
-     try {
-         await client.connect();
-         const db = client.db('db-name');
-         const {userId}= req.params
-         let match = {}
-         if(userId !== 'all'){
-            match['userId']=userId;
-         }
-         const offeringCollection = db.collection('offeringtMetaData');
-         const events = await offeringCollection.aggregate([
-            {$match: match},
-            {
-                $lookup: {
-                  from: 'userAccounts',
-                  let: { userId: '$userId' },
-                  pipeline: [
-                    {
-                      $match: {
-                        $expr: {
-                          $eq: [ '$_id', { $toObjectId: '$$userId' } ] // Convert userId to ObjectId for comparison
-                        }
-                      }
-                    }
-                  ],
-                  as: 'user'
-                }
-              },
-            {$unwind: '$user'}
-        ]).toArray()
- 
-         res.status(200).json({ status: 200, message: "Offers fetched successfully", events });
-     } catch (e) {
-         res.status(500).json({ status: 500, message: e.message });
-     } finally {
-         await client.close();
-     }
- };
 const getContentDocumentsByCategory = async (req, res) => {
     const client = new MongoClient(MONGO_URI, options);
     const { category } = req.params;  
@@ -2569,10 +2455,6 @@ module.exports = {
     postNewContentTypePropertyWithAttributes,
     getFeaturedByArtist,
     getAllContent,
-    addEvent,
-    getEvents,
-    addOffering,
-    getOfferings,
     getUserProfileById,
     addTrackToAlbum,
     getAlbum,
