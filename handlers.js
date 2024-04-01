@@ -1787,44 +1787,44 @@ const sendThanksCoinsViaArtistPage = async (req, res) => {
         await client.connect();
         const db = client.db("db-name");
         const usersCollection = db.collection("userAccounts");
-        const thanksSentCollection = db.collection("ThanksSent");
 
-        // Fetch sender to check balance by email
+        // Verify sender's existence and balance
         const sender = await usersCollection.findOne({ email: userId });
         if (!sender) {
             return res.status(404).json({ message: "Sender not found." });
         }
 
-        if (sender.thanksCoins < amountSend) {
+        // Ensure the sender has a thanksCoins property and a sufficient balance
+        const senderBalance = sender.thanksCoins || 0; // Treat missing property as 0
+        if (senderBalance < amountSend) {
             return res.status(400).json({ message: "Insufficient thanksCoins." });
         }
 
-        // Check if artist exists before proceeding
+        // Check if the artist exists before proceeding
         const artist = await usersCollection.findOne({ email: artistId });
         if (!artist) {
             return res.status(404).json({ message: "Artist not found." });
         }
 
-        // Deduct the amount from sender's balance
+        // Proceed with deducting and crediting ThanksCoins
         await usersCollection.updateOne(
             { email: userId },
             { $inc: { thanksCoins: -amountSend } }
         );
 
-        // Update the artist's balance
         await usersCollection.updateOne(
             { email: artistId },
             { $inc: { thanksCoins: amountSend } }
         );
 
-        // Record the send event with the server-side generated timestamp
+        // Record the transaction
         const sendEvent = {
             timestamp: new Date(),
             senderUserId: userId,
             recipientArtistId: artistId,
             amountSend
         };
-        await thanksSentCollection.insertOne(sendEvent);
+        await db.collection("ThanksSent").insertOne(sendEvent);
 
         res.status(200).json({ message: "ThanksCoins sent successfully to artist." });
     } catch (error) {
@@ -1834,6 +1834,7 @@ const sendThanksCoinsViaArtistPage = async (req, res) => {
         await client.close();
     }
 };
+
 
 /**
  * @api {patch} /api/sendThanksCoinsViaAlbumPage Send ThanksCoins to Artist via Album
