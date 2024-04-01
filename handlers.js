@@ -1827,7 +1827,8 @@ const sendThanksCoinsViaArtistPage = async (req, res) => {
             timestamp: new Date(),
             senderUserId: userId,
             recipientArtistId: artistId,
-            amountSend
+            amountSend,
+            giftedFrom: "ArtistPage"
         };
         await db.collection("ThanksSent").insertOne(sendEvent);
 
@@ -1898,7 +1899,8 @@ const sendThanksCoinsViaAlbumPage = async (req, res) => {
             senderUserId: userId,
             recipientArtistId: album.owner,
             albumId: albumId,
-            amountSend
+            amountSend,
+            giftedFrom: "AlbumPage"
         };
         await thanksSentCollection.insertOne(sendEvent);
 
@@ -1972,7 +1974,8 @@ const sendThanksCoinsViaContent = async (req, res) => {
             senderUserId: userId,
             recipientArtistId: artistId,
             videoId: videoId,
-            amountSend
+            amountSend,
+            giftedFrom: "ContentPage"
         };
         await thanksSentCollection.insertOne(sendEvent);
 
