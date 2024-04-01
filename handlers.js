@@ -1769,7 +1769,7 @@ const updateUserPlaybackHistory = async (req, res) => {
 };
 
 const sendThanksCoins = async (req, res) => {
-    const { userId, amountSend, contentType, artistId, albumId, videoId } = req.body;
+    const { userId, amountSend, artistId, albumId, videoId } = req.body;
 
     // Determine the transaction type and its id
     let transactionType;
