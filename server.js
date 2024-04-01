@@ -42,10 +42,6 @@ const {
   deleteAlbum,
   postNewContentTypePropertyWithAttributes,
   getAllContent,
-  addEvent,
-  getEvents,
-  addOffering,
-  getOfferings,
   getUserProfileById,
   getFeaturedByArtist,
   addTrackToAlbum,
@@ -151,13 +147,9 @@ express()
 
   //MongoDB data management:
   .post("/api/postNewContentTypePropertyWithAttributes", postNewContentTypePropertyWithAttributes)
-  .post("/api/addEvent", addEvent)
   .post("/api/addTrackToAlbum", addTrackToAlbum)
   .get("/api/getAlbum/:albumId", getAlbum)
   .get("/api/getTrack/:trackId", getTrack)
-  .get("/api/getEvents/:userId", getEvents)
-  .post("/api/addOffering", addOffering)
-  .get("/api/getOfferings/:userId", getOfferings)
   .post("/api/postNewCardForPayment", postNewCardForPayment)
   .post("/api/getCard", getCard)
   .get("/api/getAllCards/:userId", getAllCards)
