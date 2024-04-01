@@ -1971,7 +1971,7 @@ const sendThanksCoinsViaContent = async (req, res) => {
             timestamp: new Date(),
             senderUserId: userId,
             recipientArtistId: artistId,
-            trackId: trackId,
+            videoId: videoId,
             amountSend
         };
         await thanksSentCollection.insertOne(sendEvent);
