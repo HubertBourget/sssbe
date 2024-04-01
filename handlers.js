@@ -1832,7 +1832,7 @@ const sendThanksCoinsViaArtistPage = async (req, res) => {
         };
         await db.collection("ThanksSent").insertOne(sendEvent);
 
-        res.status(200).json({ message: "ThanksCoins sent successfully to artist." });
+        res.status(200).json({ message: "ThanksCoins sent successfully to the artist." });
     } catch (error) {
         console.error("Error sending ThanksCoins to artist:", error);
         res.status(500).json({ error: "Internal server error." });
@@ -1904,7 +1904,7 @@ const sendThanksCoinsViaAlbumPage = async (req, res) => {
         };
         await thanksSentCollection.insertOne(sendEvent);
 
-        res.status(200).json({ message: "ThanksCoins sent successfully to artist via album." });
+        res.status(200).json({ message: "ThanksCoins sent successfully to the artist." });
     } catch (error) {
         console.error("Error sending ThanksCoins via album:", error);
         res.status(500).json({ error: "Internal server error." });
@@ -1979,7 +1979,7 @@ const sendThanksCoinsViaContent = async (req, res) => {
         };
         await thanksSentCollection.insertOne(sendEvent);
 
-        res.status(200).json({ message: "ThanksCoins sent successfully to artist via track." });
+        res.status(200).json({ message: "ThanksCoins sent successfully to the artist." });
     } catch (error) {
         console.error("Error sending ThanksCoins via track:", error);
         res.status(500).json({ error: "Internal server error." });
