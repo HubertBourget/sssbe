@@ -41,6 +41,24 @@ const {
   getAlbumById,
   deleteAlbum,
   postNewContentTypePropertyWithAttributes,
+  getAllContent,
+  addEvent,
+  getEvents,
+  addOffering,
+  getOfferings,
+  getUserProfileById,
+  getFeaturedByArtist,
+  addTrackToAlbum,
+  getAlbum,
+  getTrack,
+  postNewCardForPayment,
+  getCard,
+  getAllCards,
+  getPaymentToken,
+  saveOrder,
+  getOrders,
+  savePlan,
+  getPlanOfUser,
   postCreateLiveStream,
   getContentDocumentsByCategory,
   updateContentCategory,
@@ -81,6 +99,7 @@ express()
   .post("/api/updateContentMetaData", updateContentMetaData)
   .post("/api/updateUserProfile", updateUserProfile)
   .get("/api/getUserProfile/:userId", getUserProfile)
+  .get("/api/getUserProfileById/:userId", getUserProfileById)
   .post("/api/postProfileImage", postProfileImage)
   .get("/api/getCheckAccountName", getCheckAccountName)
   .post("/api/postCreateImageThumbnail", CreateImageThumbnail)
@@ -88,6 +107,8 @@ express()
   .get("/api/b_getUserExist/:userId", b_getUserExist)
   .post("/api/postNewUserWithAccountName", postNewUserWithAccountName)
   .get("/api/getContentByArtist", getContentByArtist)
+  .get("/api/getFeaturedByArtist", getFeaturedByArtist)
+  .get("/api/getAllContent", getAllContent)
   .get("/api/getApprovedVideoContent", getApprovedVideoContent)
   .delete("/api/deleteContent", deleteContent)
   .post("/api/postNewAlbum", postNewAlbum)
@@ -135,6 +156,23 @@ express()
   
 
   //MongoDB data management:
+  .post("/api/postNewContentTypePropertyWithAttributes", postNewContentTypePropertyWithAttributes)
+  .post("/api/addEvent", addEvent)
+  .post("/api/addTrackToAlbum", addTrackToAlbum)
+  .get("/api/getAlbum/:albumId", getAlbum)
+  .get("/api/getTrack/:trackId", getTrack)
+  .get("/api/getEvents/:userId", getEvents)
+  .post("/api/addOffering", addOffering)
+  .get("/api/getOfferings/:userId", getOfferings)
+  .post("/api/postNewCardForPayment", postNewCardForPayment)
+  .post("/api/getCard", getCard)
+  .get("/api/getAllCards/:userId", getAllCards)
+  .get("/api/getTilopayToken", getPaymentToken)
+  .post("/api/saveOrder", saveOrder)
+  .get("/api/orders/:userId", getOrders)
+  .post("/api/save-plan", savePlan)
+  .get("/api/get-plan/:userId", getPlanOfUser)
+  // .post("/api/postNewContentTypePropertyWithAttributes", postNewContentTypePropertyWithAttributes)
   .post("/api/postNewContentTypePropertyWithAttributes", postNewContentTypePropertyWithAttributes) //used to create the contentType property in ContentMetaData, ConcertMetaData and AlbumMetaData collection
   .get("/api/getContentDocumentsByCategory/:category", getContentDocumentsByCategory) //Database Inspection tool for Content by Category type
   .patch("/api/updateContentCategory", updateContentCategory)
