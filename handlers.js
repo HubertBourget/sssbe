@@ -1768,6 +1768,68 @@ const updateUserPlaybackHistory = async (req, res) => {
     }
 };
 
+const sendThanksCoins = async (req, res) => {
+    const { userId, amountSend, contentType, artistId, albumId, videoId } = req.body;
+
+    // Determine the transaction type and its id
+    let transactionType;
+    let transactionId;
+    if (artistId) {
+        transactionType = 'artistId';
+        transactionId = artistId;
+    } else if (albumId) {
+        transactionType = 'albumId';
+        transactionId = albumId;
+    } else if (videoId) {
+        transactionType = 'videoId';
+        transactionId = videoId;
+    }
+
+    const client = new MongoClient(MONGO_URI, options);
+
+    try {
+        await client.connect();
+        const db = client.db("db-name");
+        const usersCollection = db.collection("userAccounts");
+        const thanksSentCollection = db.collection("ThanksSent");
+
+        // Fetch user to check balance by email
+        const user = await usersCollection.findOne({ email: userId });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        if (user.thanksCoins < amountSend) {
+            return res.status(400).json({ message: "Insufficient thanksCoins." });
+        }
+
+        // Deduct the amount from user's balance
+        await usersCollection.updateOne(
+            { email: userId },
+            { $inc: { thanksCoins: -amountSend } }
+        );
+
+        // Record the send event with the server-side generated timestamp
+        const sendEvent = {
+            timestamp: new Date(),
+            contentType,
+            userId: user.email, // Storing the email of the user who is sending thanksCoins
+            transactionType, // "artistId", "albumId", or "videoId"
+            transactionId, // The actual ID
+            amountSend
+        };
+        await thanksSentCollection.insertOne(sendEvent);
+
+        res.status(200).json({ message: "ThanksCoins sent successfully." });
+    } catch (error) {
+        console.error("Error sending thanksCoins:", error);
+        res.status(500).json({ error: "Internal server error." });
+    } finally {
+        await client.close();
+    }
+};
+
 
 
 
@@ -1824,4 +1886,5 @@ module.exports = {
     logContentUsage,
     getUserPlaybackHistory,
     updateUserPlaybackHistory,
+    sendThanksCoins,
 };

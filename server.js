@@ -56,6 +56,7 @@ const {
   logContentUsage,
   getUserPlaybackHistory,
   updateUserPlaybackHistory,
+  sendThanksCoins,
 } = require("./handlers");
 
 const {
@@ -112,6 +113,7 @@ express()
   .post("/api/logContentUsage", logContentUsage)
   .get("/api/getUserPlaybackHistory", getUserPlaybackHistory)
   .patch("/api/updateUserPlaybackHistory", updateUserPlaybackHistory)
+  .patch("/api/sendThanksCoins", sendThanksCoins)
   
 
   //Key encryption:
