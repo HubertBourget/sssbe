@@ -333,7 +333,6 @@ const getUserProfileById = async (req, res) => {
         const db = client.db("db-name");
         const collection = db.collection('userAccounts');
         const user = await collection.findOne({ _id: new ObjectId(req.params.userId) });
-        console.log(user)
         if (!user) {
             return res.status(200).json({
                 accountName: '',
@@ -364,7 +363,7 @@ const b_getUserExist = async (req, res) => {
         if (!user) {
             return res.status(404).json({ exist: false, message: 'User not found' });
         }
-
+        
         return res.status(200).json({ exist: true, message: 'User found', user: user });
     } catch (error) {
         console.error(error);
@@ -1959,7 +1958,7 @@ const updateUserLoves = async (req, res) => {
 /**
  * Fetches the list of favorite artists for a user.
  * 
- * @api {get} /api/getUserFavorites Fetch User's Favorite Artists
+ * @api {get} /api/getUserFavorites Fetch User's Favorite Artists       
  * @apiDescription Fetches the list of artistIds marked as favorites by the user. 
  *                 The user is identified by their email address passed as a query parameter.
  * @apiParam {String} user Query parameter containing the user's email address.
@@ -2301,7 +2300,7 @@ const sendThanksCoinsViaAlbumPage = async (req, res) => {
         }
 
         // Find the album to get the owner (artistId)
-        const album = await albumCollection.findOne({ albumId: albumId });
+        const album = await albumCollection.findOne({ _id: new ObjectId(albumId) });
         if (!album) {
             return res.status(404).json({ message: "Album not found." });
         }
@@ -2313,12 +2312,12 @@ const sendThanksCoinsViaAlbumPage = async (req, res) => {
         }
 
         // Deduct ThanksCoins from the sender and credit to the artist
-        await usersCollection.updateOne({ email: userId }, { $inc: { thanksCoins: -amountSend } });
-        await usersCollection.updateOne({ email: album.owner }, { $inc: { thanksCoins: amountSend } });
+       await usersCollection.updateOne({ email: userId }, { $inc: { thanksCoins: -amountSend } });
+       await usersCollection.updateOne({ email: album.owner }, { $inc: { thanksCoins: amountSend } });
 
         // Record the transaction
         const sendEvent = {
-            timestamp: new Date(),
+            timestamp: new Date(),      
             senderUserId: userId,
             recipientArtistId: album.owner,
             albumId: albumId,
@@ -2384,7 +2383,7 @@ const sendThanksCoinsViaContent = async (req, res) => {
         // Check if the artist exists before proceeding
         const artist = await usersCollection.findOne({ email: artistId });
         if (!artist) {
-            return res.status(404).json({ message: "Artist not found." });
+            return res.status(404).json({ message: "Artist not found." });  
         }
 
         // Deduct ThanksCoins from the sender and credit to the artist
