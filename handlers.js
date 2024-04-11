@@ -4,7 +4,10 @@ require("dotenv").config();
 const { MONGO_URI } = process.env;
 const { SyncRecombee } = require("./utils/SyncRecombee");
 const storage = require('./utils/googleCloudStorage');
+const { decryptData } = require("./utils/cardDetailsEncryption");
+const axios = require("axios");
 const { Video } = require('@mux/mux-node');
+const { findSubscriptionByEmail, createSubscription, updateSubscription } = require("./utils/beehiivAPI");
 const { timeStamp } = require("console");
 const mux = new Video(process.env.MUX_ACCESS_TOKEN, process.env.MUX_SECRET_KEY);
 
@@ -50,12 +53,36 @@ const postNewUserWithAccountName = async (req, res) => {
             // Add the user to Recombee
             const userId = email;
             
-
+            const oldUser = await db.collection("userAccounts").findOne({email: userId})
+            if(oldUser){
+                return res.status(409).json({
+                    status: 409,
+                    message: "User already created.",
+                });
+            }
             // Continue with MongoDB operations (inserting the user)
             const result = await db.collection("userAccounts").insertOne(user);
 
             if (result.insertedId) {
                 console.log("User added to MongoDB successfully!");
+                if(isArtist){
+                    const beehiivSubscriber = await findSubscriptionByEmail(userId)
+                    if(beehiivSubscriber.status === 404){
+                        await createSubscription(email)
+                    }else{
+                        let findAndUpdated
+                        for(let field of beehiivSubscriber.custom_fields){
+                            if(field.name === 'artistSignedUp' && field.value == 'false'){
+                                await updateSubscription(beehiivSubscriber.id)
+                                findAndUpdated = true
+                            }
+                        }
+                        if(!findAndUpdated){
+                            await updateSubscription(beehiivSubscriber.id)
+                        }
+                        
+                    }
+                }
                 await recombeeClient.send(new AddUser(userId));
                 res.status(200).json({ status: 200, result: result });
             } else {
@@ -191,24 +218,26 @@ const updateContentMetaData = async (req, res) => {
 };
 
 const updateUserProfile = async (req, res) => {
-    const { accountName, bio, artistLink, email, artistTitle } = req.body;
+    const { accountName, bio, artistLink, userId, artistTitle, bannerImageUrl, profileImageUrl } = req.body;
 
     const client = await MongoClient.connect(MONGO_URI, options);
     try {
         const db = client.db("db-name");
         const collection = db.collection("userAccounts");
 
-        const query = { email: email };
+        const query = { _id: new ObjectId(userId) };
         const update = {
             $set: {
                 accountName,
                 bio,
                 artistLink,
                 artistTitle,
+                bannerImageUrl,
+                profileImageUrl
             },
         };
         const options = { returnOriginal: false };
-
+        const user = await collection.findOne(query)
         const result = await collection.findOneAndUpdate(query, update, options);
 
         if (!result.value) {
@@ -287,6 +316,43 @@ const getUserProfile = async (req, res) => {
     }
 };
 
+const getUserProfileById = async (req, res) => {
+    if (!req.params.userId || req.params.userId === 'undefined') {
+
+        return res.status(200).json({
+            accountName: '',
+            bio: '',
+            artistLink: '',
+            profileImageUrl: '',
+            artistTitle: ''
+        });
+    }
+
+    const client = await new MongoClient(MONGO_URI, options);
+    try {
+        const db = client.db("db-name");
+        const collection = db.collection('userAccounts');
+        const user = await collection.findOne({ _id: new ObjectId(req.params.userId) });
+        if (!user) {
+            return res.status(200).json({
+                accountName: '',
+                bio: '',
+                artistLink: '',
+                profileImageUrl: '',
+                artistTitle: ''
+            });
+        }
+
+
+        return res.status(200).json(user);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    } finally {
+        await client.close();
+    }
+};
+
 const b_getUserExist = async (req, res) => {
     const client = await new MongoClient(MONGO_URI, options);
     try {
@@ -297,7 +363,7 @@ const b_getUserExist = async (req, res) => {
         if (!user) {
             return res.status(404).json({ exist: false, message: 'User not found' });
         }
-
+        
         return res.status(200).json({ exist: true, message: 'User found', user: user });
     } catch (error) {
         console.error(error);
@@ -410,6 +476,36 @@ const getContentByArtist = async (req, res) => {
     }
 };
 
+const getFeaturedByArtist = async (req, res) => {
+    const client = await new MongoClient(MONGO_URI, options);
+
+    try {
+        const { artistId } = req.query;
+        if (!artistId) {
+        return res.status(400).json({ message: 'Missing artistId parameter' });
+        }
+        await client.connect();
+        const collection = client.db('db-name').collection('ContentMetaData');
+        // const contentDocuments = await collection.find({ owner: artistId, isFeatured: true }).toArray();
+        const contentDocuments = await collection.aggregate([
+            {$match: {owner: artistId, isFeatured: true}},
+            {$lookup: {
+                from: 'userAccounts',
+                localField: 'owner',
+                foreignField: 'email',
+                as: 'user'
+            }},
+            {$unwind: '$user'}
+        ]).toArray()
+        res.json(contentDocuments);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    } finally {
+        client.close();
+    }
+};
+
 const getApprovedVideoContent = async (req, res) => {
     const client = await new MongoClient(MONGO_URI, options);
 
@@ -488,15 +584,15 @@ const deleteContent = async (req, res) => {
 };
 
 const postNewAlbum = async (req, res) => {
-const { albumId, owner, timestamp } = req.body;
+const { owner, albumName, selectedImageThumbnail, description } = req.body;
     const AlbumMetaData = {
         owner,
-        timestamp,
-        albumId,
-        albumName: '',
+        timestamp: new Date(),
+        albumName,
+        selectedImageThumbnail,
+        description,
         contentType: 'AlbumMetaData',
     };
-
     const client = await new MongoClient(MONGO_URI, options);
     try{
         client.connect();
@@ -797,9 +893,16 @@ const getVideoMetadataFromObjectId = async (req, res) => {
         const db = client.db("db-name");
         const videosCollection = db.collection('ContentMetaData'); 
         
-        // Query for the video by id
-        const video = await videosCollection.findOne({ _id: new ObjectId(id) } );
-        
+            const video = await videosCollection.aggregate([
+                {$match: {_id: new ObjectId(id)}},
+                {$lookup: {
+                    from: 'userAccounts',
+                    localField: 'owner',
+                    foreignField: 'email',
+                    as: 'user'
+                }},
+                {$unwind: '$user'}
+            ]).toArray()
         if (!video) {
             // If no video is found, return a 404 response
             return res.status(404).json({ message: 'Video not found' });
@@ -807,11 +910,14 @@ const getVideoMetadataFromObjectId = async (req, res) => {
         
         // If a video is found, return the video metadata
         return res.status(200).json({
-            videoId: video.videoId,
-            owner: video.owner,
-            title: video.title,
-            selectedImageThumbnail: video.selectedImageThumbnail || null,
-            fileUrl: video.fileUrl,
+            videoId: video[0].videoId,
+            owner: video[0].owner,
+            isOnlyAudio: video[0].isOnlyAudio,
+            title: video[0].title,
+            selectedImageThumbnail: video[0].selectedImageThumbnail || null,
+            fileUrl: video[0].fileUrl,
+            _id:video[0]._id,
+            user: video[0].user
         });
 
         
@@ -838,7 +944,18 @@ const getAlbumsByArtist = async (req, res) => {
         const albumsCollection = db.collection('AlbumMetaData');
 
         // Find albums where the 'owner' field matches the artistId (user's email)
-        const albums = await albumsCollection.find({ owner: artistId }).toArray();
+        // const albums = await albumsCollection.find({ owner: artistId }).toArray();
+        const albums = await albumsCollection.aggregate([
+            {$match: { owner: artistId }},
+            {$lookup: {
+                from: 'userAccounts',
+                localField: 'owner',
+                foreignField: 'email',
+                as: 'user'
+            }},
+            {$unwind: '$user'}
+        ]).toArray()
+
 
         if(albums.length === 0) {
             // If no albums are found, send a message indicating such
@@ -1175,6 +1292,172 @@ const postNewContentTypePropertyWithAttributes = async (req, res) => {
     }
 };
 
+const postNewCardForPayment = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+    try {
+        await client.connect();
+        const {card, expire, cvv, userId, nameOnCard, cardCompany} = req.body
+        const db = client.db('db-name')
+        const userCollection = db.collection('userAccounts')
+        const paymentMethodCollection = db.collection('paymentMethods')
+        const user = await userCollection.findOne({_id: new ObjectId(userId)})
+        if(!user){
+            throw new Error('user not found')
+        }
+        const savedCard = await paymentMethodCollection.insertOne({card, expire, cvv, nameOnCard, cardCompany, userId})
+
+        res.status(200).json({ status: 200, message: "Card saved successfully", savedCard });
+    } catch (e) {
+        res.status(500).json({ status: 500, message: e.message });
+    } finally {
+        await client.close();
+    }
+};
+
+const getCard = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+    try {
+        await client.connect();
+        const {_id, userId} = req.body
+        const db = client.db('db-name')
+        const paymentMethodCollection = db.collection('paymentMethods')
+        const card = await paymentMethodCollection.findOne({_id: new ObjectId(_id), userId: userId})
+        if(!card){
+            throw new Error('card not found')
+        }
+        card.card = decryptData(card.card)
+        card.nameOnCard = decryptData(card.nameOnCard)
+        card.expire = decryptData(card.expire)
+        card.cardCompany = decryptData(card.cardCompany)
+        delete card.cvv
+        res.status(200).json({ status: 200, message: "Card fetched successfully", card });
+    } catch (e) {
+        res.status(500).json({ status: 500, message: e.message });
+    } finally {
+        await client.close();
+    }
+};
+
+const getAllCards = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+    try {
+        await client.connect();
+        const {userId} = req.params
+        const db = client.db('db-name')
+        const paymentMethodCollection = db.collection('paymentMethods')
+        let cards = await paymentMethodCollection.find({userId: userId}).project({card: 1, expire: 1, cardCompany: 1, userId: 1}).toArray()
+        cards = cards.map((card) => {
+            card.card = decryptData(card.card).slice(-4)
+            card.expire = decryptData(card.expire)
+            card.cardCompany = decryptData(card.cardCompany)
+            return card
+        })        
+        res.status(200).json({ status: 200, message: "Cards fetched successfully", cards });
+    } catch (e) {
+        res.status(500).json({ status: 500, message: e.message });
+    } finally {
+        await client.close();
+    }
+};
+
+const getPaymentToken = async (req, res) => {
+    try {
+      const token = await axios.post("https://app.tilopay.com/api/v1/loginSdk", {
+        apiuser: process.env.TILOPAY_API_USER,
+        password: process.env.TILOPAY_PASSWORD,
+        key: process.env.TILOPAY_KEY,
+      });
+      res
+        .status(200)
+        .json({ status: 200, message: "token fetched successfully", token: token.data.access_token});
+    } catch (e) {
+      res.status(500).json({ status: 500, message: e.message });
+    }
+};
+
+const saveOrder = async (req, res) => {
+   const client = new MongoClient(MONGO_URI, options);
+    try {
+        await client.connect();
+        const db = client.db('db-name');
+        const orderCollection = db.collection('orderHistories');
+        const {description, amount, status, userId}= req.body
+        const savedOrder = await orderCollection.insertOne({description, amount, status, userId, time: new Date()})
+
+        res.status(200).json({ status: 200, message: "order saved successfully", savedOrder });
+    } catch (e) {
+        console.error("Error updating content types:", e.message);
+        res.status(400).json({ status: 400, message: e.message });
+    } finally {
+        await client.close();
+    }
+};
+
+const getOrders = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+     try {
+         await client.connect();
+         const db = client.db('db-name');
+         const orderCollection = db.collection('orderHistories');
+         const {userId}= req.params
+         const orders = await orderCollection.find({userId}).toArray()
+ 
+         res.status(200).json({ status: 200, message: "orders fetched successfully", orders });
+     } catch (e) {
+         res.status(500).json({ status: 500, message: e.message });
+     } finally {
+         await client.close();
+     }
+ };
+
+ const savePlan = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+     try {
+         await client.connect();
+         const db = client.db('db-name');
+         const planCollection = db.collection('plans');
+         const userCollection = db.collection('userAccounts')
+         const {amount, type, userId}= req.body
+         const user = await userCollection.findOne({_id: new ObjectId(userId)})
+         if(!user){
+             throw new Error('user not found')
+         }
+         let plan = await planCollection.findOne({userId})
+         if(plan){
+             const order = await planCollection.updateOne({userId}, {$set: {amount, type, userId}})
+             res.status(200).json({ status: 200, message: "plan updated successfully", order });
+         }else{
+            const order = await planCollection.insertOne({amount, type, userId, time: new Date()})
+             res.status(200).json({ status: 200, message: "plan saved successfully", order });
+         } 
+     } catch (e) {
+         console.error("Error updating content types:", e.message);
+         res.status(400).json({ status: 400, message: e.message });
+     } finally {
+         await client.close();
+     }
+ };
+
+
+ const getPlanOfUser = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+     try {
+         await client.connect();
+         const db = client.db('db-name');
+         const planCollection = db.collection('plans');
+        
+         const {userId}= req.params
+        
+         let plan = await planCollection.findOne({userId})
+         res.status(200).json({ status: 200, message: "plan fetch successfully", plan });
+     } catch (e) {
+         console.error("Error updating content types:", e.message);
+         res.status(400).json({ status: 400, message: e.message });
+     } finally {
+         await client.close();
+     }
+ };
+
 const getSearchResult = async (req, res) => {
     const { userId, searchQuery } = req.params;
     const { recombeeClient } = require("./utils/constants");
@@ -1219,6 +1502,145 @@ try {
         res.status(500).send('Error creating live stream');
     }
 };
+
+
+const getAllContent = async (req, res) => {
+    const client = await new MongoClient(MONGO_URI, options);
+    let {type} = req.query
+    try {
+        await client.connect();
+        let match = {};
+        if(type === 'audio'){
+            match.isOnlyAudio = true
+        }else if(type === 'video'){
+            match.isOnlyAudio = false
+        } 
+        const collection = client.db('db-name').collection('ContentMetaData');
+        // const contentDocuments = await collection.find({ isOnlyAudio: type === 'audio'? true : false }).toArray();
+        const contentDocuments = await collection.aggregate([
+            {$match: match},
+            {$lookup: {
+                from: 'userAccounts',
+                localField: 'owner',
+                foreignField: 'email',
+                as: 'user'
+            }},
+            {$unwind: '$user'}
+        ]).toArray()
+
+        res.json(contentDocuments);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    } finally {
+        client.close();
+    }
+};
+
+ const addTrackToAlbum = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+     try {
+         await client.connect();
+         const db = client.db('db-name');
+         let {owner, trackId, albumId} = req.body
+         const albumCollection = db.collection('AlbumMetaData');
+         const userCollection = db.collection('userAccounts');
+         const contentCollection = db.collection('ContentMetaData');
+         const user = await userCollection.findOne({ email: owner });
+         const content = await contentCollection.findOne({ _id: new ObjectId(trackId) });
+         const album = await albumCollection.findOne({ _id: new ObjectId(albumId) });
+        
+        if (!user || !content || !album) {
+            return res.status(404).json({ exist: false, message: 'User or Track not found' });
+        }
+
+        if(album.owner !== owner){
+            return res.status(404).json({ exist: false, message: 'User have not authority to change album' });
+        }
+        let tracks = []
+
+        if (Array.isArray(album.tracks)) {
+            tracks = [...album.tracks]; 
+            if(tracks.includes(trackId)){
+                return res.status(409).json({success : false, message:'This song is already in the playlist'})
+            }else{
+               tracks.push(trackId)  
+            }
+        } else {
+            tracks.push(trackId);
+        }
+           
+        await albumCollection.updateOne({_id: new ObjectId(albumId)},  { $set: { tracks } })
+         res.status(200).json({ status: 200, message: "Track added successfully" });
+     } catch (e) {
+         res.status(500).json({ status: 500, message: e.message });
+     } finally {
+         await client.close();
+     }
+ };
+
+ const getAlbum = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+     try {
+         await client.connect();
+         const db = client.db('db-name');
+         const {albumId}= req.params
+       
+         const albumCollection = db.collection('AlbumMetaData');
+         const album = await albumCollection.aggregate([
+            {$match: {_id: new ObjectId(albumId)}},
+            {
+                $lookup: {
+                    from: 'ContentMetaData',
+                    let: { trackIds: { $ifNull: ["$tracks", []] } },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: { $in: ["$_id", { $map: { input: "$$trackIds", as: "id", in: { $toObjectId: "$$id" } } }] }
+                            }
+                        }
+                    ],
+                    as: 'tracksArray'
+                }
+            }
+    ,
+        ]).toArray()
+ 
+         res.status(200).json({ status: 200, message: "Album fetched successfully", album: album[0] });
+     } catch (e) {
+         res.status(500).json({ status: 500, message: e.message });
+     } finally {
+         await client.close();
+     }
+ };
+
+ const getTrack = async (req, res) => {
+    const client = new MongoClient(MONGO_URI, options);
+     try {
+         await client.connect();
+         const db = client.db('db-name');
+         const {trackId}= req.params
+       
+         const trackCollection = db.collection('ContentMetaData');
+         const track = await trackCollection.aggregate([
+            {$match: {_id: new ObjectId(trackId)}},
+            {$lookup: {
+                from: 'userAccounts',
+                localField: 'owner',
+                foreignField: 'email',
+                as: 'user'
+            }},
+            {$unwind: '$user'}
+        ]).toArray()
+ 
+         res.status(200).json({ status: 200, message: "Track fetched successfully", track: track[0] });
+     } catch (e) {
+         res.status(500).json({ status: 500, message: e.message });
+     } finally {
+         await client.close();
+     }
+ };
+
 
 const getContentDocumentsByCategory = async (req, res) => {
     const client = new MongoClient(MONGO_URI, options);
@@ -1562,7 +1984,7 @@ const updateUserLoves = async (req, res) => {
 /**
  * Fetches the list of favorite artists for a user.
  * 
- * @api {get} /api/getUserFavorites Fetch User's Favorite Artists
+ * @api {get} /api/getUserFavorites Fetch User's Favorite Artists       
  * @apiDescription Fetches the list of artistIds marked as favorites by the user. 
  *                 The user is identified by their email address passed as a query parameter.
  * @apiParam {String} user Query parameter containing the user's email address.
@@ -1911,7 +2333,7 @@ const sendThanksCoinsViaAlbumPage = async (req, res) => {
         }
 
         // Find the album to get the owner (artistId)
-        const album = await albumCollection.findOne({ albumId: albumId });
+        const album = await albumCollection.findOne({ _id: new ObjectId(albumId) });
         if (!album) {
             return res.status(404).json({ message: "Album not found." });
         }
@@ -1923,12 +2345,12 @@ const sendThanksCoinsViaAlbumPage = async (req, res) => {
         }
 
         // Deduct ThanksCoins from the sender and credit to the artist
-        await usersCollection.updateOne({ email: userId }, { $inc: { thanksCoins: -amountSend } });
-        await usersCollection.updateOne({ email: album.owner }, { $inc: { thanksCoins: amountSend } });
+       await usersCollection.updateOne({ email: userId }, { $inc: { thanksCoins: -amountSend } });
+       await usersCollection.updateOne({ email: album.owner }, { $inc: { thanksCoins: amountSend } });
 
         // Record the transaction
         const sendEvent = {
-            timestamp: new Date(),
+            timestamp: new Date(),      
             senderUserId: userId,
             recipientArtistId: album.owner,
             albumId: albumId,
@@ -1994,7 +2416,7 @@ const sendThanksCoinsViaContent = async (req, res) => {
         // Check if the artist exists before proceeding
         const artist = await usersCollection.findOne({ email: artistId });
         if (!artist) {
-            return res.status(404).json({ message: "Artist not found." });
+            return res.status(404).json({ message: "Artist not found." });  
         }
 
         // Deduct ThanksCoins from the sender and credit to the artist
@@ -2059,6 +2481,20 @@ module.exports = {
     getAlbumById,
     deleteAlbum,
     postNewContentTypePropertyWithAttributes,
+    getFeaturedByArtist,
+    getAllContent,
+    getUserProfileById,
+    addTrackToAlbum,
+    getAlbum,
+    getTrack,
+    postNewCardForPayment,
+    getCard,
+    getAllCards,
+    getPaymentToken,
+    saveOrder,
+    getOrders,
+    savePlan,
+    getPlanOfUser,
     postCreateLiveStream,
     getContentDocumentsByCategory,
     updateContentCategory,
