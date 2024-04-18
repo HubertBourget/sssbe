@@ -73,6 +73,7 @@ const {
   sendThanksCoinsViaArtistPage,
   sendThanksCoinsViaAlbumPage,
   sendThanksCoinsViaContent,
+  PostUserOnboardingProgress
 } = require("./handlers");
 
 const {
@@ -135,6 +136,7 @@ express()
   .patch("/api/sendThanksCoinsViaArtistPage", sendThanksCoinsViaArtistPage)
   .patch("/api/sendThanksCoinsViaAlbumPage", sendThanksCoinsViaAlbumPage)
   .patch("/api/sendThanksCoinsViaContent", sendThanksCoinsViaContent)
+  .post("/api/PostUserOnboardingProgress", PostUserOnboardingProgress)
   
 
   //Key encryption:

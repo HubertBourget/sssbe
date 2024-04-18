@@ -1,13 +1,16 @@
-
 const { MongoClient, ObjectId } = require("mongodb");
 require("dotenv").config();
 const { MONGO_URI } = process.env;
 const { SyncRecombee } = require("./utils/SyncRecombee");
-const storage = require('./utils/googleCloudStorage');
+const storage = require("./utils/googleCloudStorage");
 const { decryptData } = require("./utils/cardDetailsEncryption");
 const axios = require("axios");
-const { Video } = require('@mux/mux-node');
-const { findSubscriptionByEmail, createSubscription, updateSubscription } = require("./utils/beehiivAPI");
+const { Video } = require("@mux/mux-node");
+const {
+  findSubscriptionByEmail,
+  createSubscription,
+  updateSubscription,
+} = require("./utils/beehiivAPI");
 const { timeStamp } = require("console");
 const mux = new Video(process.env.MUX_ACCESS_TOKEN, process.env.MUX_SECRET_KEY);
 
@@ -108,6 +111,8 @@ const postNewUserWithAccountName = async (req, res) => {
                 accountName: accountName,
                 isArtist: isArtist,
                 timestamp: timestamp,
+                currentOnBoardingStep : 0,
+                isOnboardingStepsPending : true,
             };
 
             // Create a SetUserValues request with both the user ID and properties
@@ -2229,6 +2234,7 @@ const sendThanksCoinsViaArtistPage = async (req, res) => {
 
         // Check if the artist exists before proceeding
         const artist = await usersCollection.findOne({ email: artistId });
+        console.log("🚀 ~ sendThanksCoinsViaArtistPage ~ artist:", artist);
         if (!artist) {
             return res.status(404).json({ message: "Artist not found." });
         }
@@ -2410,9 +2416,65 @@ const sendThanksCoinsViaContent = async (req, res) => {
     }
 };
 
+/**
+ * @api {post} /api/postUserOnboardingProgress Update User Onboarding Progress
+ * @apiDescription This endpoint updates the onboarding progress of a user.
+ * 
+ * @apiParam {String} userId The unique identifier (email) of the user.
+ * @apiParam {Number} currentStep The current step of the onboarding process completed by the user. Should be an integer value between 1 and 3.
+ * * @apiParam {Array} topicChoices The choices elected by users during step 2.
+ * @apiParamExample {json} Request Example:
+ *    {
+ *      "userId": "example@example.com",
+ *      "currentStep": 2
+ *       "topicChoices": ["Dance", "Techno"]
+ *    }
+ */
+const PostUserOnboardingProgress = async (req, res) => {
+    const { userId, currentStep, topicChoices, isOnboardingStepsPending } = req.body;
+  
+    // Ensure currentStep is a positive integer and within range [1, 2, 3]
+    if (!Number.isInteger(currentStep) || ![1, 2, 3].includes(currentStep)) {
+      return res.status(400).json({
+        message: "Invalid currentStep. A currentStep must be a number and either 1, 2 or 3.",
+      });
+    }
+  
+    const client = new MongoClient(MONGO_URI, options);
+  
+    try {
+      await client.connect();
+      const db = client.db("db-name");
+      const userCollection = db.collection("userAccounts");
+  
+      // Find user by email
+      const user = await userCollection.findOne({ email: userId });
+      if (!user) {
+        return res.status(404).json({ message: "User not found." });
+      }
+  
+      // Update user's onboarding progress
+      const updatePayload = {
+          currentOnBoardingStep: currentStep,
+          isOnboardingStepsPending,
+      };
 
+      if(topicChoices && topicChoices.length) updatePayload["userOnboardingTopicChoices"] = topicChoices
 
-
+      await userCollection.updateOne({ email: userId },{$set: updatePayload} );
+  
+      // Return success message
+      return res
+        .status(200)
+        .json({ message: "User onboarding progress updated successfully" });
+    } catch (error) {
+      console.error("Error updating user onboarding progress:", error);
+      return res.status(500).json({ error: "Internal server error." });
+    } finally {
+      await client.close();
+    }
+  };
+  
 
 module.exports = {
     getServerHomePage,
@@ -2484,4 +2546,5 @@ module.exports = {
     sendThanksCoinsViaArtistPage,
     sendThanksCoinsViaAlbumPage,
     sendThanksCoinsViaContent,
+    PostUserOnboardingProgress
 };
