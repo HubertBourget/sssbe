@@ -1718,6 +1718,18 @@ const updateContentCategory = async (req, res) => {
     }
 }
 
+/**
+ * @api {post} /api/createEvent Create a New Event
+ * @apiDescription This endpoint allows for the creation of a new event associated with an artist. It records various details about the event, including title, description, and pricing information. The endpoint also automatically generates a creation timestamp to track when the event was added to the system.
+ * 
+ * @apiParam {String} title The title of the event.
+ * @apiParam {String} createdBy The email or identifier of the user or artist creating the event. This field should uniquely identify the creator within the system.
+ * @apiParam {String} description A detailed description of the event.
+ * @apiParam {String} dateTime The scheduled date and time of the event. The format should comply with ISO 8601 standard (e.g., YYYY-MM-DDTHH:MM:SSZ).
+ * @apiParam {String} [paymentLink] An optional link to an external site for event booking or ticket purchase. This parameter should only be included if `priceType` is set to 'ExternalLink'.
+ * @apiParam {String} priceType The pricing strategy for the event, which determines how the event is monetized. Valid options are 'Free', 'PricedInThanks', and 'ExternalLink'.
+ * @apiParam {Number} [priceInThanks] The price of the event in ThanksCoins, required if `priceType` is 'PricedInThanks'. This field specifies how many ThanksCoins attendees need to spend to access the event.
+ */
 const postCreateEvent = async (req, res) => {
     const { title, createdBy, description, dateTime, paymentLink, priceType, priceInThanks } = req.body;
 
@@ -1755,6 +1767,20 @@ const postCreateEvent = async (req, res) => {
     }
 };
 
+/**
+ * @api {post} /api/editEvent/:id Edit an Existing Event
+ * @apiDescription This endpoint allows for the modification of an existing event's details. It updates the event with new information provided in the request body. A server-side timestamp is generated to record the last edit time.
+ * 
+ * @apiParam {String} id The unique identifier of the event to be edited. This is passed as a URL parameter.
+ * 
+ * @apiBody {String} title The new title of the event. (required)
+ * @apiBody {String} createdBy The email or identifier of the user or artist updating the event. This should match the original creator of the event. (required)
+ * @apiBody {String} description A new detailed description of the event. (required)
+ * @apiBody {String} dateTime The updated scheduled date and time of the event. The format should comply with ISO 8601 standard (e.g., YYYY-MM-DDTHH:MM:SSZ). (required)
+ * @apiBody {String} [paymentLink] An optional new link to an external site for event booking or ticket purchase. This parameter should only be included if `priceType` is set to 'ExternalLink'. (optional)
+ * @apiBody {String} priceType The updated pricing strategy for the event, which determines how the event is monetized. Valid options are 'Free', 'PricedInThanks', and 'ExternalLink'. (required)
+ * @apiBody {Number} [priceInThanks] The updated price of the event in ThanksCoins, required if `priceType` is 'PricedInThanks'. This field specifies how many ThanksCoins attendees need to spend to access the event. (optional)
+ */
 const postEditEvent = async (req, res) => {
     const { id } = req.params; // Event ID is passed as URL parameter
     const { title, createdBy, description, dateTime, paymentLink, priceType, priceInThanks } = req.body;
@@ -2074,6 +2100,13 @@ const updateUserSubscription = async (req, res) => {
     }
 };
 
+/**
+ * @api {post} /api/logContentUsage Log Content Usage
+ * @apiDescription Logs a user's interaction with content, specifically when a video is played. This endpoint captures the event along with a server-generated timestamp to record when the content was accessed.
+ * 
+ * @apiParam {String} user The email of the user who interacted with the content. This is used to identify the user account within the system.
+ * @apiParam {String} videoId The unique identifier of the video content that was accessed by the user. This ID corresponds to the specific piece of content within the content catalog.
+ */
 const logContentUsage = async (req, res) => {
     const { user, videoId } = req.body;
 
